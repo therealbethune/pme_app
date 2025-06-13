@@ -118,4 +118,5 @@ def calculate_max_drawdown(returns: pd.Series) -> float:
     cumulative = (1 + returns).cumprod()
     running_max = cumulative.expanding().max()
     drawdown = (cumulative - running_max) / running_max
-    return drawdown.min()
+    min_drawdown = drawdown.min()
+    return float(min_drawdown) if pd.notna(min_drawdown) else 0.0
