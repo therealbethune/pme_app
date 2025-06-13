@@ -2,13 +2,14 @@
 Minimal FastAPI server for PME Calculator that bypasses problematic Pydantic schemas.
 """
 
-from fastapi import FastAPI, File, UploadFile, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
+import io
 import uuid
 from datetime import datetime
-import io
+from typing import Any, Dict
+
 import pandas as pd
-from typing import Dict, Any
+from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title="PME Calculator - Minimal", version="1.0.0")
 
@@ -27,7 +28,7 @@ app.add_middleware(
 )
 
 # In-memory file storage
-uploaded_files: Dict[str, Dict[str, Any]] = {}
+uploaded_files: dict[str, dict[str, Any]] = {}
 
 
 @app.get("/api/health")
@@ -54,9 +55,7 @@ async def upload_fund_file(file: UploadFile = File(...)):
             raise HTTPException(status_code=400, detail=f"Invalid CSV file: {str(e)}")
 
         # Generate file ID
-        file_id = (
-            f"fund_{len([k for k in uploaded_files.keys() if k.startswith('fund_')])}"
-        )
+        file_id = f"fund_{len([k for k in uploaded_files if k.startswith('fund_')])}"
 
         # Store file info
         uploaded_files[file_id] = {
@@ -93,9 +92,7 @@ async def upload_index_file(file: UploadFile = File(...)):
             raise HTTPException(status_code=400, detail=f"Invalid CSV file: {str(e)}")
 
         # Generate file ID
-        file_id = (
-            f"index_{len([k for k in uploaded_files.keys() if k.startswith('index_')])}"
-        )
+        file_id = f"index_{len([k for k in uploaded_files if k.startswith('index_')])}"
 
         # Store file info
         uploaded_files[file_id] = {
@@ -143,7 +140,7 @@ async def run_simple_analysis():
 
         # Find fund file
         fund_file_id = None
-        for file_id in uploaded_files.keys():
+        for file_id in uploaded_files:
             if file_id.startswith("fund_"):
                 fund_file_id = file_id
                 break

@@ -15,11 +15,12 @@ Test Criteria:
 - Redis memory usage stays reasonable
 """
 
-import time
-import requests
 import concurrent.futures
-from typing import Dict
 import statistics
+import time
+from typing import Dict
+
+import requests
 
 # Test configuration
 BASE_URL = "http://localhost:8000"
@@ -79,7 +80,7 @@ def test_concurrent_requests():
 
     url = f"{BASE_URL}{ENDPOINT}"
 
-    def make_request(request_id: int) -> Dict:
+    def make_request(request_id: int) -> dict:
         """Make a single request and measure performance."""
         start_time = time.time()
         try:

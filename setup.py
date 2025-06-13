@@ -1,4 +1,4 @@
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
 setup(
     name="pme_app",
@@ -10,7 +10,7 @@ setup(
     python_requires=">=3.7",
     install_requires=["numpy", "pandas", "matplotlib", "numpy_financial", "scipy"],
     extras_require={
-        "dev": ["black", "ruff", "pytest", "pytest-asyncio", "polars"]
+        "dev": ["black", "ruff", "pytest", "pytest-cov", "pytest-asyncio", "polars"]
     },
     entry_points={
         "console_scripts": [

@@ -3,11 +3,12 @@
 Test PMEAnalysisEngine methods to ensure they work with the upload system.
 """
 
-import sys
 import os
+import sys
 import tempfile
-import pandas as pd
 from pathlib import Path
+
+import pandas as pd
 
 # Add backend directory to path
 backend_dir = Path(__file__).parent / "pme_calculator" / "backend"

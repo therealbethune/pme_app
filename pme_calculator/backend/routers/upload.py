@@ -2,32 +2,32 @@
 FastAPI upload router with comprehensive file validation.
 """
 
-from fastapi import (
-    APIRouter,
-    UploadFile,
-    File,
-    HTTPException,
-    BackgroundTasks,
-    Query,
-)
-from fastapi.responses import JSONResponse
-from typing import Dict, Any
 import tempfile
 import uuid
+from datetime import datetime
 from pathlib import Path
-import aiofiles
+from typing import Any, Dict
 
+import aiofiles
+from fastapi import (
+    APIRouter,
+    BackgroundTasks,
+    File,
+    HTTPException,
+    Query,
+    UploadFile,
+)
+from fastapi.responses import JSONResponse
+from logger import get_logger
 from validation.file_check_simple import validate_file_comprehensive
 from validation.schemas_simple import (
     UploadResponse,
 )
-from logger import get_logger
-from datetime import datetime
 
 # Make database imports optional
 try:
-    from models.upload_meta import UploadFileMeta
     from database import get_session
+    from models.upload_meta import UploadFileMeta
 
     DATABASE_AVAILABLE = True
 except ImportError as e:
@@ -52,7 +52,7 @@ ALLOWED = {
 }
 
 # In-memory storage for uploaded files (replace with Redis/DB in production)
-uploaded_files: Dict[str, Dict[str, Any]] = {}
+uploaded_files: dict[str, dict[str, Any]] = {}
 
 
 # UploadResponse now imported from schemas_simple

@@ -9,8 +9,8 @@ import pandas as pd
 # Import Phase 1 components
 from pme_math.alignment_engine import DataAlignmentEngine
 from pme_math.error_envelope import (
-    envelope_ok,
     ErrorCollector,
+    envelope_ok,
 )
 
 

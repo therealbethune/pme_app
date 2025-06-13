@@ -5,7 +5,7 @@ This package contains standalone mathematical functions for Private Market Equiv
 calculations without any I/O or logging dependencies.
 """
 
-from .metrics import xirr_wrapper, ks_pme, ln_pme, direct_alpha, pme_plus
+from .metrics import direct_alpha, ks_pme, ln_pme, pme_plus, xirr_wrapper
 
 __all__ = ["xirr_wrapper", "ks_pme", "ln_pme", "direct_alpha", "pme_plus"]
 

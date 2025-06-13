@@ -9,14 +9,14 @@ This test verifies that:
 """
 
 import asyncio
-import time
 import json
 import sys
+import time
 
 # Add current directory to path for imports
 sys.path.append(".")
 
-from cache import make_cache_key, cache_get, cache_set
+from cache import cache_get, cache_set, make_cache_key
 
 
 async def test_cache_functionality():

@@ -3,12 +3,13 @@
 Test upload integration with the fixed PMEAnalysisEngine.
 """
 
-import sys
-import os
-import tempfile
-import pandas as pd
-from pathlib import Path
 import asyncio
+import os
+import sys
+import tempfile
+from pathlib import Path
+
+import pandas as pd
 
 # Add backend directory to path
 backend_dir = Path(__file__).parent / "pme_calculator" / "backend"

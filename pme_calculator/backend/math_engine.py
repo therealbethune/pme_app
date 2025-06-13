@@ -3,10 +3,11 @@ Math Engine - Mathematical utilities for PME calculations
 Provides core mathematical functions used throughout the PME system.
 """
 
-import numpy as np
 from typing import List, Tuple
-from scipy.optimize import brentq
+
+import numpy as np
 import numpy_financial as npf
+from scipy.optimize import brentq
 
 # Try importing xirr_wrapper with relative import, fallback to creating our own
 try:
@@ -101,7 +102,7 @@ class MathEngine:
 
     @staticmethod
     def calculate_time_weighted_return(
-        values: List[float], cash_flows: List[float]
+        values: list[float], cash_flows: list[float]
     ) -> float:
         """
         Calculate Time-Weighted Return.
@@ -144,7 +145,7 @@ class MathEngine:
 
     @staticmethod
     def calculate_sharpe_ratio(
-        returns: List[float], risk_free_rate: float = 0.0
+        returns: list[float], risk_free_rate: float = 0.0
     ) -> float:
         """
         Calculate Sharpe Ratio.
@@ -173,7 +174,7 @@ class MathEngine:
             return 0.0
 
     @staticmethod
-    def calculate_volatility(returns: List[float], annualize: bool = True) -> float:
+    def calculate_volatility(returns: list[float], annualize: bool = True) -> float:
         """
         Calculate volatility (standard deviation of returns).
 
@@ -200,7 +201,7 @@ class MathEngine:
             return 0.0
 
     @staticmethod
-    def calculate_correlation(series1: List[float], series2: List[float]) -> float:
+    def calculate_correlation(series1: list[float], series2: list[float]) -> float:
         """
         Calculate correlation between two series.
 
@@ -226,7 +227,7 @@ class MathEngine:
             return 0.0
 
     @staticmethod
-    def calculate_drawdown(values: List[float]) -> Tuple[float, int, int]:
+    def calculate_drawdown(values: list[float]) -> tuple[float, int, int]:
         """
         Calculate maximum drawdown and its duration.
 
@@ -261,7 +262,7 @@ class MathEngine:
             return 0.0, 0, 0
 
     @staticmethod
-    def calculate_irr(cash_flows: List[float]) -> float:
+    def calculate_irr(cash_flows: list[float]) -> float:
         """
         Calculate Internal Rate of Return.
 

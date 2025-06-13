@@ -1,5 +1,4 @@
-
-with open("backend/pyproject.toml", "r") as f:
+with open("backend/pyproject.toml") as f:
     content = f.read()
 content = content.replace(
     '"fastapi==0.111.0",',

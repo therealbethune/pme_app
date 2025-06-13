@@ -69,6 +69,20 @@ const Navbar: React.FC = () => {
             Analysis
           </Button>
           
+          <Button
+            component={RouterLink}
+            to="/charts-test"
+            color="inherit"
+            variant={isActive('/charts-test') ? 'contained' : 'text'}
+            size="small"
+            sx={{ 
+              fontWeight: isActive('/charts-test') ? 600 : 400,
+              fontSize: '0.75rem',
+            }}
+          >
+            Charts Test
+          </Button>
+          
           <DarkModeToggle />
         </Box>
       </Toolbar>

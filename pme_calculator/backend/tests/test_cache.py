@@ -3,11 +3,12 @@ Comprehensive tests for the Redis cache module.
 Tests all functionality including edge cases and error conditions.
 """
 
-import pytest
 import json
-from unittest.mock import Mock, patch, AsyncMock
 import sys
 from pathlib import Path
+from unittest.mock import AsyncMock, Mock, patch
+
+import pytest
 
 # Add backend directory to path
 backend_dir = Path(__file__).parent.parent
@@ -15,12 +16,12 @@ sys.path.insert(0, str(backend_dir))
 
 from cache import (
     CacheManager,
-    cached,
-    get_cache,
-    set_cache,
-    delete_cache,
     cache_exists,
+    cached,
+    delete_cache,
+    get_cache,
     init_cache,
+    set_cache,
 )
 
 

@@ -4,17 +4,18 @@ Tests for predictive cache warming functionality.
 
 import asyncio
 import json
-import pytest
-from unittest.mock import patch, MagicMock
 
 # Import the modules we need to test
 import sys
 from pathlib import Path
+from unittest.mock import MagicMock, patch
+
+import pytest
 
 sys.path.append(str(Path(__file__).parent.parent / "pme_calculator" / "backend"))
 
-from cache import make_cache_key, cache_get, cache_set
-from worker.tasks import warm_cache, POPULAR_FUNDS
+from cache import cache_get, cache_set, make_cache_key
+from worker.tasks import POPULAR_FUNDS, warm_cache
 
 
 @pytest.fixture

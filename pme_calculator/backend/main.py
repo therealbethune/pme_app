@@ -1,15 +1,15 @@
 """Main entry point for the PME Calculator FastAPI backend server."""
 
-from fastapi import FastAPI, HTTPException
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
-from fastapi.middleware.cors import CORSMiddleware
-import uvicorn
 from pathlib import Path
 
+import uvicorn
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
+from logger import get_logger
 from routers.upload import router as upload_router
 from simple_analysis import router as simple_analysis_router
-from logger import get_logger
 
 # Initialize logger
 logger = get_logger(__name__)
@@ -97,8 +97,8 @@ async def health_check():
 @app.get("/api/system/info")
 async def system_info():
     """System information for diagnostics."""
-    import sys
     import platform
+    import sys
     from datetime import datetime
 
     return {

@@ -1,0 +1,19 @@
+[tool.mypy]
+python_version = "3.12"
+strict = true
+ignore_missing_imports = true
+
+# Start with services only, then expand
+files = ["pme_app/services"]
+
+# Strict settings
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+
+# Allow some flexibility for gradual adoption
+allow_redefinition = true
+implicit_reexport = true 

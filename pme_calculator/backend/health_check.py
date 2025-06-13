@@ -4,12 +4,13 @@ Comprehensive Health Check Script for PME Calculator Backend
 Tests all critical components and dependencies to ensure system health.
 """
 
-import sys
 import os
-import traceback
+import sys
 import tempfile
-import pandas as pd
+import traceback
 from pathlib import Path
+
+import pandas as pd
 
 # Set up structured logging
 from logger import get_logger
@@ -71,7 +72,7 @@ def test_imports():
         logger.error(f"   ❌ analysis_engine import failed: {e}")
 
     try:
-        from pme_engine import PMEEngine, BenchmarkType
+        from pme_engine import BenchmarkType, PMEEngine
 
         logger.info("   ✅ pme_engine")
     except ImportError as e:
@@ -171,7 +172,7 @@ def test_pme_engine():
     errors = []
 
     try:
-        from pme_engine import PMEEngine, BenchmarkType
+        from pme_engine import BenchmarkType, PMEEngine
 
         # Create test data
         fund_data = pd.DataFrame(

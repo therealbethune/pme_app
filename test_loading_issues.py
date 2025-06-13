@@ -4,11 +4,12 @@ Comprehensive test suite for loading issues in PME Calculator.
 Tests backend imports, port conflicts, file uploads, and frontend connectivity.
 """
 
-import sys
+import asyncio
 import os
 import subprocess
-import asyncio
+import sys
 from pathlib import Path
+
 import pytest
 
 # Add backend directory to path
@@ -127,8 +128,8 @@ class TestLoadingIssues:
             os.chdir(backend_dir)
 
             # Import FastAPI app
-            from main_minimal import app
             from fastapi.testclient import TestClient
+            from main_minimal import app
 
             client = TestClient(app)
 

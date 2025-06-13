@@ -4,7 +4,8 @@ Example of how to integrate Redis cache with the PME calculator.
 """
 
 import asyncio
-from cache import cached, cache, init_cache
+
+from cache import cache, cached, init_cache
 
 
 # Example: Cache expensive PME calculations

@@ -1,9 +1,10 @@
 # Phase 1: DataAlignmentEngine for PME calculations
 
-import polars as pl
-import pandas as pd
-from typing import Literal
 import logging
+from typing import Literal
+
+import pandas as pd
+import polars as pl
 
 logger = logging.getLogger(__name__)
 

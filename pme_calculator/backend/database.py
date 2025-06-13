@@ -4,11 +4,12 @@ Database configuration and models for PME Calculator.
 
 import os
 from datetime import datetime
-from typing import Optional, List, Any, Dict
-from sqlmodel import SQLModel, select
+from typing import Any, Dict, List, Optional
+
+from logger import get_logger
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
-from logger import get_logger
+from sqlmodel import SQLModel, select
 
 # Import UploadFileMeta from models package with proper fallback
 UploadFileMeta = None
@@ -33,7 +34,7 @@ except ImportError:
                     self.filename = kwargs.get("filename", "")
                     self.user = kwargs.get("user", "anonymous")
                     self.created_at = datetime.utcnow()
-                    self.s3_key = kwargs.get("s3_key", None)
+                    self.s3_key = kwargs.get("s3_key")
 
 
 logger = get_logger(__name__)
@@ -76,7 +77,7 @@ async def init_db():
         raise
 
 
-async def get_upload_by_id(session: AsyncSession, upload_id: int) -> Optional[Any]:
+async def get_upload_by_id(session: AsyncSession, upload_id: int) -> Any | None:
     """
     Get upload file metadata by ID.
     """
@@ -94,7 +95,7 @@ async def get_upload_by_id(session: AsyncSession, upload_id: int) -> Optional[An
 
 async def get_uploads_by_user(
     session: AsyncSession, user: str = "anonymous", limit: int = 100
-) -> List[Any]:
+) -> list[Any]:
     """
     Get upload files for a specific user.
     """
@@ -114,8 +115,8 @@ async def get_uploads_by_user(
 
 
 async def create_upload_record(
-    session: AsyncSession, upload_data: Dict[str, Any]
-) -> Optional[Any]:
+    session: AsyncSession, upload_data: dict[str, Any]
+) -> Any | None:
     """
     Create a new upload file record.
     """
@@ -136,8 +137,8 @@ async def create_upload_record(
 
 
 async def update_upload_record(
-    session: AsyncSession, upload_id: int, update_data: Dict[str, Any]
-) -> Optional[Any]:
+    session: AsyncSession, upload_id: int, update_data: dict[str, Any]
+) -> Any | None:
     """
     Update an existing upload file record.
     """

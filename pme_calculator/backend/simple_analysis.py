@@ -2,9 +2,10 @@
 Simple analysis endpoint that bypasses complex Pydantic validation.
 """
 
-from fastapi import APIRouter
 import uuid
 from datetime import datetime
+
+from fastapi import APIRouter
 from routers.upload import uploaded_files
 
 router = APIRouter(prefix="/simple-analysis", tags=["simple-analysis"])
@@ -20,7 +21,7 @@ async def run_simple_analysis():
 
         # Find fund file
         fund_file_id = None
-        for file_id in uploaded_files.keys():
+        for file_id in uploaded_files:
             if file_id.startswith("fund_"):
                 fund_file_id = file_id
                 break

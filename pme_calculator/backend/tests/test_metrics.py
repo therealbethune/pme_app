@@ -9,10 +9,12 @@ from pathlib import Path
 backend_dir = Path(__file__).parent.parent
 sys.path.insert(0, str(backend_dir))
 
-import pytest
-import pandas as pd
-import numpy as np
 from datetime import datetime
+
+import numpy as np
+import pandas as pd
+import pytest
+
 from pme_math.metrics import ks_pme, xirr_wrapper
 
 
@@ -214,8 +216,9 @@ def test_additional_metrics_functions():
     """
     Test other functions in the metrics module for coverage.
     """
-    from pme_math.metrics import ln_pme, direct_alpha, pme_plus
     import pandas as pd
+
+    from pme_math.metrics import direct_alpha, ln_pme, pme_plus
 
     # Test ln_pme
     cashflows = pd.Series([-1000, -500, 800, 700])

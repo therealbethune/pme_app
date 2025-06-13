@@ -5,6 +5,7 @@ Simple system test to verify core functionality without problematic imports.
 
 import sys
 import tempfile
+
 import pandas as pd
 
 
@@ -60,7 +61,7 @@ def test_core_functionality():
 
     try:
         # Test 2: PME Engine compatibility layer
-        from pme_engine import PMEEngine, BenchmarkType
+        from pme_engine import BenchmarkType, PMEEngine
 
         print("   ✅ PME Engine imported successfully")
 
@@ -150,7 +151,7 @@ def test_dependencies():
         ("fastapi", "FastAPI"),
     ]
 
-    for dep_name, import_name in dependencies:
+    for dep_name, _import_name in dependencies:
         try:
             if dep_name == "numpy":
                 import numpy as np

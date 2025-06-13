@@ -12,8 +12,8 @@ Robust data loading for PME calculator (Excel/CSV).
 
 from pathlib import Path
 from typing import Union
-import pandas as pd
 
+import pandas as pd
 
 
 def resolve_col(df, possibles):
@@ -29,7 +29,7 @@ def resolve_col(df, possibles):
     return None
 
 
-def export_to_excel(metrics: dict, file: Union[str, Path]):
+def export_to_excel(metrics: dict, file: str | Path):
     """
     Export the PME metrics to Excel.
     """
@@ -37,15 +37,15 @@ def export_to_excel(metrics: dict, file: Union[str, Path]):
     df.to_excel(file, index=False)
 
 
-def export_to_pdf(metrics: dict, file: Union[str, Path]):
+def export_to_pdf(metrics: dict, file: str | Path):
     """
     Export the PME metrics to PDF using matplotlib.
     """
     try:
         import matplotlib.pyplot as plt
         from matplotlib.backends.backend_pdf import PdfPages
-    except ImportError:
-        raise ImportError("matplotlib is required for PDF export.")
+    except ImportError as e:
+        raise ImportError("matplotlib is required for PDF export.") from e
 
     df = pd.DataFrame(list(metrics.items()), columns=["Metric", "Value"])
     fig, ax = plt.subplots(figsize=(8, 4))

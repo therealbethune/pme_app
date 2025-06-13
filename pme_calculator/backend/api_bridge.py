@@ -2,16 +2,17 @@
 API Bridge for PME Calculator - Compatibility layer for existing PME logic
 """
 
-import pandas as pd
-import numpy as np
-from typing import Dict, Any, List, Optional
-import tempfile
 import os
+import tempfile
+from typing import Any, Dict, List, Optional
+
+import numpy as np
+import pandas as pd
 
 # Import existing PME modules with fallback
 try:
-    from pme_app.pme_calcs import compute_pme_metrics
     from pme_app.data_loader import load_fund_file, load_index_file
+    from pme_app.pme_calcs import compute_pme_metrics
 
     PME_MODULES_AVAILABLE = True
 except ImportError as e:
@@ -37,7 +38,7 @@ class ApiBridge:
         self.temp_files = []
         self.last_analysis_results = None
 
-    def upload_fund_file(self, file_content: str, filename: str) -> Dict[str, Any]:
+    def upload_fund_file(self, file_content: str, filename: str) -> dict[str, Any]:
         """
         Upload and process fund file using existing logic.
         """
@@ -81,7 +82,7 @@ class ApiBridge:
             logger.error(f"Fund file upload failed: {str(e)}", exc_info=True)
             return {"success": False, "error": str(e)}
 
-    def upload_index_file(self, file_content: str, filename: str) -> Dict[str, Any]:
+    def upload_index_file(self, file_content: str, filename: str) -> dict[str, Any]:
         """
         Upload and process index file using existing logic.
         """
@@ -125,7 +126,7 @@ class ApiBridge:
             logger.error(f"Index file upload failed: {str(e)}", exc_info=True)
             return {"success": False, "error": str(e)}
 
-    def run_analysis(self) -> Dict[str, Any]:
+    def run_analysis(self) -> dict[str, Any]:
         """
         Run PME analysis using existing calculation logic.
         """
@@ -172,24 +173,29 @@ class ApiBridge:
             logger.error(f"Analysis failed: {str(e)}", exc_info=True)
             return {"success": False, "error": str(e)}
 
-    def _serialize_metrics(self, metrics: Dict[str, Any]) -> Dict[str, Any]:
+    def _serialize_metrics(self, metrics: dict[str, Any]) -> dict[str, Any]:
         """Convert numpy types to JSON-serializable types."""
+        try:
+            from pme_app.utils import to_jsonable
 
-        def convert_value(value):
-            if isinstance(value, (np.integer, np.floating)):
-                return float(value)
-            elif isinstance(value, np.ndarray):
-                return value.tolist()
-            elif isinstance(value, dict):
-                return {k: convert_value(v) for k, v in value.items()}
-            elif isinstance(value, list):
-                return [convert_value(v) for v in value]
-            else:
-                return value
+            return to_jsonable(metrics)
+        except ImportError:
+            # Fallback implementation
+            def convert_value(value):
+                if isinstance(value, np.integer | np.floating):
+                    return float(value)
+                elif isinstance(value, np.ndarray):
+                    return value.tolist()
+                elif isinstance(value, dict):
+                    return {k: convert_value(v) for k, v in value.items()}
+                elif isinstance(value, list):
+                    return [convert_value(v) for v in value]
+                else:
+                    return value
 
-        return convert_value(metrics)
+            return convert_value(metrics)
 
-    def _extract_cashflow_data(self) -> List[Dict[str, Any]]:
+    def _extract_cashflow_data(self) -> list[dict[str, Any]]:
         """Extract cashflow data for charting."""
         try:
             if self.fund_data is None:
@@ -219,7 +225,7 @@ class ApiBridge:
             logger.error(f"Error extracting cashflow data: {str(e)}", exc_info=True)
             return []
 
-    def _extract_nav_data(self) -> List[Dict[str, Any]]:
+    def _extract_nav_data(self) -> list[dict[str, Any]]:
         """Extract NAV data for charting."""
         try:
             if self.fund_data is None:
@@ -261,7 +267,7 @@ class ApiBridge:
             logger.error(f"Error extracting NAV data: {str(e)}", exc_info=True)
             return []
 
-    def _calculate_basic_fund_metrics(self, fund_data: pd.DataFrame) -> Dict[str, Any]:
+    def _calculate_basic_fund_metrics(self, fund_data: pd.DataFrame) -> dict[str, Any]:
         """Calculate basic fund metrics as fallback."""
         try:
             # Basic calculations
@@ -339,7 +345,7 @@ class ApiBridge:
                 )
         self.temp_files = []
 
-    def fund_metrics(self, file_path: str) -> Dict[str, Any]:
+    def fund_metrics(self, file_path: str) -> dict[str, Any]:
         """
         Calculate fund metrics from uploaded file using existing PME logic.
         """
@@ -365,7 +371,7 @@ class ApiBridge:
             # Convert numpy types to native Python types for JSON serialization
             serializable_metrics = {}
             for key, value in metrics.items():
-                if isinstance(value, (np.integer, np.floating)):
+                if isinstance(value, np.integer | np.floating):
                     serializable_metrics[key] = float(value)
                 elif isinstance(value, np.ndarray):
                     serializable_metrics[key] = value.tolist()
@@ -377,7 +383,7 @@ class ApiBridge:
         except Exception as e:
             return {"success": False, "error": str(e)}
 
-    def cashflow_data(self, file_path: str) -> Dict[str, Any]:
+    def cashflow_data(self, file_path: str) -> dict[str, Any]:
         """
         Extract cashflow data for charting using existing data processing.
         """
@@ -413,7 +419,7 @@ class ApiBridge:
         except Exception as e:
             return {"success": False, "error": str(e)}
 
-    def nav_series(self, file_path: str) -> Dict[str, Any]:
+    def nav_series(self, file_path: str) -> dict[str, Any]:
         """
         Extract NAV time series data using existing data processing.
         """
@@ -461,7 +467,7 @@ class ApiBridge:
         except Exception as e:
             return {"success": False, "error": str(e)}
 
-    def load_index_data(self, index_path: str) -> Dict[str, Any]:
+    def load_index_data(self, index_path: str) -> dict[str, Any]:
         """Load index/benchmark data using existing logic."""
         try:
             self.index_data = load_index_file(index_path)
@@ -475,8 +481,8 @@ class ApiBridge:
             return {"success": False, "error": str(e)}
 
     def run_full_analysis(
-        self, fund_path: str, index_path: Optional[str] = None
-    ) -> Dict[str, Any]:
+        self, fund_path: str, index_path: str | None = None
+    ) -> dict[str, Any]:
         """
         Run complete PME analysis using existing PMEApp logic.
         """
@@ -517,11 +523,11 @@ class ApiBridge:
         except Exception as e:
             return {"success": False, "error": str(e)}
 
-    def get_supported_file_types(self) -> List[str]:
+    def get_supported_file_types(self) -> list[str]:
         """Return list of supported file extensions."""
         return [".csv", ".xlsx", ".xls"]
 
-    def validate_file(self, file_path: str) -> Dict[str, Any]:
+    def validate_file(self, file_path: str) -> dict[str, Any]:
         """Validate uploaded file format and structure."""
         try:
             if not os.path.exists(file_path):

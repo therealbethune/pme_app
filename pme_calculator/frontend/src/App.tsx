@@ -5,6 +5,7 @@ import { ColorModeProvider } from "./contexts/ColorModeContext";
 import Navbar from "./components/Navbar";
 import Analysis from "./pages/Analysis";
 import DataUpload from "./pages/DataUpload";
+import ChartsTest from "./pages/ChartsTest";
 import { ApiConnectionError, DemoModeBanner, GlassfundsLoader } from "./components/ProfessionalErrorStates";
 import { healthCheckService } from "./services/healthCheck";
 import { NotificationProvider } from "./components/NotificationSystem";
@@ -80,6 +81,7 @@ function App() {
                 <Route path="/" element={<DataUpload />} />
                 <Route path="/analysis" element={<Analysis />} />
                 <Route path="/upload" element={<DataUpload />} />
+                <Route path="/charts-test" element={<ChartsTest />} />
               </Routes>
             </GradientBackground>
           </Router>

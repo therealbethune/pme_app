@@ -4,8 +4,9 @@ Test script to verify that the PME analysis is working correctly
 and that the chart data is being generated properly.
 """
 
-import requests
 import os
+
+import requests
 
 
 def test_analysis_integration():

@@ -1,8 +1,8 @@
 # pme_app/nav_waterfall.py
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mtick
-import pandas as pd
 import numpy as np
+import pandas as pd
 
 
 def build_nav_change_df(fund_df: pd.DataFrame) -> pd.DataFrame:

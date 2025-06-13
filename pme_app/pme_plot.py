@@ -3,9 +3,9 @@
 pme_plot.py – Visualizes Net Cash Flows vs Market Index
 """
 
-import pandas as pd
-import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
+import matplotlib.pyplot as plt
+import pandas as pd
 
 from .utils import ensure_datetime_index
 
