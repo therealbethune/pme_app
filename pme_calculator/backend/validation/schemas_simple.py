@@ -2,18 +2,16 @@
 Simplified Pydantic schemas for PME Calculator - optimized for production use.
 """
 
-from datetime import datetime, date
-from decimal import Decimal
+from datetime import datetime
 from typing import List, Optional, Dict, Any
 from enum import Enum
-import re
 
 from pydantic import BaseModel, Field
 
 
 class FileTypeEnum(str, Enum):
     CSV = "csv"
-    XLSX = "xlsx" 
+    XLSX = "xlsx"
     XLS = "xls"
 
 
@@ -25,6 +23,7 @@ class AnalysisMethodEnum(str, Enum):
 
 class UploadMeta(BaseModel):
     """Metadata for uploaded files."""
+
     filename: str = Field(..., max_length=255)
     file_size: int = Field(..., gt=0)
     file_type: FileTypeEnum
@@ -37,6 +36,7 @@ class UploadMeta(BaseModel):
 
 class ValidationResult(BaseModel):
     """Result of file validation."""
+
     is_valid: bool
     errors: List[str] = Field(default_factory=list)
     warnings: List[str] = Field(default_factory=list)
@@ -46,6 +46,7 @@ class ValidationResult(BaseModel):
 
 class AnalysisRequest(BaseModel):
     """Request for PME analysis."""
+
     fund_file_id: str
     index_file_id: Optional[str] = None
     method: AnalysisMethodEnum = AnalysisMethodEnum.KAPLAN_SCHOAR
@@ -57,6 +58,7 @@ class AnalysisRequest(BaseModel):
 
 class AnalysisResponse(BaseModel):
     """Response from PME analysis."""
+
     request_id: str
     success: bool
     metrics: Optional[Dict[str, Any]] = None
@@ -68,8 +70,9 @@ class AnalysisResponse(BaseModel):
 
 class UploadResponse(BaseModel):
     """Response model for file uploads."""
+
     success: bool
     file_id: str
     filename: str
     validation: ValidationResult
-    message: str 
+    message: str

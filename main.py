@@ -6,49 +6,53 @@ Main entry point for launching the web-based PME calculation tool.
 import subprocess
 from pathlib import Path
 
+
 def main():
     """Finds and executes the start_app.sh script."""
     print("Launching Fund Analysis Tool Web Application...")
-    
+
     # The script should be in the same directory as this main.py
     script_path = Path(__file__).parent / "start_app.sh"
-    
+
     if not script_path.is_file():
         print(f"Error: start_app.sh not found at {script_path}")
         print("Please ensure start_app.sh is in the project root directory.")
         return 1
-        
+
     try:
         # Make sure the script is executable
         script_path.chmod(0o755)
-        
+
         # Run the script and stream its output
         process = subprocess.Popen(
             ["bash", str(script_path)],
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
-            text=True
+            text=True,
         )
-        
+
         # Print output line-by-line
         if process.stdout:
-            for line in iter(process.stdout.readline, ''):
+            for line in iter(process.stdout.readline, ""):
                 print(line.strip())
-        
+
         # Wait for the process to complete
         return_code = process.wait()
-        
+
         if return_code != 0:
             print(f"Script exited with code {return_code}.")
-        
+
         return return_code
 
     except FileNotFoundError:
-        print("Error: 'bash' command not found. Please ensure bash is installed and in your PATH.")
+        print(
+            "Error: 'bash' command not found. Please ensure bash is installed and in your PATH."
+        )
         return 1
     except Exception as e:
         print(f"An unexpected error occurred: {e}")
         return 1
+
 
 if __name__ == "__main__":
     exit_code = main()
@@ -56,4 +60,4 @@ if __name__ == "__main__":
         print("Application shut down gracefully.")
     else:
         print("Application shut down with errors.")
-    exit(exit_code) 
+    exit(exit_code)

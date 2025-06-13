@@ -4,17 +4,16 @@ Handles project management, session persistence, data validation, and user prefe
 """
 
 import json
-import pickle
-import os
 import sqlite3
 import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Tuple, Any
+from typing import Dict, List, Tuple
 import hashlib
 import shutil
 from pathlib import Path
 import logging
+
 
 class DataManager:
     """Comprehensive data management system for PME calculator."""
@@ -27,8 +26,13 @@ class DataManager:
         self.exports_dir = self.data_dir / "exports"
 
         # Create directories
-        for dir_path in [self.data_dir, self.projects_dir, self.settings_dir,
-                        self.cache_dir, self.exports_dir]:
+        for dir_path in [
+            self.data_dir,
+            self.projects_dir,
+            self.settings_dir,
+            self.cache_dir,
+            self.exports_dir,
+        ]:
             dir_path.mkdir(parents=True, exist_ok=True)
 
         # Initialize database
@@ -47,8 +51,8 @@ class DataManager:
         logging.basicConfig(
             filename=log_file,
             level=logging.INFO,
-            format='%(asctime)s - %(levelname)s - %(message)s',
-            datefmt='%Y-%m-%d %H:%M:%S'
+            format="%(asctime)s - %(levelname)s - %(message)s",
+            datefmt="%Y-%m-%d %H:%M:%S",
         )
         self.logger = logging.getLogger(__name__)
 
@@ -58,7 +62,8 @@ class DataManager:
             cursor = conn.cursor()
 
             # Projects table
-            cursor.execute("""
+            cursor.execute(
+                """
                 CREATE TABLE IF NOT EXISTS projects (
                     id TEXT PRIMARY KEY,
                     name TEXT NOT NULL,
@@ -73,10 +78,12 @@ class DataManager:
                     analysis_method TEXT,
                     status TEXT DEFAULT 'active'
                 )
-            """)
+            """
+            )
 
             # Analysis sessions table
-            cursor.execute("""
+            cursor.execute(
+                """
                 CREATE TABLE IF NOT EXISTS analysis_sessions (
                     id TEXT PRIMARY KEY,
                     project_id TEXT,
@@ -87,10 +94,12 @@ class DataManager:
                     file_path TEXT,
                     FOREIGN KEY (project_id) REFERENCES projects (id)
                 )
-            """)
+            """
+            )
 
             # Data validation log
-            cursor.execute("""
+            cursor.execute(
+                """
                 CREATE TABLE IF NOT EXISTS validation_log (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     project_id TEXT,
@@ -100,21 +109,30 @@ class DataManager:
                     issues_detail TEXT,
                     FOREIGN KEY (project_id) REFERENCES projects (id)
                 )
-            """)
+            """
+            )
 
             # User preferences
-            cursor.execute("""
+            cursor.execute(
+                """
                 CREATE TABLE IF NOT EXISTS user_preferences (
                     key TEXT PRIMARY KEY,
                     value TEXT,
                     updated_date TEXT
                 )
-            """)
+            """
+            )
 
             conn.commit()
 
-    def create_project(self, name: str, description: str = "", fund_name: str = "",
-                      fund_type: str = "private_equity", tags: List[str] = None) -> str:
+    def create_project(
+        self,
+        name: str,
+        description: str = "",
+        fund_name: str = "",
+        fund_type: str = "private_equity",
+        tags: List[str] = None,
+    ) -> str:
         """Create a new project."""
         project_id = self._generate_project_id(name)
 
@@ -132,35 +150,51 @@ class DataManager:
             "created_date": datetime.now().isoformat(),
             "modified_date": datetime.now().isoformat(),
             "tags": tags or [],
-            "status": "active"
+            "status": "active",
         }
 
         # Save to database
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
-            cursor.execute("""
+            cursor.execute(
+                """
                 INSERT INTO projects
                 (id, name, description, fund_name, created_date, modified_date,
                  file_path, tags, fund_type, status)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """, (
-                project_id, name, description, fund_name,
-                project_data["created_date"], project_data["modified_date"],
-                str(project_dir), json.dumps(tags or []), fund_type, "active"
-            ))
+            """,
+                (
+                    project_id,
+                    name,
+                    description,
+                    fund_name,
+                    project_data["created_date"],
+                    project_data["modified_date"],
+                    str(project_dir),
+                    json.dumps(tags or []),
+                    fund_type,
+                    "active",
+                ),
+            )
             conn.commit()
 
         # Save project metadata file
         metadata_file = project_dir / "metadata.json"
-        with open(metadata_file, 'w') as f:
+        with open(metadata_file, "w") as f:
             json.dump(project_data, f, indent=2)
 
         self.logger.info(f"Created project: {name} (ID: {project_id})")
         return project_id
 
-    def save_project_session(self, project_id: str, session_name: str,
-                           fund_data: pd.DataFrame, index_data: pd.DataFrame,
-                           metrics: Dict, settings: Dict) -> str:
+    def save_project_session(
+        self,
+        project_id: str,
+        session_name: str,
+        fund_data: pd.DataFrame,
+        index_data: pd.DataFrame,
+        metrics: Dict,
+        settings: Dict,
+    ) -> str:
         """Save a complete analysis session."""
         session_id = f"{project_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
 
@@ -174,10 +208,10 @@ class DataManager:
             index_data.to_csv(session_dir / "index_data.csv")
 
             # Save metrics and settings
-            with open(session_dir / "metrics.json", 'w') as f:
+            with open(session_dir / "metrics.json", "w") as f:
                 json.dump(self._serialize_metrics(metrics), f, indent=2)
 
-            with open(session_dir / "settings.json", 'w') as f:
+            with open(session_dir / "settings.json", "w") as f:
                 json.dump(settings, f, indent=2)
 
             # Save session metadata
@@ -189,31 +223,39 @@ class DataManager:
                 "fund_records": len(fund_data),
                 "index_records": len(index_data),
                 "metrics_count": len(metrics),
-                "data_hash": self._calculate_data_hash(fund_data, index_data)
+                "data_hash": self._calculate_data_hash(fund_data, index_data),
             }
 
-            with open(session_dir / "session_metadata.json", 'w') as f:
+            with open(session_dir / "session_metadata.json", "w") as f:
                 json.dump(session_metadata, f, indent=2)
 
             # Update database
             with sqlite3.connect(self.db_path) as conn:
                 cursor = conn.cursor()
-                cursor.execute("""
+                cursor.execute(
+                    """
                     INSERT INTO analysis_sessions
                     (id, project_id, session_name, created_date, metrics, settings, file_path)
                     VALUES (?, ?, ?, ?, ?, ?, ?)
-                """, (
-                    session_id, project_id, session_name,
-                    session_metadata["created_date"],
-                    json.dumps(self._serialize_metrics(metrics)),
-                    json.dumps(settings),
-                    str(session_dir)
-                ))
+                """,
+                    (
+                        session_id,
+                        project_id,
+                        session_name,
+                        session_metadata["created_date"],
+                        json.dumps(self._serialize_metrics(metrics)),
+                        json.dumps(settings),
+                        str(session_dir),
+                    ),
+                )
 
                 # Update project modified date
-                cursor.execute("""
+                cursor.execute(
+                    """
                     UPDATE projects SET modified_date = ? WHERE id = ?
-                """, (datetime.now().isoformat(), project_id))
+                """,
+                    (datetime.now().isoformat(), project_id),
+                )
 
                 conn.commit()
 
@@ -227,7 +269,9 @@ class DataManager:
                 shutil.rmtree(session_dir)
             raise
 
-    def load_project_session(self, session_id: str) -> Tuple[pd.DataFrame, pd.DataFrame, Dict, Dict]:
+    def load_project_session(
+        self, session_id: str
+    ) -> Tuple[pd.DataFrame, pd.DataFrame, Dict, Dict]:
         """Load a complete analysis session."""
         # Find session directory
         session_dir = None
@@ -243,14 +287,18 @@ class DataManager:
 
         try:
             # Load data files
-            fund_data = pd.read_csv(session_dir / "fund_data.csv", index_col=0, parse_dates=True)
-            index_data = pd.read_csv(session_dir / "index_data.csv", index_col=0, parse_dates=True)
+            fund_data = pd.read_csv(
+                session_dir / "fund_data.csv", index_col=0, parse_dates=True
+            )
+            index_data = pd.read_csv(
+                session_dir / "index_data.csv", index_col=0, parse_dates=True
+            )
 
             # Load metrics and settings
-            with open(session_dir / "metrics.json", 'r') as f:
+            with open(session_dir / "metrics.json", "r") as f:
                 metrics = json.load(f)
 
-            with open(session_dir / "settings.json", 'r') as f:
+            with open(session_dir / "settings.json", "r") as f:
                 settings = json.load(f)
 
             self.logger.info(f"Loaded session: {session_id}")
@@ -264,13 +312,16 @@ class DataManager:
         """Get list of all projects."""
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
-            cursor.execute("""
+            cursor.execute(
+                """
                 SELECT id, name, description, fund_name, created_date, modified_date,
                        tags, fund_type, benchmark_name
                 FROM projects
                 WHERE status = ?
                 ORDER BY modified_date DESC
-            """, (status,))
+            """,
+                (status,),
+            )
 
             projects = []
             for row in cursor.fetchall():
@@ -283,7 +334,7 @@ class DataManager:
                     "modified_date": row[5],
                     "tags": json.loads(row[6]) if row[6] else [],
                     "fund_type": row[7],
-                    "benchmark_name": row[8] or "Not set"
+                    "benchmark_name": row[8] or "Not set",
                 }
                 projects.append(project)
 
@@ -293,12 +344,15 @@ class DataManager:
         """Get all analysis sessions for a project."""
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
-            cursor.execute("""
+            cursor.execute(
+                """
                 SELECT id, session_name, created_date, file_path
                 FROM analysis_sessions
                 WHERE project_id = ?
                 ORDER BY created_date DESC
-            """, (project_id,))
+            """,
+                (project_id,),
+            )
 
             sessions = []
             for row in cursor.fetchall():
@@ -306,14 +360,15 @@ class DataManager:
                     "id": row[0],
                     "session_name": row[1],
                     "created_date": row[2],
-                    "file_path": row[3]
+                    "file_path": row[3],
                 }
                 sessions.append(session)
 
             return sessions
 
-    def validate_data(self, project_id: str, fund_data: pd.DataFrame,
-                     index_data: pd.DataFrame) -> Dict:
+    def validate_data(
+        self, project_id: str, fund_data: pd.DataFrame, index_data: pd.DataFrame
+    ) -> Dict:
         """Comprehensive data validation."""
         issues = []
         warnings = []
@@ -340,20 +395,28 @@ class DataManager:
             "issues": issues,
             "warnings": warnings,
             "overall_status": "PASS" if len(issues) == 0 else "FAIL",
-            "data_quality_score": self._calculate_quality_score(fund_data, index_data, issues)
+            "data_quality_score": self._calculate_quality_score(
+                fund_data, index_data, issues
+            ),
         }
 
         # Log to database
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
-            cursor.execute("""
+            cursor.execute(
+                """
                 INSERT INTO validation_log
                 (project_id, data_type, validation_date, issues_found, issues_detail)
                 VALUES (?, ?, ?, ?, ?)
-            """, (
-                project_id, "fund_and_index", validation_report["validation_date"],
-                len(issues), json.dumps(issues)
-            ))
+            """,
+                (
+                    project_id,
+                    "fund_and_index",
+                    validation_report["validation_date"],
+                    len(issues),
+                    json.dumps(issues),
+                ),
+            )
             conn.commit()
 
         return validation_report
@@ -367,7 +430,7 @@ class DataManager:
             return issues
 
         # Check required columns
-        required_columns = ['cash_flow', 'nav']
+        required_columns = ["cash_flow", "nav"]
         missing_columns = [col for col in required_columns if col not in df.columns]
         if missing_columns:
             issues.append(f"Missing required columns: {missing_columns}")
@@ -386,16 +449,16 @@ class DataManager:
             issues.append("Duplicate dates found in fund data")
 
         # Validate cash flows
-        if 'cash_flow' in df.columns:
-            if (df['cash_flow'] == 0).all():
+        if "cash_flow" in df.columns:
+            if (df["cash_flow"] == 0).all():
                 issues.append("All cash flows are zero")
 
             # Check for extreme values
-            cf_std = df['cash_flow'].std()
-            cf_mean = df['cash_flow'].mean()
+            cf_std = df["cash_flow"].std()
+            cf_mean = df["cash_flow"].mean()
             extreme_threshold = abs(cf_mean) + 5 * cf_std
 
-            if (abs(df['cash_flow']) > extreme_threshold).any():
+            if (abs(df["cash_flow"]) > extreme_threshold).any():
                 issues.append("Extreme cash flow values detected")
 
         return issues
@@ -409,7 +472,7 @@ class DataManager:
             return issues
 
         # Check for price column
-        if 'price' not in df.columns and len(df.columns) < 1:
+        if "price" not in df.columns and len(df.columns) < 1:
             issues.append("No price data found in index")
 
         # Check date index
@@ -417,7 +480,7 @@ class DataManager:
             issues.append("Index data does not have DatetimeIndex")
 
         # Check for negative prices
-        price_column = 'price' if 'price' in df.columns else df.columns[0]
+        price_column = "price" if "price" in df.columns else df.columns[0]
         if (df[price_column] <= 0).any():
             issues.append("Negative or zero prices found in index data")
 
@@ -429,7 +492,9 @@ class DataManager:
 
         return issues
 
-    def _validate_data_alignment(self, fund_df: pd.DataFrame, index_df: pd.DataFrame) -> List[str]:
+    def _validate_data_alignment(
+        self, fund_df: pd.DataFrame, index_df: pd.DataFrame
+    ) -> List[str]:
         """Validate alignment between fund and index data."""
         issues = []
 
@@ -441,10 +506,14 @@ class DataManager:
         index_start, index_end = index_df.index.min(), index_df.index.max()
 
         if fund_start < index_start:
-            issues.append(f"Fund data starts before index data ({fund_start} vs {index_start})")
+            issues.append(
+                f"Fund data starts before index data ({fund_start} vs {index_start})"
+            )
 
         if fund_end > index_end:
-            issues.append(f"Fund data ends after index data ({fund_end} vs {index_end})")
+            issues.append(
+                f"Fund data ends after index data ({fund_end} vs {index_end})"
+            )
 
         # Check for sufficient overlap
         overlap_start = max(fund_start, index_start)
@@ -456,8 +525,9 @@ class DataManager:
 
         return issues
 
-    def _calculate_quality_score(self, fund_df: pd.DataFrame, index_df: pd.DataFrame,
-                               issues: List[str]) -> float:
+    def _calculate_quality_score(
+        self, fund_df: pd.DataFrame, index_df: pd.DataFrame, issues: List[str]
+    ) -> float:
         """Calculate data quality score (0-100)."""
         base_score = 100.0
 
@@ -467,7 +537,9 @@ class DataManager:
 
         # Bonus for data completeness
         if not fund_df.empty and not index_df.empty:
-            completeness_bonus = min(10, len(fund_df) / 12)  # Bonus for more data points
+            completeness_bonus = min(
+                10, len(fund_df) / 12
+            )  # Bonus for more data points
             base_score += completeness_bonus
 
         # Bonus for data range
@@ -491,7 +563,7 @@ class DataManager:
 
         try:
             # Load project metadata
-            with open(project_dir / "metadata.json", 'r') as f:
+            with open(project_dir / "metadata.json", "r") as f:
                 metadata = json.load(f)
 
             if export_format.lower() == "excel":
@@ -505,42 +577,53 @@ class DataManager:
             self.logger.error(f"Failed to export project {project_id}: {str(e)}")
             raise
 
-    def _export_to_excel(self, project_id: str, export_dir: Path, metadata: Dict) -> str:
+    def _export_to_excel(
+        self, project_id: str, export_dir: Path, metadata: Dict
+    ) -> str:
         """Export project to Excel format."""
-        from openpyxl import Workbook
-        from openpyxl.styles import Font, PatternFill, Alignment
 
         export_file = export_dir / f"{metadata['name']}_export.xlsx"
 
-        with pd.ExcelWriter(export_file, engine='openpyxl') as writer:
+        with pd.ExcelWriter(export_file, engine="openpyxl") as writer:
             # Project summary
-            summary_df = pd.DataFrame([
-                ["Project Name", metadata['name']],
-                ["Description", metadata.get('description', '')],
-                ["Fund Name", metadata.get('fund_name', '')],
-                ["Fund Type", metadata.get('fund_type', '')],
-                ["Created Date", metadata['created_date']],
-                ["Modified Date", metadata['modified_date']]
-            ], columns=['Property', 'Value'])
+            summary_df = pd.DataFrame(
+                [
+                    ["Project Name", metadata["name"]],
+                    ["Description", metadata.get("description", "")],
+                    ["Fund Name", metadata.get("fund_name", "")],
+                    ["Fund Type", metadata.get("fund_type", "")],
+                    ["Created Date", metadata["created_date"]],
+                    ["Modified Date", metadata["modified_date"]],
+                ],
+                columns=["Property", "Value"],
+            )
 
-            summary_df.to_excel(writer, sheet_name='Project Summary', index=False)
+            summary_df.to_excel(writer, sheet_name="Project Summary", index=False)
 
             # Get all sessions and export their data
             sessions = self.get_project_sessions(project_id)
             for i, session in enumerate(sessions[:5]):  # Limit to 5 most recent
                 try:
-                    fund_data, index_data, metrics, settings = self.load_project_session(session['id'])
+                    fund_data, index_data, metrics, settings = (
+                        self.load_project_session(session["id"])
+                    )
 
                     sheet_name = f"Session_{i+1}"
                     fund_data.to_excel(writer, sheet_name=f"{sheet_name}_Fund")
                     index_data.to_excel(writer, sheet_name=f"{sheet_name}_Index")
 
                     # Metrics sheet
-                    metrics_df = pd.DataFrame(list(metrics.items()), columns=['Metric', 'Value'])
-                    metrics_df.to_excel(writer, sheet_name=f"{sheet_name}_Metrics", index=False)
+                    metrics_df = pd.DataFrame(
+                        list(metrics.items()), columns=["Metric", "Value"]
+                    )
+                    metrics_df.to_excel(
+                        writer, sheet_name=f"{sheet_name}_Metrics", index=False
+                    )
 
                 except Exception as e:
-                    self.logger.warning(f"Could not export session {session['id']}: {str(e)}")
+                    self.logger.warning(
+                        f"Could not export session {session['id']}: {str(e)}"
+                    )
 
         self.logger.info(f"Exported project {project_id} to Excel: {export_file}")
         return str(export_file)
@@ -551,7 +634,9 @@ class DataManager:
         name_hash = hashlib.md5(name.encode()).hexdigest()[:8]
         return f"proj_{timestamp}_{name_hash}"
 
-    def _calculate_data_hash(self, fund_data: pd.DataFrame, index_data: pd.DataFrame) -> str:
+    def _calculate_data_hash(
+        self, fund_data: pd.DataFrame, index_data: pd.DataFrame
+    ) -> str:
         """Calculate hash for data integrity checking."""
         combined_str = f"{fund_data.to_string()}{index_data.to_string()}"
         return hashlib.md5(combined_str.encode()).hexdigest()
@@ -580,12 +665,12 @@ class DataManager:
             "max_recent_projects": 10,
             "export_format": "excel",
             "data_validation_level": "strict",
-            "theme": "light"
+            "theme": "light",
         }
 
         if preferences_file.exists():
             try:
-                with open(preferences_file, 'r') as f:
+                with open(preferences_file, "r") as f:
                     loaded_prefs = json.load(f)
                 default_preferences.update(loaded_prefs)
             except Exception as e:
@@ -599,17 +684,20 @@ class DataManager:
         preferences_file = self.settings_dir / "preferences.json"
 
         try:
-            with open(preferences_file, 'w') as f:
+            with open(preferences_file, "w") as f:
                 json.dump(self.preferences, f, indent=2)
 
             # Also save to database
             with sqlite3.connect(self.db_path) as conn:
                 cursor = conn.cursor()
                 for key, value in preferences.items():
-                    cursor.execute("""
+                    cursor.execute(
+                        """
                         INSERT OR REPLACE INTO user_preferences (key, value, updated_date)
                         VALUES (?, ?, ?)
-                    """, (key, json.dumps(value), datetime.now().isoformat()))
+                    """,
+                        (key, json.dumps(value), datetime.now().isoformat()),
+                    )
                 conn.commit()
 
             self.logger.info("Saved user preferences")
@@ -630,10 +718,13 @@ class DataManager:
         """Soft delete a project."""
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
-            cursor.execute("""
+            cursor.execute(
+                """
                 UPDATE projects SET status = 'deleted', modified_date = ?
                 WHERE id = ?
-            """, (datetime.now().isoformat(), project_id))
+            """,
+                (datetime.now().isoformat(), project_id),
+            )
             conn.commit()
 
         self.logger.info(f"Deleted project: {project_id}")
@@ -644,15 +735,22 @@ class DataManager:
 
         # Cleanup cache
         for cache_file in self.cache_dir.iterdir():
-            if cache_file.is_file() and cache_file.stat().st_mtime < cutoff_date.timestamp():
+            if (
+                cache_file.is_file()
+                and cache_file.stat().st_mtime < cutoff_date.timestamp()
+            ):
                 cache_file.unlink()
 
         # Cleanup old exports
         for export_file in self.exports_dir.iterdir():
-            if export_file.is_file() and export_file.stat().st_mtime < cutoff_date.timestamp():
+            if (
+                export_file.is_file()
+                and export_file.stat().st_mtime < cutoff_date.timestamp()
+            ):
                 export_file.unlink()
 
         self.logger.info(f"Cleaned up data older than {days_old} days")
+
 
 # Singleton instance
 data_manager = DataManager()

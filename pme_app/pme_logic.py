@@ -14,7 +14,6 @@ from pathlib import Path
 from typing import Union
 import pandas as pd
 
-from .utils import ensure_datetime_index, load_fund_file, load_index_file
 
 
 def resolve_col(df, possibles):

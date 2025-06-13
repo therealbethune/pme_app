@@ -1,6 +1,7 @@
 """
 Alembic environment configuration.
 """
+
 import asyncio
 from logging.config import fileConfig
 from sqlalchemy import pool
@@ -10,7 +11,6 @@ from alembic import context
 from sqlmodel import SQLModel
 
 # Import all models to ensure they are registered with SQLModel
-from models.upload_meta import UploadFileMeta
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -89,4 +89,4 @@ def run_migrations_online() -> None:
 if context.is_offline_mode():
     run_migrations_offline()
 else:
-    run_migrations_online() 
+    run_migrations_online()

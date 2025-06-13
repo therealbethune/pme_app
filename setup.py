@@ -8,13 +8,7 @@ setup(
     author_email="you@example.com",
     packages=find_packages(include=["pme_app", "pme_app.*"]),
     python_requires=">=3.7",
-    install_requires=[
-        "numpy",
-        "pandas",
-        "matplotlib",
-        "numpy_financial",
-        "scipy"
-    ],
+    install_requires=["numpy", "pandas", "matplotlib", "numpy_financial", "scipy"],
     entry_points={
         "console_scripts": [
             # Entry point for web application

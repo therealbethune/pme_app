@@ -1,10 +1,11 @@
 """
 Database configuration and models for PME Calculator.
 """
+
 import os
 from datetime import datetime
 from typing import Optional, List, Any, Dict
-from sqlmodel import SQLModel, Field, create_engine, Session, select
+from sqlmodel import SQLModel, select
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 from logger import get_logger
@@ -29,30 +30,26 @@ except ImportError:
                     for key, value in kwargs.items():
                         setattr(self, key, value)
                     self.id = None
-                    self.filename = kwargs.get('filename', '')
-                    self.user = kwargs.get('user', 'anonymous')
+                    self.filename = kwargs.get("filename", "")
+                    self.user = kwargs.get("user", "anonymous")
                     self.created_at = datetime.utcnow()
-                    self.s3_key = kwargs.get('s3_key', None)
+                    self.s3_key = kwargs.get("s3_key", None)
+
 
 logger = get_logger(__name__)
 
 # Database configuration
 DATABASE_URL = os.getenv(
-    "DATABASE_URL", 
-    "postgresql+asyncpg://pme_user:pme_password@localhost:5432/pme_db"
+    "DATABASE_URL", "postgresql+asyncpg://pme_user:pme_password@localhost:5432/pme_db"
 )
 
 # Create async engine
 engine = create_async_engine(
-    DATABASE_URL,
-    echo=True,  # Set to False in production
-    future=True
+    DATABASE_URL, echo=True, future=True  # Set to False in production
 )
 
 # Create async session factory
-async_session = sessionmaker(
-    engine, class_=AsyncSession, expire_on_commit=False
-)
+async_session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
 
 async def get_session():
@@ -95,7 +92,9 @@ async def get_upload_by_id(session: AsyncSession, upload_id: int) -> Optional[An
         return None
 
 
-async def get_uploads_by_user(session: AsyncSession, user: str = "anonymous", limit: int = 100) -> List[Any]:
+async def get_uploads_by_user(
+    session: AsyncSession, user: str = "anonymous", limit: int = 100
+) -> List[Any]:
     """
     Get upload files for a specific user.
     """
@@ -114,14 +113,16 @@ async def get_uploads_by_user(session: AsyncSession, user: str = "anonymous", li
         return []
 
 
-async def create_upload_record(session: AsyncSession, upload_data: Dict[str, Any]) -> Optional[Any]:
+async def create_upload_record(
+    session: AsyncSession, upload_data: Dict[str, Any]
+) -> Optional[Any]:
     """
     Create a new upload file record.
     """
     try:
         if UploadFileMeta is None:
             return None
-            
+
         upload = UploadFileMeta(**upload_data)
         session.add(upload)
         await session.commit()
@@ -134,7 +135,9 @@ async def create_upload_record(session: AsyncSession, upload_data: Dict[str, Any
         return None
 
 
-async def update_upload_record(session: AsyncSession, upload_id: int, update_data: Dict[str, Any]) -> Optional[Any]:
+async def update_upload_record(
+    session: AsyncSession, upload_id: int, update_data: Dict[str, Any]
+) -> Optional[Any]:
     """
     Update an existing upload file record.
     """
@@ -145,17 +148,17 @@ async def update_upload_record(session: AsyncSession, upload_id: int, update_dat
             select(UploadFileMeta).where(UploadFileMeta.id == upload_id)
         )
         upload = result.scalar_one_or_none()
-        
+
         if not upload:
             return None
-            
+
         for key, value in update_data.items():
             setattr(upload, key, value)
-        
+
         upload.updated_at = datetime.utcnow()
         await session.commit()
         await session.refresh(upload)
-        
+
         logger.info(f"Updated upload record with ID {upload_id}")
         return upload
     except Exception as e:
@@ -175,16 +178,16 @@ async def delete_upload_record(session: AsyncSession, upload_id: int) -> bool:
             select(UploadFileMeta).where(UploadFileMeta.id == upload_id)
         )
         upload = result.scalar_one_or_none()
-        
+
         if not upload:
             return False
-            
+
         await session.delete(upload)
         await session.commit()
-        
+
         logger.info(f"Deleted upload record with ID {upload_id}")
         return True
     except Exception as e:
         logger.error(f"Error deleting upload record {upload_id}: {e}")
         await session.rollback()
-        return False 
+        return False

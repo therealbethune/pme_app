@@ -19,4 +19,4 @@ __all__ = [
 
 # Add available components to __all__
 if MathEngine is not None:
-    __all__.append("MathEngine") 
+    __all__.append("MathEngine")

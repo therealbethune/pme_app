@@ -2,12 +2,12 @@
 
 import numpy as np
 import pandas as pd
-from typing import Dict, Any, Tuple, Optional
-from datetime import datetime
-import numpy_financial as npf
 from pme_math.metrics import xirr_wrapper
 
-def _calculate_annualized_return(returns: pd.Series, periods_per_year: int = 252) -> float:
+
+def _calculate_annualized_return(
+    returns: pd.Series, periods_per_year: int = 252
+) -> float:
     """Safely calculates the annualized geometric mean return."""
     if returns.empty:
         return np.nan
@@ -30,8 +30,10 @@ def _calculate_annualized_return(returns: pd.Series, periods_per_year: int = 252
 
     return annualized_return
 
+
 def safe_div(num, denom):
     return num / denom if denom != 0 else np.nan
+
 
 def ks_pme(fund_cf: np.ndarray, idx_at_dates: np.ndarray) -> float:
     index_end = idx_at_dates[-1]
@@ -41,20 +43,30 @@ def ks_pme(fund_cf: np.ndarray, idx_at_dates: np.ndarray) -> float:
     distribs = fund_cf[distrib_mask]
     idx_contribs = idx_at_dates[contrib_mask]
     idx_distribs = idx_at_dates[distrib_mask]
-    pv_contrib = np.sum(contribs * (index_end / idx_contribs)) if len(contribs) > 0 else 0.0
-    pv_distrib = np.sum(distribs * (index_end / idx_distribs)) if len(distribs) > 0 else 0.0
+    pv_contrib = (
+        np.sum(contribs * (index_end / idx_contribs)) if len(contribs) > 0 else 0.0
+    )
+    pv_distrib = (
+        np.sum(distribs * (index_end / idx_distribs)) if len(distribs) > 0 else 0.0
+    )
     return pv_distrib / pv_contrib if pv_contrib > 0 else np.nan
+
 
 def direct_alpha(fund_irr: float, index_irr: float) -> float:
     if (
-        fund_irr is None or index_irr is None
-        or np.isnan(fund_irr) or np.isnan(index_irr)
+        fund_irr is None
+        or index_irr is None
+        or np.isnan(fund_irr)
+        or np.isnan(index_irr)
         or (1 + index_irr) == 0
     ):
         return np.nan
     return (1 + fund_irr) / (1 + index_irr) - 1
 
-def align_series_to_dates(series: pd.Series, target_dates: pd.DatetimeIndex, freq: str = "auto") -> pd.Series:
+
+def align_series_to_dates(
+    series: pd.Series, target_dates: pd.DatetimeIndex, freq: str = "auto"
+) -> pd.Series:
     series = series.copy()
     if not isinstance(series.index, pd.DatetimeIndex):
         series.index = pd.to_datetime(series.index)
@@ -64,8 +76,11 @@ def align_series_to_dates(series: pd.Series, target_dates: pd.DatetimeIndex, fre
     result = aligned.reindex(target_dates)
     percent_filled = result.isnull().mean() * 100
     if percent_filled > 5:
-        print(f"Warning: {percent_filled:.1f}% of values were filled by interpolation/ffill.")
+        print(
+            f"Warning: {percent_filled:.1f}% of values were filled by interpolation/ffill."
+        )
     return result
+
 
 def compute_volatility(return_series, freq="monthly"):
     return_series = pd.Series(return_series).dropna()
@@ -79,11 +94,13 @@ def compute_volatility(return_series, freq="monthly"):
         scale = 1
     return np.nanstd(return_series) * scale if len(return_series) > 1 else np.nan
 
+
 def compute_drawdown(series):
     s = pd.Series(series).dropna()
     cumulative = np.maximum.accumulate(s)
     dd = (s - cumulative) / cumulative
     return dd.min() if len(dd) > 1 else np.nan
+
 
 def compute_rolling_returns(series, window=12):
     s = pd.Series(series).dropna()
@@ -97,6 +114,7 @@ def compute_rolling_returns(series, window=12):
     rolling_pct_change.replace([np.inf, -np.inf], np.nan, inplace=True)
 
     return rolling_pct_change.dropna()
+
 
 def compute_alpha_beta(fund_returns, index_returns):
     fund_returns = pd.Series(fund_returns).dropna()
@@ -119,7 +137,7 @@ def compute_alpha_beta(fund_returns, index_returns):
     index_returns_aligned = index_returns[idx]
 
     # Add a constant for linear regression
-    X = pd.DataFrame({'alpha': 1, 'beta': index_returns_aligned})
+    X = pd.DataFrame({"alpha": 1, "beta": index_returns_aligned})
 
     try:
         # OLS regression to find alpha and beta
@@ -130,42 +148,57 @@ def compute_alpha_beta(fund_returns, index_returns):
 
     return alpha, beta
 
+
 def _smooth_returns(returns, window=5):
     """Apply smoothing to index returns."""
     return returns.rolling(window=window, center=True).mean().fillna(returns)
+
 
 def _apply_lag_adjustment(returns, lag_quarters=1):
     """Apply lag adjustment to account for private equity reporting lag."""
     lag_periods = lag_quarters * 3  # Assuming monthly data
     return returns.shift(lag_periods).fillna(returns)
 
+
 def calculate_direct_alpha_pme(fund_df, index_returns, risk_free_rate):
     """Calculate PME using Direct Alpha methodology."""
     # Direct Alpha PME focuses on pure excess return
-    fund_returns = fund_df['nav'].pct_change().fillna(0)
-    fund_irr = xirr_wrapper(dict(zip(fund_df.index, fund_df['cash_flow_amount'])))
+    fund_returns = fund_df["nav"].pct_change().fillna(0)
+    fund_irr = xirr_wrapper(dict(zip(fund_df.index, fund_df["cash_flow_amount"])))
     index_irr = _calculate_annualized_return(index_returns)
 
     # Calculate PME as excess return over index
-    excess_return = fund_irr - index_irr if not np.isnan(fund_irr) and not np.isnan(index_irr) else np.nan
+    excess_return = (
+        fund_irr - index_irr
+        if not np.isnan(fund_irr) and not np.isnan(index_irr)
+        else np.nan
+    )
     pme_value = 1 + excess_return if not np.isnan(excess_return) else np.nan
     pme_irr = fund_irr
 
     return pme_value, pme_irr
 
+
 def calculate_modified_pme(fund_df, index_returns, risk_free_rate):
     """Calculate Enhanced PME+ methodology."""
     # Modified PME incorporates risk adjustments
-    fund_returns = fund_df['nav'].pct_change().fillna(0)
-    fund_irr = xirr_wrapper(dict(zip(fund_df.index, fund_df['cash_flow_amount'])))
+    fund_returns = fund_df["nav"].pct_change().fillna(0)
+    fund_irr = xirr_wrapper(dict(zip(fund_df.index, fund_df["cash_flow_amount"])))
 
     # Risk-adjusted benchmark return
     index_irr = _calculate_annualized_return(index_returns)
-    risk_adjusted_benchmark = index_irr + risk_free_rate if not np.isnan(index_irr) else np.nan
+    risk_adjusted_benchmark = (
+        index_irr + risk_free_rate if not np.isnan(index_irr) else np.nan
+    )
 
     # Calculate modified PME with risk adjustment
     alpha, beta = compute_alpha_beta(fund_returns, index_returns)
-    if not np.isnan(beta) and beta != 0 and not np.isnan(fund_irr) and not np.isnan(index_irr):
+    if (
+        not np.isnan(beta)
+        and beta != 0
+        and not np.isnan(fund_irr)
+        and not np.isnan(index_irr)
+    ):
         risk_adjusted_return = fund_irr - beta * (index_irr - risk_free_rate)
         pme_value = safe_div(1 + risk_adjusted_return, 1 + risk_adjusted_benchmark)
     else:
@@ -174,10 +207,11 @@ def calculate_modified_pme(fund_df, index_returns, risk_free_rate):
     pme_irr = fund_irr
     return pme_value, pme_irr
 
+
 def calculate_long_nickels_pme(fund_df, index_returns):
     """Calculate Long & Nickels PME methodology."""
     # Long-Nickels methodology uses alternative scaling
-    fund_cash_flows = fund_df['cash_flow_amount'].fillna(0)
+    fund_cash_flows = fund_df["cash_flow_amount"].fillna(0)
     index_levels = (1 + index_returns).cumprod()
 
     # Alternative scaling approach
@@ -186,7 +220,11 @@ def calculate_long_nickels_pme(fund_df, index_returns):
         if cf != 0:
             if cf < 0:  # Contribution
                 # Scale by forward-looking index performance
-                future_performance = index_levels.iloc[-1] / index_levels.iloc[i] if i < len(index_levels) else 1
+                future_performance = (
+                    index_levels.iloc[-1] / index_levels.iloc[i]
+                    if i < len(index_levels)
+                    else 1
+                )
                 scaled_cf = cf * future_performance
             else:  # Distribution
                 # Scale by current index level
@@ -204,8 +242,16 @@ def calculate_long_nickels_pme(fund_df, index_returns):
 
     return pme_value, pme_irr
 
-def compute_pme_metrics(fund_df, index_df, method="kaplan_schoar", risk_free_rate=0.025,
-                       smooth_index=False, lag_adjustment=False, confidence_level=0.95):
+
+def compute_pme_metrics(
+    fund_df,
+    index_df,
+    method="kaplan_schoar",
+    risk_free_rate=0.025,
+    smooth_index=False,
+    lag_adjustment=False,
+    confidence_level=0.95,
+):
     """
     Compute PME metrics for a fund against an index.
 
@@ -233,29 +279,31 @@ def compute_pme_metrics(fund_df, index_df, method="kaplan_schoar", risk_free_rat
     index_df = index_df.reindex(all_dates)
 
     # Forward fill NAV and index values
-    fund_df['nav'] = fund_df['nav'].ffill().fillna(0)
-    index_df['price'] = index_df['price'].ffill().bfill()
-    
+    fund_df["nav"] = fund_df["nav"].ffill().fillna(0)
+    index_df["price"] = index_df["price"].ffill().bfill()
+
     # Calculate returns from prices if return column doesn't exist
-    if 'return' not in index_df.columns:
-        index_df['return'] = index_df['price'].pct_change().fillna(0)
+    if "return" not in index_df.columns:
+        index_df["return"] = index_df["price"].pct_change().fillna(0)
     else:
-        index_df['return'] = index_df['return'].fillna(0)
+        index_df["return"] = index_df["return"].fillna(0)
 
     # Calculate fund metrics
     # Handle different column names for cashflow data
-    if 'cash_flow_amount' in fund_df.columns:
-        fund_cash_flows = fund_df['cash_flow_amount'].fillna(0)
-    elif 'cashflow' in fund_df.columns:
-        fund_cash_flows = fund_df['cashflow'].fillna(0)
+    if "cash_flow_amount" in fund_df.columns:
+        fund_cash_flows = fund_df["cash_flow_amount"].fillna(0)
+    elif "cashflow" in fund_df.columns:
+        fund_cash_flows = fund_df["cashflow"].fillna(0)
     else:
-        raise ValueError("Fund DataFrame must contain either 'cash_flow_amount' or 'cashflow' column")
-    
-    fund_nav = fund_df['nav'].fillna(0)
+        raise ValueError(
+            "Fund DataFrame must contain either 'cash_flow_amount' or 'cashflow' column"
+        )
+
+    fund_nav = fund_df["nav"].fillna(0)
 
     # Calculate index metrics
-    index_price = index_df['price']
-    index_return = index_df['return']
+    index_price = index_df["price"]
+    index_return = index_df["return"]
 
     # Calculate fund IRR
     fund_irr = xirr_wrapper(dict(zip(fund_df.index, fund_cash_flows)))
@@ -281,7 +329,7 @@ def compute_pme_metrics(fund_df, index_df, method="kaplan_schoar", risk_free_rat
         if index_price_first_valid is not None:
             index_levels = index_price / index_price[index_price_first_valid]
         else:
-            index_levels = pd.Series(1.0, index=index_price.index) # fallback
+            index_levels = pd.Series(1.0, index=index_price.index)  # fallback
         working_returns = index_levels.pct_change().fillna(0)
 
     # Apply processing options
@@ -305,16 +353,22 @@ def compute_pme_metrics(fund_df, index_df, method="kaplan_schoar", risk_free_rat
             if date in fund_cash_flows.index and fund_cash_flows[date] != 0:
                 cf = fund_cash_flows[date]
                 if cf < 0:  # Contribution
-                    pme_cash_flows[date] = cf * (index_levels.iloc[-1] / index_levels.iloc[i])
+                    pme_cash_flows[date] = cf * (
+                        index_levels.iloc[-1] / index_levels.iloc[i]
+                    )
                 else:  # Distribution
                     pme_cash_flows[date] = cf
         pme_irr = xirr_wrapper(dict(zip(all_dates, pme_cash_flows)))
 
     elif method == "direct_alpha":
-        ks_pme_value, pme_irr = calculate_direct_alpha_pme(fund_df, working_returns, risk_free_rate)
+        ks_pme_value, pme_irr = calculate_direct_alpha_pme(
+            fund_df, working_returns, risk_free_rate
+        )
 
     elif method == "modified_pme":
-        ks_pme_value, pme_irr = calculate_modified_pme(fund_df, working_returns, risk_free_rate)
+        ks_pme_value, pme_irr = calculate_modified_pme(
+            fund_df, working_returns, risk_free_rate
+        )
 
     elif method == "long_nickels":
         ks_pme_value, pme_irr = calculate_long_nickels_pme(fund_df, working_returns)
@@ -330,13 +384,19 @@ def compute_pme_metrics(fund_df, index_df, method="kaplan_schoar", risk_free_rat
             if date in fund_cash_flows.index and fund_cash_flows[date] != 0:
                 cf = fund_cash_flows[date]
                 if cf < 0:  # Contribution
-                    pme_cash_flows[date] = cf * (index_levels.iloc[-1] / index_levels.iloc[i])
+                    pme_cash_flows[date] = cf * (
+                        index_levels.iloc[-1] / index_levels.iloc[i]
+                    )
                 else:  # Distribution
                     pme_cash_flows[date] = cf
         pme_irr = xirr_wrapper(dict(zip(all_dates, pme_cash_flows)))
 
     # Calculate PME TVPI
-    total_pme_contributions = abs(fund_cash_flows[fund_cash_flows < 0].sum()) * ks_pme_value if not np.isnan(ks_pme_value) else 0
+    total_pme_contributions = (
+        abs(fund_cash_flows[fund_cash_flows < 0].sum()) * ks_pme_value
+        if not np.isnan(ks_pme_value)
+        else 0
+    )
     total_pme_distributions = fund_cash_flows[fund_cash_flows > 0].sum()
     pme_nav = final_nav * ks_pme_value if not np.isnan(ks_pme_value) else 0
     pme_tvpi = safe_div(total_pme_distributions + pme_nav, total_pme_contributions)
@@ -362,34 +422,45 @@ def compute_pme_metrics(fund_df, index_df, method="kaplan_schoar", risk_free_rat
     fund_rolling_1y = compute_rolling_returns(fund_returns, window=12)
     index_rolling_1y = compute_rolling_returns(working_returns, window=12)
 
-    direct_alpha_value = fund_irr - index_irr if not np.isnan(fund_irr) and not np.isnan(index_irr) else np.nan
+    direct_alpha_value = (
+        fund_irr - index_irr
+        if not np.isnan(fund_irr) and not np.isnan(index_irr)
+        else np.nan
+    )
 
     # Return comprehensive metrics with standardized names expected by GUI
     return {
-        'Fund IRR': fund_irr,
-        'TVPI': fund_tvpi,
-        'DPI': fund_dpi,
-        'RVPI': fund_rvpi,
-        'KS PME': ks_pme_value,
-        'PME IRR': pme_irr,
-        'Index IRR': index_irr,
-        'Index TVPI': pme_tvpi,
-        'Direct Alpha': direct_alpha_value,
-        'Alpha': alpha,
-        'Beta': beta,
-        'Fund Volatility': fund_volatility,
-        'Index Volatility': index_volatility,
-        'Fund Drawdown': fund_drawdown,
-        'Index Drawdown': index_drawdown,
-        'Fund Best 1Y Return': fund_rolling_1y.max() if not fund_rolling_1y.empty else np.nan,
-        'Fund Worst 1Y Return': fund_rolling_1y.min() if not fund_rolling_1y.empty else np.nan,
-        'Index Best 1Y Return': index_rolling_1y.max() if not index_rolling_1y.empty else np.nan,
-        'Index Worst 1Y Return': index_rolling_1y.min() if not index_rolling_1y.empty else np.nan,
-        'Total Contributions': total_contributions,
-        'Total Distributions': total_distributions,
-        'Final NAV': final_nav,
-        'Method Used': method.replace('_', ' ').title(),
-        'Risk Free Rate': risk_free_rate,
-        'Confidence Level': confidence_level
+        "Fund IRR": fund_irr,
+        "TVPI": fund_tvpi,
+        "DPI": fund_dpi,
+        "RVPI": fund_rvpi,
+        "KS PME": ks_pme_value,
+        "PME IRR": pme_irr,
+        "Index IRR": index_irr,
+        "Index TVPI": pme_tvpi,
+        "Direct Alpha": direct_alpha_value,
+        "Alpha": alpha,
+        "Beta": beta,
+        "Fund Volatility": fund_volatility,
+        "Index Volatility": index_volatility,
+        "Fund Drawdown": fund_drawdown,
+        "Index Drawdown": index_drawdown,
+        "Fund Best 1Y Return": (
+            fund_rolling_1y.max() if not fund_rolling_1y.empty else np.nan
+        ),
+        "Fund Worst 1Y Return": (
+            fund_rolling_1y.min() if not fund_rolling_1y.empty else np.nan
+        ),
+        "Index Best 1Y Return": (
+            index_rolling_1y.max() if not index_rolling_1y.empty else np.nan
+        ),
+        "Index Worst 1Y Return": (
+            index_rolling_1y.min() if not index_rolling_1y.empty else np.nan
+        ),
+        "Total Contributions": total_contributions,
+        "Total Distributions": total_distributions,
+        "Final NAV": final_nav,
+        "Method Used": method.replace("_", " ").title(),
+        "Risk Free Rate": risk_free_rate,
+        "Confidence Level": confidence_level,
     }
-

@@ -14,5 +14,5 @@ warnings.warn(
     "analysis_engine module is deprecated. Use analysis_engine_legacy for PMEAnalysisEngine "
     "or pme_math.metrics for mathematical functions.",
     DeprecationWarning,
-    stacklevel=2
-) 
+    stacklevel=2,
+)

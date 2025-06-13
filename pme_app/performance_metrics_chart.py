@@ -9,8 +9,6 @@ if str(backend_dir) not in sys.path:
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import mplcursors
-from matplotlib.dates import DateFormatter
 from matplotlib.figure import Figure
 from pme_math.metrics import xirr_wrapper
 
@@ -18,6 +16,7 @@ try:
     import numpy_financial as npf
 except ImportError:
     npf = None
+
 
 def running_xirr(cash_flows, navs, dates):
     xirrs = []
@@ -56,6 +55,7 @@ def running_xirr(cash_flows, navs, dates):
     # Pad initial with nan so array length matches other series
     return [np.nan] + xirrs
 
+
 def running_multiples(cash_flows, navs):
     tvpis, dpis, rvpies = [], [], []
     for i in range(1, len(cash_flows) + 1):
@@ -72,7 +72,10 @@ def running_multiples(cash_flows, navs):
         rvpies.append(rvpi)
     return tvpis, dpis, rvpies
 
-def plot_performance_metrics(fund_df: pd.DataFrame, metrics: dict = None, title: str = None) -> Figure:
+
+def plot_performance_metrics(
+    fund_df: pd.DataFrame, metrics: dict = None, title: str = None
+) -> Figure:
     """Plot performance metrics with enhanced interactivity and modern styling."""
     # Ensure proper data types and alignment
     fund_df = fund_df.copy()
@@ -80,8 +83,10 @@ def plot_performance_metrics(fund_df: pd.DataFrame, metrics: dict = None, title:
     fund_df = fund_df.sort_index()
 
     # Calculate running metrics
-    running_irr = running_xirr(fund_df['cash_flow_amount'], fund_df['nav'], fund_df.index)
-    running_mults = running_multiples(fund_df['cash_flow_amount'], fund_df['nav'])
+    running_irr = running_xirr(
+        fund_df["cash_flow_amount"], fund_df["nav"], fund_df.index
+    )
+    running_mults = running_multiples(fund_df["cash_flow_amount"], fund_df["nav"])
 
     # Convert to 1D numpy arrays and ensure correct length
     x = np.array(fund_df.index)
@@ -97,7 +102,7 @@ def plot_performance_metrics(fund_df: pd.DataFrame, metrics: dict = None, title:
     rvpi = rvpi[:n]
 
     # Set the style
-    plt.style.use('seaborn-v0_8-whitegrid')
+    plt.style.use("seaborn-v0_8-whitegrid")
 
     # Create figure and axes
     fig, ax1 = plt.subplots(figsize=(10, 6))
@@ -106,41 +111,58 @@ def plot_performance_metrics(fund_df: pd.DataFrame, metrics: dict = None, title:
     ax2 = ax1.twinx()
 
     # Plot TVPI, DPI, RVPI
-    ax2.plot(x, tvpi, label='TVPI', color='blue')
-    ax2.plot(x, dpi, label='DPI', color='green')
-    ax2.plot(x, rvpi, label='RVPI', color='red')
+    ax2.plot(x, tvpi, label="TVPI", color="blue")
+    ax2.plot(x, dpi, label="DPI", color="green")
+    ax2.plot(x, rvpi, label="RVPI", color="red")
 
     # Configure right axis
-    ax2.set_ylabel('Multiple', color='black')
-    ax2.tick_params(axis='y', labelcolor='black')
+    ax2.set_ylabel("Multiple", color="black")
+    ax2.tick_params(axis="y", labelcolor="black")
     ax2.grid(True, alpha=0.3)
 
     # Plot IRR on the left axis
-    ax1.plot(x, running_irr * 100, label='IRR', color='purple', linestyle='--')
+    ax1.plot(x, running_irr * 100, label="IRR", color="purple", linestyle="--")
 
     # Configure left axis
-    ax1.set_ylabel('IRR (%)', color='black')
-    ax1.tick_params(axis='y', labelcolor='black')
+    ax1.set_ylabel("IRR (%)", color="black")
+    ax1.tick_params(axis="y", labelcolor="black")
     ax1.grid(True, alpha=0.3)
 
     # Add legend
     lines1, labels1 = ax1.get_legend_handles_labels()
     lines2, labels2 = ax2.get_legend_handles_labels()
-    ax1.legend(lines1 + lines2, labels1 + labels2, loc='upper left')
+    ax1.legend(lines1 + lines2, labels1 + labels2, loc="upper left")
 
     # Add title
-    plt.title('Performance Metrics Over Time')
+    plt.title("Performance Metrics Over Time")
 
     # Adjust layout
     plt.tight_layout()
 
     return fig
 
+
 def plot_pme_metrics(metrics: dict) -> plt.Figure:
     table_keys = [
-        "Fund IRR", "Index IRR", "TVPI", "DPI", "RVPI", "KS PME", "Direct Alpha", "Index TVPI",
-        "Annualized Return", "Fund Volatility", "Index Volatility", "Fund Drawdown", "Index Drawdown",
-        "Fund Best 1Y Return", "Fund Worst 1Y Return", "Index Best 1Y Return", "Index Worst 1Y Return", "Alpha", "Beta"
+        "Fund IRR",
+        "Index IRR",
+        "TVPI",
+        "DPI",
+        "RVPI",
+        "KS PME",
+        "Direct Alpha",
+        "Index TVPI",
+        "Annualized Return",
+        "Fund Volatility",
+        "Index Volatility",
+        "Fund Drawdown",
+        "Index Drawdown",
+        "Fund Best 1Y Return",
+        "Fund Worst 1Y Return",
+        "Index Best 1Y Return",
+        "Index Worst 1Y Return",
+        "Alpha",
+        "Beta",
     ]
     rows = []
     for k in table_keys:
@@ -150,7 +172,13 @@ def plot_pme_metrics(metrics: dict) -> plt.Figure:
         rows.append(["Warnings", "\n".join(metrics["Warnings"])])
     fig, ax = plt.subplots(figsize=(6.5, 1 + 0.3 * len(rows)))
     ax.axis("off")
-    table = ax.table(cellText=rows, colLabels=["Metric", "Value"], cellLoc="center", loc="center", colWidths=[0.4, 0.6])
+    table = ax.table(
+        cellText=rows,
+        colLabels=["Metric", "Value"],
+        cellLoc="center",
+        loc="center",
+        colWidths=[0.4, 0.6],
+    )
     table.auto_set_font_size(False)
     table.set_fontsize(11)
     table.scale(1.35, 1.2)
@@ -162,10 +190,17 @@ def plot_pme_metrics(metrics: dict) -> plt.Figure:
     plt.tight_layout(pad=2.0)
     return fig
 
+
 def plot_benchmark_metrics(bench_results: dict) -> plt.Figure:
     keys_order = [
-        "Index IRR", "Index TVPI", "Volatility", "Drawdown",
-        "Best 1Y Return", "Worst 1Y Return", "Alpha", "Beta"
+        "Index IRR",
+        "Index TVPI",
+        "Volatility",
+        "Drawdown",
+        "Best 1Y Return",
+        "Worst 1Y Return",
+        "Alpha",
+        "Beta",
     ]
     all_keys = []
     for name, metrics in bench_results.items():
@@ -186,7 +221,7 @@ def plot_benchmark_metrics(bench_results: dict) -> plt.Figure:
         colLabels=col_labels,
         cellLoc="center",
         loc="center",
-        colWidths=[0.25] + [0.17]*len(bench_results),
+        colWidths=[0.25] + [0.17] * len(bench_results),
     )
     table.auto_set_font_size(False)
     table.set_fontsize(11)
@@ -200,6 +235,7 @@ def plot_benchmark_metrics(bench_results: dict) -> plt.Figure:
     plt.title("Benchmark Metrics", pad=16, fontsize=15, weight="bold")
     plt.tight_layout(pad=2.0)
     return fig
+
 
 def pretty_val(key, val):
     if val is None or (isinstance(val, float) and (np.isnan(val) or np.isinf(val))):

@@ -3,7 +3,6 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as mtick
 import pandas as pd
 import numpy as np
-from .utils import ensure_datetime_index , load_fund_file , load_index_file
 
 
 def build_nav_change_df(fund_df: pd.DataFrame) -> pd.DataFrame:
@@ -29,7 +28,11 @@ def build_nav_change_df(fund_df: pd.DataFrame) -> pd.DataFrame:
     first_nav = df["nav"].iloc[0] if len(df) > 0 else 0
     if first_nav == 0:
         non_zero_navs = df["nav"][df["nav"] > 0]
-        first_nav = non_zero_navs.iloc[0] if not non_zero_navs.empty and len(non_zero_navs) > 0 else 0
+        first_nav = (
+            non_zero_navs.iloc[0]
+            if not non_zero_navs.empty and len(non_zero_navs) > 0
+            else 0
+        )
     current_nav = first_nav
 
     rows = []
@@ -43,20 +46,23 @@ def build_nav_change_df(fund_df: pd.DataFrame) -> pd.DataFrame:
         if not pd.isna(row["nav"]):
             gain_loss = row["nav"] - nav_after_cf
             end_nav = row["nav"]
-        rows.append({
-            "date": dt,
-            "start_nav": start_nav,
-            "contribution": contrib,
-            "distribution": dist,
-            "gain_loss": gain_loss,
-            "end_nav": end_nav
-        })
+        rows.append(
+            {
+                "date": dt,
+                "start_nav": start_nav,
+                "contribution": contrib,
+                "distribution": dist,
+                "gain_loss": gain_loss,
+                "end_nav": end_nav,
+            }
+        )
         current_nav = end_nav
 
     result_df = pd.DataFrame(rows).set_index("date")
     result_df["cash_flow_amount"] = df["cash_flow_amount"]
     result_df["nav"] = df["nav"]
     return result_df
+
 
 def compute_annual_nav_components(df: pd.DataFrame) -> pd.DataFrame:
     """
@@ -70,11 +76,9 @@ def compute_annual_nav_components(df: pd.DataFrame) -> pd.DataFrame:
     df["distribution"] = df["cash_flow_amount"].apply(lambda x: x if x > 0 else 0)
 
     # Group as before
-    grouped = df.groupby("year").agg({
-        "contribution": "sum",
-        "distribution": "sum",
-        "nav": ["first", "last"]
-    })
+    grouped = df.groupby("year").agg(
+        {"contribution": "sum", "distribution": "sum", "nav": ["first", "last"]}
+    )
     grouped.columns = ["contribution", "distribution", "start_nav", "end_nav"]
     grouped = grouped.reset_index()
 
@@ -94,13 +98,14 @@ def compute_annual_nav_components(df: pd.DataFrame) -> pd.DataFrame:
         last_nav = grouped.at[i, "end_nav"]
 
     grouped["net_value_change"] = (
-        grouped["end_nav"] - grouped["start_nav"]
-        - grouped["contribution"] + grouped["distribution"]
+        grouped["end_nav"]
+        - grouped["start_nav"]
+        - grouped["contribution"]
+        + grouped["distribution"]
     )
     # Contributions are already positive numbers (absolute value of cash-outflows),
     # so they must be subtracted. Distributions are inflows (positive values)
     # and must be added, to isolate true investment performance.
-
 
     return grouped
 
@@ -121,18 +126,28 @@ def add_bar_labels(ax, bars, currency_symbol="USD"):
             fontsize=8,
         )
 
+
 def plot_nav_waterfall(
     fund_df: pd.DataFrame,
     currency_symbol: str = "USD",
-    title: str = "Annual NAV Waterfall"
+    title: str = "Annual NAV Waterfall",
 ) -> plt.Figure:
 
     df = build_nav_change_df(fund_df)
     if df.empty:
         # Return a minimal placeholder Figure with a user-friendly message
         fig, ax = plt.subplots(figsize=(8, 4))
-        ax.text(0.5, 0.5, "No data available", ha="center", va="center",
-                fontsize=16, color="gray", fontweight="bold", alpha=0.7)
+        ax.text(
+            0.5,
+            0.5,
+            "No data available",
+            ha="center",
+            va="center",
+            fontsize=16,
+            color="gray",
+            fontweight="bold",
+            alpha=0.7,
+        )
         ax.set_axis_off()
         fig.tight_layout()
         return fig
@@ -143,22 +158,38 @@ def plot_nav_waterfall(
     bar_width = 0.22
 
     fig, ax = plt.subplots(figsize=(12, 6))
-    ax.plot(x, annual["end_nav"], color="dimgray", label="Net Asset Value", marker="o", linewidth=2)
+    ax.plot(
+        x,
+        annual["end_nav"],
+        color="dimgray",
+        label="Net Asset Value",
+        marker="o",
+        linewidth=2,
+    )
 
     bars_contrib = ax.bar(
-        x - bar_width, -annual["contribution"].astype(float).values,
-        width=bar_width, color="crimson", label="Paid In"
+        x - bar_width,
+        -annual["contribution"].astype(float).values,
+        width=bar_width,
+        color="crimson",
+        label="Paid In",
     )
     for spine in ("left", "right"):
         ax.spines[spine].set_visible(False)
     ax.yaxis.set_label_position("right")
     bars_dist = ax.bar(
-        x, annual["distribution"].astype(float).values,
-        width=bar_width, color="deepskyblue", label="Distributed"
+        x,
+        annual["distribution"].astype(float).values,
+        width=bar_width,
+        color="deepskyblue",
+        label="Distributed",
     )
     bars_change = ax.bar(
-        x + bar_width, annual["net_value_change"].astype(float).values,
-        width=bar_width, color="darkgray", label="Net Value Change"
+        x + bar_width,
+        annual["net_value_change"].astype(float).values,
+        width=bar_width,
+        color="darkgray",
+        label="Net Value Change",
     )
 
     ax.set_xticks(x)
@@ -170,6 +201,7 @@ def plot_nav_waterfall(
         # Always prepend '–' for negative values for clarity
         sign = "-" if x < 0 else ""
         return f"{sign}{currency_symbol}{abs(x)/1e6:,.0f}M"
+
     ax.yaxis.set_major_formatter(mtick.FuncFormatter(currency_fmt))
     ax.axhline(0, color="black", linewidth=1)
     ax.grid(True, axis="y", linestyle="--", alpha=0.3)
@@ -179,5 +211,3 @@ def plot_nav_waterfall(
     ax.legend(loc="upper left", bbox_to_anchor=(1, 1))
     plt.tight_layout()
     return fig
-
-
