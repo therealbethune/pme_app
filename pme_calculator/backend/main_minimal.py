@@ -265,7 +265,7 @@ async def health_check():
     """Health check endpoint."""
     try:
         # Test basic functionality
-        test_engine = PMEAnalysisEngine()
+        PMEAnalysisEngine()
 
         return {
             "status": "healthy",
@@ -306,7 +306,7 @@ async def get_system_status():
     """Get detailed system status."""
     try:
         # Test analysis engine
-        engine = PMEAnalysisEngine()
+        PMEAnalysisEngine()
         engine_status = "operational"
     except Exception as e:
         logger.error(f"Analysis engine test failed: {str(e)}", exc_info=True)
@@ -345,7 +345,6 @@ async def upload_fund_file(file: UploadFile = File(...)):
         raise HTTPException(400, "No file provided")
 
     # Get database session if available - FIXED: Remove problematic async for loop
-    session = None
 
     try:
         tmp_file_path = await save_temp_file(file)
@@ -368,7 +367,7 @@ async def upload_fund_file(file: UploadFile = File(...)):
         fund_info = {"rows": rows_count, "columns": columns_count, "success": True}
 
         # Prepare upload data for database
-        upload_data = {
+        {
             "filename": f"fund_{datetime.now().timestamp()}_{file.filename}",
             "original_filename": file.filename,
             "user": "anonymous",  # TODO: Get from authentication
@@ -429,7 +428,6 @@ async def upload_index_file(file: UploadFile = File(...)):
         raise HTTPException(400, "No file provided")
 
     # Get database session if available - FIXED: Remove problematic async for loop
-    session = None
 
     try:
         tmp_file_path = await save_temp_file(file)
@@ -452,7 +450,7 @@ async def upload_index_file(file: UploadFile = File(...)):
         index_info = {"rows": rows_count, "columns": columns_count, "success": True}
 
         # Prepare upload data for database
-        upload_data = {
+        {
             "filename": f"index_{datetime.now().timestamp()}_{file.filename}",
             "original_filename": file.filename,
             "user": "anonymous",  # TODO: Get from authentication
@@ -537,7 +535,6 @@ async def list_uploaded_files():
 async def get_uploads(user: str = "anonymous", limit: int = 100):
     """Get list of uploaded files from database or memory."""
     # Get database session if available - FIXED: Remove problematic async for loop
-    session = None
 
     try:
         # Return from memory when database is not available or for simplicity
@@ -564,7 +561,6 @@ async def get_uploads(user: str = "anonymous", limit: int = 100):
 async def get_upload_by_id_endpoint(upload_id: int):
     """Get specific upload by ID from database or memory."""
     # Get database session if available - FIXED: Remove problematic async for loop
-    session = None
 
     try:
         # Search in memory storage

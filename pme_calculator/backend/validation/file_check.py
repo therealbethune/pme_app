@@ -298,7 +298,7 @@ def validate_fund_file(file_path: Union[str, Path]) -> List[str]:
         if not errors and rows_data:
             # Validate complete dataset
             try:
-                fund_data = FundDataSchema(rows=rows_data)
+                FundDataSchema(rows=rows_data)
             except Exception as e:
                 errors.append(f"Dataset validation failed: {str(e)}")
 
@@ -367,7 +367,7 @@ def validate_index_file(file_path: Union[str, Path]) -> List[str]:
         if not errors and rows_data:
             # Validate complete dataset
             try:
-                index_data = IndexDataSchema(rows=rows_data)
+                IndexDataSchema(rows=rows_data)
             except Exception as e:
                 errors.append(f"Dataset validation failed: {str(e)}")
 

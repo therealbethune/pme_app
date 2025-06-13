@@ -217,12 +217,10 @@ class TestPMEEngine:
         engine = PMEEngine(fund_data, benchmark_data)
 
         # Check that temp files were created
-        fund_temp_exists = hasattr(engine, "fund_temp_path") and os.path.exists(
-            engine.fund_temp_path
+        hasattr(engine, "fund_temp_path") and os.path.exists(engine.fund_temp_path)
+        hasattr(engine, "benchmark_temp_path") and os.path.exists(
+            engine.benchmark_temp_path
         )
-        benchmark_temp_exists = hasattr(
-            engine, "benchmark_temp_path"
-        ) and os.path.exists(engine.benchmark_temp_path)
 
         # Delete the engine
         del engine

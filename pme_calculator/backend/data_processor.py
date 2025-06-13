@@ -397,7 +397,7 @@ class IntelligentDataProcessor:
         else:
             df = data.copy()
 
-        original_columns = list(df.columns)
+        list(df.columns)
 
         # Detect and map columns
         column_mappings = []
@@ -1084,7 +1084,6 @@ class IntelligentDataProcessor:
         ready = True
 
         # Check for required columns in fund data
-        required_fund_columns = ["date"]
         has_cashflow = "cashflow" in fund_data.columns
         has_contribution_distribution = (
             "contribution" in fund_data.columns and "distribution" in fund_data.columns

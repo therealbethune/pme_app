@@ -98,7 +98,7 @@ except ImportError as e:
 
             # Convert to days from first date
             first_date = min(dates)
-            days = [(d - first_date).days / 365.25 for d in dates]
+            [(d - first_date).days / 365.25 for d in dates]
 
             # Use numpy financial IRR calculation
             return float(npf.irr(values)) if not np.isnan(npf.irr(values)) else 0.0

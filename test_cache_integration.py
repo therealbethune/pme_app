@@ -108,7 +108,7 @@ async def test_performance_characteristics():
     start_time = time.time()
     for i in range(1000):
         payload = {"endpoint": "irr_pme", "files_hash": i, "timestamp": 1000}
-        key = make_cache_key("/v1/metrics/irr_pme", payload)
+        make_cache_key("/v1/metrics/irr_pme", payload)
     key_gen_time = time.time() - start_time
 
     print(
@@ -123,7 +123,7 @@ async def test_performance_characteristics():
 
     start_time = time.time()
     for i in range(100):
-        serialized = json.dumps(test_data)
+        json.dumps(test_data)
     serialization_time = time.time() - start_time
 
     print(

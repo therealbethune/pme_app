@@ -255,7 +255,7 @@ def main():
         print()
 
         # Test 3: Cache behavior
-        cache_times = test_cache_behavior()
+        test_cache_behavior()
         print()
 
         # Test 4: Data integrity

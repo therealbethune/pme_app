@@ -171,7 +171,7 @@ def _apply_lag_adjustment(returns, lag_quarters=1):
 def calculate_direct_alpha_pme(fund_df, index_returns, risk_free_rate):
     """Calculate PME using Direct Alpha methodology."""
     # Direct Alpha PME focuses on pure excess return
-    fund_returns = fund_df["nav"].pct_change().fillna(0)
+    fund_df["nav"].pct_change().fillna(0)
     fund_irr = xirr_wrapper(dict(zip(fund_df.index, fund_df["cash_flow_amount"])))
     index_irr = _calculate_annualized_return(index_returns)
 

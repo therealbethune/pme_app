@@ -83,7 +83,7 @@ def test_plotly_import():
         # Test basic chart creation
         fig = go.Figure()
         fig.add_trace(go.Scatter(x=[1, 2, 3], y=[4, 5, 6]))
-        json_data = fig.to_json()
+        fig.to_json()
         print("   ✅ Basic chart creation works")
 
         return True

@@ -60,7 +60,7 @@ def test_import():
         print("✅ Import successful!")
 
         # Test instantiation
-        engine = PMEAnalysisEngine()
+        PMEAnalysisEngine()
         print("✅ Instantiation successful!")
 
         return True

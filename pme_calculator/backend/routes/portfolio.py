@@ -110,7 +110,7 @@ async def get_portfolios(
     try:
         portfolios = (
             db.query(Portfolio)
-            .filter(Portfolio.is_active == True)
+            .filter(Portfolio.is_active)
             .offset(skip)
             .limit(limit)
             .all()
@@ -152,7 +152,7 @@ async def get_portfolio(portfolio_id: int, db: Session = Depends(get_db)):
     try:
         portfolio = (
             db.query(Portfolio)
-            .filter(Portfolio.id == portfolio_id, Portfolio.is_active == True)
+            .filter(Portfolio.id == portfolio_id, Portfolio.is_active)
             .first()
         )
 
@@ -195,7 +195,7 @@ async def update_portfolio(
     try:
         portfolio = (
             db.query(Portfolio)
-            .filter(Portfolio.id == portfolio_id, Portfolio.is_active == True)
+            .filter(Portfolio.id == portfolio_id, Portfolio.is_active)
             .first()
         )
 
@@ -244,7 +244,7 @@ async def delete_portfolio(portfolio_id: int, db: Session = Depends(get_db)):
     try:
         portfolio = (
             db.query(Portfolio)
-            .filter(Portfolio.id == portfolio_id, Portfolio.is_active == True)
+            .filter(Portfolio.id == portfolio_id, Portfolio.is_active)
             .first()
         )
 
@@ -301,7 +301,7 @@ async def update_portfolio_weights(
         # Validate portfolio exists
         portfolio = (
             db.query(Portfolio)
-            .filter(Portfolio.id == portfolio_id, Portfolio.is_active == True)
+            .filter(Portfolio.id == portfolio_id, Portfolio.is_active)
             .first()
         )
 

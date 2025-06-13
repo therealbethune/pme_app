@@ -81,9 +81,7 @@ def test_warm_cache_task_structure():
 async def test_cache_warming_logic():
     """Test the cache warming logic without actually running Celery."""
     # Mock the cache operations
-    with patch("cache.cache_set") as mock_cache_set, patch(
-        "db_views.refresh"
-    ) as mock_refresh:
+    with patch("cache.cache_set") as mock_cache_set, patch("db_views.refresh"):
 
         mock_cache_set.return_value = True
 
@@ -91,15 +89,7 @@ async def test_cache_warming_logic():
         warmed_funds = []
 
         for fund_id in POPULAR_FUNDS[:2]:  # Test with first 2 funds
-            key = make_cache_key("irr_pme", {"fund": fund_id})
-
-            mock_data = {
-                "fund_id": fund_id,
-                "irr": 0.15,
-                "pme": 1.2,
-                "warmed_at": "2024-01-01T00:00:00Z",
-                "data_source": "cache_warming",
-            }
+            make_cache_key("irr_pme", {"fund": fund_id})
 
             # This would be the async call in the actual task
             success = True  # Mocked success

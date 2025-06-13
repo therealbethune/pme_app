@@ -140,7 +140,7 @@ class BenchmarkLibrary:
         if benchmark_id not in self.benchmarks:
             raise ValueError(f"Benchmark {benchmark_id} not found in library")
 
-        benchmark_info = self.benchmarks[benchmark_id]
+        self.benchmarks[benchmark_id]
 
         # Generate date range
         if frequency == "M":
@@ -165,7 +165,7 @@ class BenchmarkLibrary:
         self, benchmark_id: str, num_periods: int
     ) -> np.ndarray:
         """Generate realistic synthetic returns for a benchmark."""
-        benchmark_info = self.benchmarks[benchmark_id]
+        self.benchmarks[benchmark_id]
 
         # Set parameters based on benchmark type
         if benchmark_id == "sp500":

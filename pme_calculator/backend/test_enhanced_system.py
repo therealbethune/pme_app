@@ -19,7 +19,7 @@ def test_enhanced_system():
         # Test analysis engine integration
         from analysis_engine import PMEAnalysisEngine
 
-        analysis_engine = PMEAnalysisEngine()
+        PMEAnalysisEngine()
         print("✅ Analysis engine loaded")
 
         # Test pandas and numpy
@@ -78,23 +78,21 @@ def test_enhanced_system():
 
         # Performance comparison
         try:
-            perf_chart = engine.create_performance_comparison_chart(
-                fund_data, benchmark_data
-            )
+            engine.create_performance_comparison_chart(fund_data, benchmark_data)
             print("   ✅ Performance comparison chart")
         except Exception as e:
             print(f"   ❌ Performance comparison failed: {e}")
 
         # Cash flow waterfall
         try:
-            cf_chart = engine.create_cash_flow_waterfall_chart(fund_data)
+            engine.create_cash_flow_waterfall_chart(fund_data)
             print("   ✅ Cash flow waterfall chart")
         except Exception as e:
             print(f"   ❌ Cash flow waterfall failed: {e}")
 
         # Metrics summary
         try:
-            metrics_chart = engine.create_metrics_summary_chart(metrics)
+            engine.create_metrics_summary_chart(metrics)
             print("   ✅ Metrics summary chart")
         except Exception as e:
             print(f"   ❌ Metrics summary failed: {e}")

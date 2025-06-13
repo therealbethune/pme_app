@@ -56,7 +56,7 @@ def test_analysis_engine():
     from analysis_engine import PMEAnalysisEngine
 
     # Create engine instance
-    engine = PMEAnalysisEngine()
+    PMEAnalysisEngine()
     print("✅ PMEAnalysisEngine created successfully")
 
     # Test that the engine can call the refactored methods

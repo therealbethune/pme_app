@@ -209,7 +209,7 @@ class DataValidator:
         valid_records = 0
         for idx, row in df.iterrows():
             try:
-                record = FundCashFlowRecord(**row.to_dict())
+                FundCashFlowRecord(**row.to_dict())
                 valid_records += 1
             except Exception as e:
                 errors.append(
@@ -290,7 +290,7 @@ class DataValidator:
         valid_records = 0
         for idx, row in df.iterrows():
             try:
-                record = IndexRecord(**row.to_dict())
+                IndexRecord(**row.to_dict())
                 valid_records += 1
             except Exception as e:
                 errors.append(

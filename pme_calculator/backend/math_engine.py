@@ -20,7 +20,7 @@ except ImportError:
             """Local fallback xirr wrapper."""
             if not cashflows_dict:
                 return 0.0
-            dates = list(cashflows_dict.keys())
+            list(cashflows_dict.keys())
             amounts = list(cashflows_dict.values())
             if len(amounts) < 2:
                 return 0.0

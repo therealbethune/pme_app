@@ -3,8 +3,6 @@ import pandas as pd
 import numpy as np
 
 
-
-
 def compute_realized_cash_flow_duration(dates, cashflows, navs, discount_rate):
     """
     Computes period-by-period realized cash flow duration.
@@ -17,8 +15,8 @@ def compute_realized_cash_flow_duration(dates, cashflows, navs, discount_rate):
     t0 = dates.min()
     for i, t in enumerate(dates):
         cf_to_t = cashflows[: i + 1]
-        nav_to_t = navs[: i + 1]
-        dt_years = (t - t0).days / 365.25
+        navs[: i + 1]
+        (t - t0).days / 365.25
         # Example calculation: duration = sum(time-weighted PV of CFs) / sum(PV of CFs)
         if np.abs(cf_to_t).sum() == 0:
             duration = np.nan
@@ -37,7 +35,6 @@ def compute_realized_cash_flow_duration(dates, cashflows, navs, discount_rate):
 
 import matplotlib.pyplot as plt
 import mplcursors
-
 
 
 def plot_duration_line(duration_series):
