@@ -5,16 +5,17 @@ Quick fix script for immediate loading issues.
 
 import subprocess
 from pathlib import Path
+
 import psutil
 
 
 def kill_port_8000():
     """Kill processes listening on port 8000 using graceful termination."""
     print("🔧 Scanning for processes listening on port 8000...")
-    
+
     # First, identify all processes listening on port 8000
     listening_processes = []
-    
+
     try:
         for proc in psutil.process_iter(["pid", "name", "cmdline"]):
             try:
@@ -29,19 +30,25 @@ def kill_port_8000():
                     ):
                         # Get command line for better identification
                         try:
-                            cmdline = " ".join(proc.info["cmdline"]) if proc.info["cmdline"] else proc.info["name"]
+                            cmdline = (
+                                " ".join(proc.info["cmdline"])
+                                if proc.info["cmdline"]
+                                else proc.info["name"]
+                            )
                             # Truncate very long command lines
                             if len(cmdline) > 80:
                                 cmdline = cmdline[:77] + "..."
                         except (psutil.AccessDenied, psutil.NoSuchProcess):
                             cmdline = proc.info["name"]
-                        
-                        listening_processes.append({
-                            "pid": proc.info["pid"],
-                            "name": proc.info["name"],
-                            "cmdline": cmdline,
-                            "process": proc
-                        })
+
+                        listening_processes.append(
+                            {
+                                "pid": proc.info["pid"],
+                                "name": proc.info["name"],
+                                "cmdline": cmdline,
+                                "process": proc,
+                            }
+                        )
                         break  # Found listening connection, no need to check more
             except (
                 psutil.NoSuchProcess,
@@ -60,27 +67,37 @@ def kill_port_8000():
 
     # Display summary table
     print(f"\n📋 Found {len(listening_processes)} process(es) listening on port 8000:")
-    print("┌─────────┬──────────────┬─────────────────────────────────────────────────────────────────────────────┐")
-    print("│   PID   │     NAME     │                                  COMMAND                                    │")
-    print("├─────────┼──────────────┼─────────────────────────────────────────────────────────────────────────────┤")
-    
+    print(
+        "┌─────────┬──────────────┬─────────────────────────────────────────────────────────────────────────────┐"
+    )
+    print(
+        "│   PID   │     NAME     │                                  COMMAND                                    │"
+    )
+    print(
+        "├─────────┼──────────────┼─────────────────────────────────────────────────────────────────────────────┤"
+    )
+
     for proc_info in listening_processes:
         pid_str = str(proc_info["pid"]).center(7)
         name_str = proc_info["name"][:12].ljust(12)
         cmd_str = proc_info["cmdline"][:75].ljust(75)
         print(f"│ {pid_str} │ {name_str} │ {cmd_str} │")
-    
-    print("└─────────┴──────────────┴─────────────────────────────────────────────────────────────────────────────┘")
+
+    print(
+        "└─────────┴──────────────┴─────────────────────────────────────────────────────────────────────────────┘"
+    )
 
     # Gracefully terminate processes
-    print(f"\n🔄 Attempting graceful termination (SIGTERM)...")
+    print("\n🔄 Attempting graceful termination (SIGTERM)...")
     terminated_count = 0
     still_alive = []
 
     for proc_info in listening_processes:
         proc = proc_info["process"]
         try:
-            print(f"   → Sending SIGTERM to PID {proc_info['pid']} ({proc_info['name']})")
+            print(
+                f"   → Sending SIGTERM to PID {proc_info['pid']} ({proc_info['name']})"
+            )
             proc.terminate()
             terminated_count += 1
         except (psutil.NoSuchProcess, psutil.AccessDenied) as e:
@@ -94,6 +111,7 @@ def kill_port_8000():
     # Wait for graceful shutdown
     print("⏳ Waiting 5 seconds for graceful shutdown...")
     import time
+
     time.sleep(5)
 
     # Check which processes are still alive
@@ -109,11 +127,15 @@ def kill_port_8000():
     # Force kill any remaining processes
     killed_count = 0
     if still_alive:
-        print(f"\n💀 Force killing {len(still_alive)} stubborn process(es) (SIGKILL)...")
+        print(
+            f"\n💀 Force killing {len(still_alive)} stubborn process(es) (SIGKILL)..."
+        )
         for proc_info in still_alive:
             proc = proc_info["process"]
             try:
-                print(f"   → Sending SIGKILL to PID {proc_info['pid']} ({proc_info['name']})")
+                print(
+                    f"   → Sending SIGKILL to PID {proc_info['pid']} ({proc_info['name']})"
+                )
                 proc.kill()
                 killed_count += 1
             except (psutil.NoSuchProcess, psutil.AccessDenied) as e:
@@ -122,13 +144,15 @@ def kill_port_8000():
     # Final summary
     total_handled = len(listening_processes)
     graceful_count = total_handled - len(still_alive)
-    
-    print(f"\n✅ Port 8000 cleanup complete:")
+
+    print("\n✅ Port 8000 cleanup complete:")
     print(f"   • {graceful_count} process(es) terminated gracefully")
     if killed_count > 0:
         print(f"   • {killed_count} process(es) force killed")
     if total_handled - graceful_count - killed_count > 0:
-        print(f"   • {total_handled - graceful_count - killed_count} process(es) could not be stopped")
+        print(
+            f"   • {total_handled - graceful_count - killed_count} process(es) could not be stopped"
+        )
     print(f"   • Total processes handled: {total_handled}")
 
 

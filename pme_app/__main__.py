@@ -6,7 +6,8 @@ This allows running the CLI with: python -m pme_app.cli
 """
 
 import sys
+
 from pme_app.cli import main
 
 if __name__ == "__main__":
-    sys.exit(main()) 
+    sys.exit(main())

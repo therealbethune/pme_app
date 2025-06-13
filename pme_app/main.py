@@ -3,30 +3,31 @@ FastAPI main application for PME Calculator.
 Production-ready API with comprehensive PME analysis capabilities.
 """
 
-from fastapi import FastAPI, HTTPException, UploadFile, File
+import io
+import logging
+from typing import Any, Dict, Optional
+
+import numpy as np
+import pandas as pd
+from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
-from typing import Optional, Dict, Any
-import pandas as pd
-import numpy as np
-import io
-import logging
 
-from pme_app.services.analysis import (
-    ks_pme,
-    direct_alpha,
-    compute_volatility,
-    compute_drawdown,
-    compute_alpha_beta,
-    calculate_annualized_return,
-)
 from pme_app.logger import logger
 from pme_app.routers import portfolio
+from pme_app.services.analysis import (
+    calculate_annualized_return,
+    compute_alpha_beta,
+    compute_drawdown,
+    compute_volatility,
+    direct_alpha,
+    ks_pme,
+)
 from pme_app.utils import (
     DefaultJSONResponse,
-    create_success_response,
     create_error_response,
+    create_success_response,
     to_jsonable,
 )
 
@@ -52,27 +53,34 @@ app.add_middleware(
 # Include routers
 app.include_router(portfolio.router)
 
+
 # Pydantic models
 class PMERequest(BaseModel):
     fund_cashflows: list[float]
     index_values: list[float]
 
+
 class AlphaRequest(BaseModel):
     fund_irr: float
     index_irr: float
 
+
 class VolatilityRequest(BaseModel):
     returns: list[float]
 
+
 class DrawdownRequest(BaseModel):
     prices: list[float]
+
 
 class AlphaBetaRequest(BaseModel):
     fund_returns: list[float]
     index_returns: list[float]
 
+
 class AnnualizedReturnRequest(BaseModel):
     returns: list[float]
+
 
 # Health check endpoints (both paths for compatibility)
 @app.get("/health")
@@ -89,9 +97,10 @@ async def health_check():
             "Volatility Computation",
             "Drawdown Analysis",
             "Alpha/Beta Calculation",
-            "Annualized Returns"
-        ]
+            "Annualized Returns",
+        ],
     }
+
 
 # Root endpoint
 @app.get("/")
@@ -101,8 +110,9 @@ async def root():
         "message": "PME Calculator API",
         "docs": "/docs",
         "health": "/health",
-        "version": "1.0.0"
+        "version": "1.0.0",
     }
+
 
 # PME Calculation endpoints
 @app.post("/api/pme/ks")
@@ -111,47 +121,50 @@ async def calculate_ks_pme(request: PMERequest):
     try:
         fund_cf = np.array(request.fund_cashflows)
         idx_values = np.array(request.index_values)
-        
+
         result = ks_pme(fund_cf, idx_values)
-        
-        logger.info("KS PME calculation completed", extra={
-            "pme_value": result,
-            "fund_cashflows_count": len(fund_cf),
-            "index_values_count": len(idx_values)
-        })
-        
+
+        logger.info(
+            "KS PME calculation completed",
+            extra={
+                "pme_value": result,
+                "fund_cashflows_count": len(fund_cf),
+                "index_values_count": len(idx_values),
+            },
+        )
+
         return create_success_response(
             data={
                 "pme_value": result,
                 "method": "Kaplan-Schoar PME",
                 "fund_cashflows_count": len(fund_cf),
-                "index_values_count": len(idx_values)
+                "index_values_count": len(idx_values),
             },
-            message="KS PME calculation completed successfully"
+            message="KS PME calculation completed successfully",
         )
     except Exception as e:
         logger.error(f"KS PME calculation failed: {str(e)}")
         return create_error_response(
-            error="KS PME calculation failed",
-            details=str(e),
-            status_code=400
+            error="KS PME calculation failed", details=str(e), status_code=400
         )
+
 
 @app.post("/api/alpha/direct")
 async def calculate_direct_alpha(request: AlphaRequest):
     """Calculate Direct Alpha."""
     try:
         result = direct_alpha(request.fund_irr, request.index_irr)
-        
+
         return {
             "alpha": result,
             "fund_irr": request.fund_irr,
             "index_irr": request.index_irr,
-            "method": "Direct Alpha"
+            "method": "Direct Alpha",
         }
     except Exception as e:
         logger.error(f"Direct Alpha calculation failed: {str(e)}")
         raise HTTPException(status_code=400, detail=f"Calculation failed: {str(e)}")
+
 
 @app.post("/api/analysis/volatility")
 async def calculate_volatility(request: VolatilityRequest):
@@ -159,22 +172,21 @@ async def calculate_volatility(request: VolatilityRequest):
     try:
         returns_series = pd.Series(request.returns)
         result = compute_volatility(returns_series)
-        
+
         return create_success_response(
             data={
                 "volatility": result,
                 "returns_count": len(request.returns),
-                "method": "Standard Deviation"
+                "method": "Standard Deviation",
             },
-            message="Volatility calculation completed successfully"
+            message="Volatility calculation completed successfully",
         )
     except Exception as e:
         logger.error(f"Volatility calculation failed: {str(e)}")
         return create_error_response(
-            error="Volatility calculation failed",
-            details=str(e),
-            status_code=400
+            error="Volatility calculation failed", details=str(e), status_code=400
         )
+
 
 @app.post("/api/analysis/drawdown")
 async def calculate_drawdown(request: DrawdownRequest):
@@ -182,15 +194,16 @@ async def calculate_drawdown(request: DrawdownRequest):
     try:
         prices_series = pd.Series(request.prices)
         result = compute_drawdown(prices_series)
-        
+
         return {
             "max_drawdown": result,
             "prices_count": len(request.prices),
-            "method": "Peak-to-Trough"
+            "method": "Peak-to-Trough",
         }
     except Exception as e:
         logger.error(f"Drawdown calculation failed: {str(e)}")
         raise HTTPException(status_code=400, detail=f"Calculation failed: {str(e)}")
+
 
 @app.post("/api/analysis/alpha-beta")
 async def calculate_alpha_beta_analysis(request: AlphaBetaRequest):
@@ -198,19 +211,20 @@ async def calculate_alpha_beta_analysis(request: AlphaBetaRequest):
     try:
         fund_returns = pd.Series(request.fund_returns)
         index_returns = pd.Series(request.index_returns)
-        
+
         alpha, beta = compute_alpha_beta(fund_returns, index_returns)
-        
+
         return {
             "alpha": alpha,
             "beta": beta,
             "fund_returns_count": len(request.fund_returns),
             "index_returns_count": len(request.index_returns),
-            "method": "OLS Regression"
+            "method": "OLS Regression",
         }
     except Exception as e:
         logger.error(f"Alpha/Beta calculation failed: {str(e)}")
         raise HTTPException(status_code=400, detail=f"Calculation failed: {str(e)}")
+
 
 @app.post("/api/analysis/annualized-return")
 async def calculate_annualized_return_endpoint(request: AnnualizedReturnRequest):
@@ -218,57 +232,64 @@ async def calculate_annualized_return_endpoint(request: AnnualizedReturnRequest)
     try:
         returns_series = pd.Series(request.returns)
         result = calculate_annualized_return(returns_series)
-        
+
         return {
             "annualized_return": result,
             "returns_count": len(request.returns),
-            "method": "Geometric Mean"
+            "method": "Geometric Mean",
         }
     except Exception as e:
         logger.error(f"Annualized return calculation failed: {str(e)}")
         raise HTTPException(status_code=400, detail=f"Calculation failed: {str(e)}")
+
 
 # File upload endpoints
 @app.post("/api/upload/csv")
 async def upload_csv_data(file: UploadFile = File(...)):
     """Upload CSV file and return parsed data."""
     try:
-        if not file.filename.endswith('.csv'):
+        if not file.filename.endswith(".csv"):
             raise HTTPException(status_code=400, detail="File must be a CSV")
-        
+
         contents = await file.read()
-        df = pd.read_csv(io.StringIO(contents.decode('utf-8')))
-        
+        df = pd.read_csv(io.StringIO(contents.decode("utf-8")))
+
         return {
             "filename": file.filename,
             "rows": len(df),
             "columns": list(df.columns),
-            "data_preview": df.head().to_dict('records')
+            "data_preview": df.head().to_dict("records"),
         }
     except Exception as e:
         logger.error(f"CSV upload failed: {str(e)}")
         raise HTTPException(status_code=400, detail=f"Upload failed: {str(e)}")
 
+
 @app.post("/api/upload/fund")
 async def upload_fund_data(file: UploadFile = File(...)):
     """Upload fund data file (CSV/Excel)."""
     try:
-        if not (file.filename.endswith('.csv') or file.filename.endswith('.xlsx')):
-            raise HTTPException(status_code=400, detail="File must be CSV or Excel format")
-        
+        if not (file.filename.endswith(".csv") or file.filename.endswith(".xlsx")):
+            raise HTTPException(
+                status_code=400, detail="File must be CSV or Excel format"
+            )
+
         contents = await file.read()
-        
-        if file.filename.endswith('.csv'):
-            df = pd.read_csv(io.StringIO(contents.decode('utf-8')))
+
+        if file.filename.endswith(".csv"):
+            df = pd.read_csv(io.StringIO(contents.decode("utf-8")))
         else:
             df = pd.read_excel(io.BytesIO(contents))
-        
-        logger.info("Fund data uploaded", extra={
-            "filename": file.filename,
-            "rows": len(df),
-            "columns": list(df.columns)
-        })
-        
+
+        logger.info(
+            "Fund data uploaded",
+            extra={
+                "filename": file.filename,
+                "rows": len(df),
+                "columns": list(df.columns),
+            },
+        )
+
         return {
             "status": "success",
             "message": "Fund data uploaded successfully",
@@ -278,33 +299,39 @@ async def upload_fund_data(file: UploadFile = File(...)):
             "columns": list(df.columns),
             "rows_processed": len(df),
             "columns_detected": len(df.columns),
-            "data_preview": df.head().to_dict('records'),
-            "data_type": "fund"
+            "data_preview": df.head().to_dict("records"),
+            "data_type": "fund",
         }
     except Exception as e:
         logger.error(f"Fund upload failed: {str(e)}")
         raise HTTPException(status_code=400, detail=f"Upload failed: {str(e)}")
 
+
 @app.post("/api/upload/index")
 async def upload_index_data(file: UploadFile = File(...)):
     """Upload market index data file (CSV/Excel)."""
     try:
-        if not (file.filename.endswith('.csv') or file.filename.endswith('.xlsx')):
-            raise HTTPException(status_code=400, detail="File must be CSV or Excel format")
-        
+        if not (file.filename.endswith(".csv") or file.filename.endswith(".xlsx")):
+            raise HTTPException(
+                status_code=400, detail="File must be CSV or Excel format"
+            )
+
         contents = await file.read()
-        
-        if file.filename.endswith('.csv'):
-            df = pd.read_csv(io.StringIO(contents.decode('utf-8')))
+
+        if file.filename.endswith(".csv"):
+            df = pd.read_csv(io.StringIO(contents.decode("utf-8")))
         else:
             df = pd.read_excel(io.BytesIO(contents))
-        
-        logger.info("Index data uploaded", extra={
-            "filename": file.filename,
-            "rows": len(df),
-            "columns": list(df.columns)
-        })
-        
+
+        logger.info(
+            "Index data uploaded",
+            extra={
+                "filename": file.filename,
+                "rows": len(df),
+                "columns": list(df.columns),
+            },
+        )
+
         return {
             "status": "success",
             "message": "Index data uploaded successfully",
@@ -314,12 +341,13 @@ async def upload_index_data(file: UploadFile = File(...)):
             "columns": list(df.columns),
             "rows_processed": len(df),
             "columns_detected": len(df.columns),
-            "data_preview": df.head().to_dict('records'),
-            "data_type": "index"
+            "data_preview": df.head().to_dict("records"),
+            "data_type": "index",
         }
     except Exception as e:
         logger.error(f"Index upload failed: {str(e)}")
         raise HTTPException(status_code=400, detail=f"Upload failed: {str(e)}")
+
 
 # Analysis execution endpoints
 @app.post("/api/analysis/run")
@@ -344,7 +372,7 @@ async def run_comprehensive_analysis():
                 "Beta": 0.95,
                 "Volatility": 0.185,
                 "Max Drawdown": -0.123,
-                "Sharpe Ratio": 0.82
+                "Sharpe Ratio": 0.82,
             },
             "summary": {
                 "fund_irr": 0.152,
@@ -354,7 +382,7 @@ async def run_comprehensive_analysis():
                 "beta": 0.95,
                 "volatility": 0.185,
                 "max_drawdown": -0.123,
-                "sharpe_ratio": 0.82
+                "sharpe_ratio": 0.82,
             },
             "performance_metrics": {
                 "total_return": 45.6,
@@ -362,39 +390,43 @@ async def run_comprehensive_analysis():
                 "excess_return": 2.4,
                 "tracking_error": 8.2,
                 "information_ratio": 0.29,
-                "sortino_ratio": 1.15
+                "sortino_ratio": 1.15,
             },
             "risk_metrics": {
                 "value_at_risk_95": -8.5,
                 "conditional_var": -12.1,
                 "downside_deviation": 13.2,
                 "upside_capture": 105.3,
-                "downside_capture": 92.7
+                "downside_capture": 92.7,
             },
             "charts": {
                 "performance_comparison": "/v1/metrics/twr_vs_index",
                 "cashflow_analysis": "/v1/metrics/cashflow_overview",
                 "pme_progression": "/v1/metrics/pme_progression",
-                "risk_return": "/v1/metrics/net_cf_market"
+                "risk_return": "/v1/metrics/net_cf_market",
             },
             "recommendations": [
                 "Fund outperformed benchmark with PME ratio of 1.18",
                 "Strong risk-adjusted returns with Sharpe ratio of 0.82",
-                "Consider rebalancing to reduce maximum drawdown exposure"
-            ]
+                "Consider rebalancing to reduce maximum drawdown exposure",
+            ],
         }
-        
-        logger.info("Comprehensive analysis completed", extra={
-            "analysis_id": analysis_results["analysis_id"],
-            "pme_ratio": analysis_results["summary"]["pme_ratio"],
-            "fund_irr": analysis_results["summary"]["fund_irr"]
-        })
-        
+
+        logger.info(
+            "Comprehensive analysis completed",
+            extra={
+                "analysis_id": analysis_results["analysis_id"],
+                "pme_ratio": analysis_results["summary"]["pme_ratio"],
+                "fund_irr": analysis_results["summary"]["fund_irr"],
+            },
+        )
+
         return analysis_results
-        
+
     except Exception as e:
         logger.error(f"Analysis execution failed: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
+
 
 @app.get("/api/analysis/{analysis_id}")
 async def get_analysis_results(analysis_id: str):
@@ -403,8 +435,9 @@ async def get_analysis_results(analysis_id: str):
     return {
         "analysis_id": analysis_id,
         "status": "completed",
-        "results": "Analysis results would be here"
+        "results": "Analysis results would be here",
     }
+
 
 @app.get("/api/metrics/summary")
 async def get_metrics_summary():
@@ -422,10 +455,11 @@ async def get_metrics_summary():
             "beta": 0.95,
             "volatility": 0.185,
             "max_drawdown": -0.123,
-            "sharpe_ratio": 0.82
+            "sharpe_ratio": 0.82,
         },
-        "charts_available": True
+        "charts_available": True,
     }
+
 
 # Legacy v1/metrics endpoints for frontend compatibility
 @app.get("/v1/metrics/twr_vs_index")
@@ -443,7 +477,7 @@ async def get_twr_vs_index():
                 "mode": "lines+markers",
                 "name": "Fund TWR",
                 "line": {"color": "#2563eb", "width": 3},
-                "marker": {"size": 8}
+                "marker": {"size": 8},
             },
             {
                 "x": ["2023-01", "2023-02", "2023-03", "2023-04", "2023-05"],
@@ -452,15 +486,16 @@ async def get_twr_vs_index():
                 "mode": "lines+markers",
                 "name": "Russell 3000",
                 "line": {"color": "#dc2626", "width": 2, "dash": "dash"},
-                "marker": {"size": 6}
-            }
+                "marker": {"size": 6},
+            },
         ],
         "layout": {
             "title": "TWR vs Russell 3000®",
             "xaxis": {"title": "Time Period"},
-            "yaxis": {"title": "Index Value"}
-        }
+            "yaxis": {"title": "Index Value"},
+        },
     }
+
 
 @app.get("/v1/metrics/cashflow_overview")
 async def get_cashflow_overview():
@@ -474,23 +509,24 @@ async def get_cashflow_overview():
                 "y": [-1000, -500, -750, -300],
                 "type": "bar",
                 "name": "Contributions",
-                "marker": {"color": "#dc2626"}
+                "marker": {"color": "#dc2626"},
             },
             {
                 "x": ["2023-Q1", "2023-Q2", "2023-Q3", "2023-Q4"],
                 "y": [0, 200, 400, 600],
                 "type": "bar",
                 "name": "Distributions",
-                "marker": {"color": "#16a34a"}
-            }
+                "marker": {"color": "#16a34a"},
+            },
         ],
         "layout": {
             "title": "Cash Flow Analysis",
             "xaxis": {"title": "Time Period"},
             "yaxis": {"title": "Cash Flow ($000s)"},
-            "barmode": "group"
-        }
+            "barmode": "group",
+        },
     }
+
 
 @app.get("/v1/metrics/irr_pme")
 async def get_irr_pme():
@@ -506,7 +542,7 @@ async def get_irr_pme():
                 "mode": "lines+markers",
                 "name": "Cumulative IRR (%)",
                 "line": {"color": "#2563eb", "width": 3},
-                "yaxis": "y"
+                "yaxis": "y",
             },
             {
                 "x": ["2023-01", "2023-02", "2023-03", "2023-04", "2023-05"],
@@ -515,16 +551,17 @@ async def get_irr_pme():
                 "mode": "lines+markers",
                 "name": "PME Ratio",
                 "line": {"color": "#16a34a", "width": 3},
-                "yaxis": "y2"
-            }
+                "yaxis": "y2",
+            },
         ],
         "layout": {
             "title": "Performance Analysis",
             "xaxis": {"title": "Time Period"},
             "yaxis": {"title": "IRR (%)", "side": "left"},
-            "yaxis2": {"title": "PME Ratio", "side": "right", "overlaying": "y"}
-        }
+            "yaxis2": {"title": "PME Ratio", "side": "right", "overlaying": "y"},
+        },
     }
+
 
 @app.get("/v1/metrics/pme_progression")
 async def get_pme_progression():
@@ -541,15 +578,16 @@ async def get_pme_progression():
                 "name": "PME Ratio",
                 "line": {"color": "#2563eb", "width": 3},
                 "marker": {"size": 8},
-                "fill": "tonexty"
+                "fill": "tonexty",
             }
         ],
         "layout": {
             "title": "PME Progression",
             "xaxis": {"title": "Time Period"},
-            "yaxis": {"title": "PME Ratio"}
-        }
+            "yaxis": {"title": "PME Ratio"},
+        },
     }
+
 
 @app.get("/v1/metrics/net_cf_market")
 async def get_net_cf_market():
@@ -564,7 +602,7 @@ async def get_net_cf_market():
                 "type": "bar",
                 "name": "Net Cash Flow ($000s)",
                 "marker": {"color": "#2563eb"},
-                "yaxis": "y"
+                "yaxis": "y",
             },
             {
                 "x": ["2023-Q1", "2023-Q2", "2023-Q3", "2023-Q4"],
@@ -573,16 +611,21 @@ async def get_net_cf_market():
                 "mode": "lines+markers",
                 "name": "Market Return (%)",
                 "line": {"color": "#dc2626", "width": 3},
-                "yaxis": "y2"
-            }
+                "yaxis": "y2",
+            },
         ],
         "layout": {
             "title": "Net Cash Flow vs Market Performance",
             "xaxis": {"title": "Time Period"},
             "yaxis": {"title": "Net Cash Flow ($000s)", "side": "left"},
-            "yaxis2": {"title": "Market Return (%)", "side": "right", "overlaying": "y"}
-        }
+            "yaxis2": {
+                "title": "Market Return (%)",
+                "side": "right",
+                "overlaying": "y",
+            },
+        },
     }
+
 
 @app.get("/v1/metrics/cashflow_pacing")
 async def get_cashflow_pacing():
@@ -598,7 +641,7 @@ async def get_cashflow_pacing():
                 "mode": "lines",
                 "name": "Planned",
                 "fill": "tonexty",
-                "line": {"color": "#16a34a"}
+                "line": {"color": "#16a34a"},
             },
             {
                 "x": ["2023-Q1", "2023-Q2", "2023-Q3", "2023-Q4"],
@@ -607,32 +650,35 @@ async def get_cashflow_pacing():
                 "mode": "lines+markers",
                 "name": "Actual",
                 "line": {"color": "#2563eb", "width": 3},
-                "marker": {"size": 8}
-            }
+                "marker": {"size": 8},
+            },
         ],
         "layout": {
             "title": "Cash Flow Pacing Analysis",
             "xaxis": {"title": "Time Period"},
-            "yaxis": {"title": "Cash Flow ($000s)"}
-        }
+            "yaxis": {"title": "Cash Flow ($000s)"},
+        },
     }
+
 
 # Error handlers
 @app.exception_handler(404)
 async def not_found_handler(request, exc):
     return JSONResponse(
         status_code=404,
-        content={"detail": "Endpoint not found. Visit /docs for API documentation."}
+        content={"detail": "Endpoint not found. Visit /docs for API documentation."},
     )
+
 
 @app.exception_handler(500)
 async def internal_error_handler(request, exc):
     logger.error(f"Internal server error: {str(exc)}")
     return JSONResponse(
-        status_code=500,
-        content={"detail": "Internal server error. Please check logs."}
+        status_code=500, content={"detail": "Internal server error. Please check logs."}
     )
+
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000, reload=True) 
+
+    uvicorn.run(app, host="0.0.0.0", port=8000, reload=True)

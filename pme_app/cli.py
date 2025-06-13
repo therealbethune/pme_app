@@ -10,9 +10,9 @@ import sys
 from pathlib import Path
 from typing import Optional
 
-from pme_app.services.portfolio import calc_portfolio_metrics
 from pme_app.reporting.pdf import render_pdf
 from pme_app.reporting.xlsx import render_xlsx
+from pme_app.services.portfolio import calc_portfolio_metrics
 
 
 def create_parser() -> argparse.ArgumentParser:
@@ -27,42 +27,36 @@ Examples:
   python -m pme_app.cli version                   # Show version info
   python -m pme_app.cli report --data funds/     # Generate reports
   python -m pme_app.cli server                   # Start web server
-        """
+        """,
     )
-    
+
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
-    
+
     # Version command
     version_parser = subparsers.add_parser("version", help="Show version information")
-    
+
     # Report command
     report_parser = subparsers.add_parser("report", help="Generate portfolio reports")
     report_parser.add_argument(
-        "--data", "-d",
-        type=Path,
-        help="Directory containing fund CSV files"
+        "--data", "-d", type=Path, help="Directory containing fund CSV files"
     )
     report_parser.add_argument(
-        "--output", "-o",
+        "--output",
+        "-o",
         type=Path,
         default=Path("reports"),
-        help="Output directory for reports (default: reports)"
+        help="Output directory for reports (default: reports)",
     )
-    
+
     # Server command
     server_parser = subparsers.add_parser("server", help="Start the web server")
     server_parser.add_argument(
-        "--host",
-        default="0.0.0.0",
-        help="Host to bind to (default: 0.0.0.0)"
+        "--host", default="0.0.0.0", help="Host to bind to (default: 0.0.0.0)"
     )
     server_parser.add_argument(
-        "--port",
-        type=int,
-        default=8000,
-        help="Port to bind to (default: 8000)"
+        "--port", type=int, default=8000, help="Port to bind to (default: 8000)"
     )
-    
+
     return parser
 
 
@@ -73,16 +67,16 @@ def cmd_version():
     print("Python package for portfolio analytics and PME calculations")
 
 
-def cmd_report(data_dir: Optional[Path], output_dir: Path):
+def cmd_report(data_dir: Path | None, output_dir: Path):
     """Generate portfolio reports."""
     if not data_dir or not data_dir.exists():
         print("❌ Data directory not found or not specified")
         print("Use --data to specify a directory containing CSV files")
         return 1
-    
+
     print(f"📊 Generating reports from {data_dir}")
     print(f"📁 Output directory: {output_dir}")
-    
+
     # This would integrate with the existing report generation logic
     print("✅ Report generation functionality available")
     print("   (Integration with portfolio analytics in progress)")
@@ -97,15 +91,15 @@ def cmd_server(host: str, port: int):
     return 0
 
 
-def main(args: Optional[list[str]] = None) -> int:
+def main(args: list[str] | None = None) -> int:
     """Main CLI entry point."""
     parser = create_parser()
     parsed_args = parser.parse_args(args)
-    
+
     if not parsed_args.command:
         parser.print_help()
         return 0
-    
+
     if parsed_args.command == "version":
         cmd_version()
         return 0
@@ -120,4 +114,4 @@ def main(args: Optional[list[str]] = None) -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main()) 
+    sys.exit(main())

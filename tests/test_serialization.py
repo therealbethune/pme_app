@@ -50,40 +50,34 @@ class TestToJsonable:
         assert to_jsonable(np.nan) is None
         assert to_jsonable(np.inf) == "Infinity"
         assert to_jsonable(-np.inf) == "-Infinity"
-        assert to_jsonable(float('nan')) is None
-        assert to_jsonable(float('inf')) == "Infinity"
+        assert to_jsonable(float("nan")) is None
+        assert to_jsonable(float("inf")) == "Infinity"
 
     def test_numpy_arrays(self):
         """Test handling of numpy arrays."""
         arr = np.array([1, 2, 3])
         assert to_jsonable(arr) == [1, 2, 3]
-        
+
         # 2D array
         arr_2d = np.array([[1, 2], [3, 4]])
         assert to_jsonable(arr_2d) == [[1, 2], [3, 4]]
-        
+
         # Empty array
         empty_arr = np.array([])
         assert to_jsonable(empty_arr) == []
-        
+
         # Scalar array
         scalar_arr = np.array(42)
         assert to_jsonable(scalar_arr) == 42
 
     def test_pandas_dataframe(self):
         """Test handling of pandas DataFrames."""
-        df = pd.DataFrame({
-            'a': [1, 2, 3],
-            'b': [4.0, 5.0, np.nan],
-            'c': ['x', 'y', 'z']
-        })
-        
+        df = pd.DataFrame(
+            {"a": [1, 2, 3], "b": [4.0, 5.0, np.nan], "c": ["x", "y", "z"]}
+        )
+
         result = to_jsonable(df)
-        expected = {
-            'a': [1, 2, 3],
-            'b': [4.0, 5.0, None],
-            'c': ['x', 'y', 'z']
-        }
+        expected = {"a": [1, 2, 3], "b": [4.0, 5.0, None], "c": ["x", "y", "z"]}
         assert result == expected
 
     def test_pandas_series(self):
@@ -94,10 +88,10 @@ class TestToJsonable:
 
     def test_pandas_timestamp(self):
         """Test handling of pandas Timestamp."""
-        ts = pd.Timestamp('2023-01-01 12:30:45')
+        ts = pd.Timestamp("2023-01-01 12:30:45")
         result = to_jsonable(ts)
-        assert result == '2023-01-01T12:30:45'
-        
+        assert result == "2023-01-01T12:30:45"
+
         # NaT (Not a Time)
         nat = pd.NaT
         assert to_jsonable(nat) is None
@@ -105,48 +99,42 @@ class TestToJsonable:
     def test_datetime_objects(self):
         """Test handling of datetime objects."""
         dt = datetime(2023, 1, 1, 12, 30, 45)
-        assert to_jsonable(dt) == '2023-01-01T12:30:45'
-        
+        assert to_jsonable(dt) == "2023-01-01T12:30:45"
+
         d = date(2023, 1, 1)
-        assert to_jsonable(d) == '2023-01-01'
-        
+        assert to_jsonable(d) == "2023-01-01"
+
         t = time(12, 30, 45)
-        assert to_jsonable(t) == '12:30:45'
+        assert to_jsonable(t) == "12:30:45"
 
     def test_decimal_and_complex(self):
         """Test handling of Decimal and complex numbers."""
-        dec = Decimal('3.14159')
+        dec = Decimal("3.14159")
         assert to_jsonable(dec) == 3.14159
-        
+
         comp = complex(3, 4)
         assert to_jsonable(comp) == {"real": 3.0, "imag": 4.0}
 
     def test_path_objects(self):
         """Test handling of Path objects."""
-        path = Path('/tmp/test.txt')
-        assert to_jsonable(path) == '/tmp/test.txt'
+        path = Path("/tmp/test.txt")
+        assert to_jsonable(path) == "/tmp/test.txt"
 
     def test_nested_structures(self):
         """Test handling of nested dictionaries and lists."""
         data = {
-            'numbers': [1, np.int32(2), np.float64(3.14)],
-            'dataframe': pd.DataFrame({'x': [1, 2]}),
-            'timestamp': pd.Timestamp('2023-01-01'),
-            'nested': {
-                'array': np.array([1, 2, 3]),
-                'nan_value': np.nan
-            }
+            "numbers": [1, np.int32(2), np.float64(3.14)],
+            "dataframe": pd.DataFrame({"x": [1, 2]}),
+            "timestamp": pd.Timestamp("2023-01-01"),
+            "nested": {"array": np.array([1, 2, 3]), "nan_value": np.nan},
         }
-        
+
         result = to_jsonable(data)
         expected = {
-            'numbers': [1, 2, 3.14],
-            'dataframe': {'x': [1, 2]},
-            'timestamp': '2023-01-01T00:00:00',
-            'nested': {
-                'array': [1, 2, 3],
-                'nan_value': None
-            }
+            "numbers": [1, 2, 3.14],
+            "dataframe": {"x": [1, 2]},
+            "timestamp": "2023-01-01T00:00:00",
+            "nested": {"array": [1, 2, 3], "nan_value": None},
         }
         assert result == expected
 
@@ -156,32 +144,28 @@ class TestSafeJsonDumps:
 
     def test_basic_serialization(self):
         """Test basic JSON serialization."""
-        data = {'a': 1, 'b': 'test'}
+        data = {"a": 1, "b": "test"}
         result = safe_json_dumps(data)
         assert json.loads(result) == data
 
     def test_numpy_serialization(self):
         """Test serialization of numpy objects."""
-        data = {
-            'array': np.array([1, 2, 3]),
-            'scalar': np.int32(42),
-            'nan': np.nan
-        }
-        
+        data = {"array": np.array([1, 2, 3]), "scalar": np.int32(42), "nan": np.nan}
+
         result = safe_json_dumps(data)
         parsed = json.loads(result)
-        
-        assert parsed['array'] == [1, 2, 3]
-        assert parsed['scalar'] == 42
-        assert parsed['nan'] is None
+
+        assert parsed["array"] == [1, 2, 3]
+        assert parsed["scalar"] == 42
+        assert parsed["nan"] is None
 
     def test_dataframe_serialization(self):
         """Test serialization of pandas DataFrame."""
-        df = pd.DataFrame({'a': [1, 2], 'b': [3.0, np.nan]})
+        df = pd.DataFrame({"a": [1, 2], "b": [3.0, np.nan]})
         result = safe_json_dumps(df)
         parsed = json.loads(result)
-        
-        assert parsed == {'a': [1, 2], 'b': [3.0, None]}
+
+        assert parsed == {"a": [1, 2], "b": [3.0, None]}
 
 
 class TestDataFrameToRecords:
@@ -189,16 +173,15 @@ class TestDataFrameToRecords:
 
     def test_basic_conversion(self):
         """Test basic DataFrame to records conversion."""
-        df = pd.DataFrame({
-            'date': pd.date_range('2023-01-01', periods=2),
-            'value': [1.0, np.nan]
-        })
-        
+        df = pd.DataFrame(
+            {"date": pd.date_range("2023-01-01", periods=2), "value": [1.0, np.nan]}
+        )
+
         result = dataframe_to_records(df)
         assert len(result) == 2
-        assert result[0]['date'] == '2023-01-01T00:00:00'
-        assert result[0]['value'] == 1.0
-        assert result[1]['value'] is None
+        assert result[0]["date"] == "2023-01-01T00:00:00"
+        assert result[0]["value"] == 1.0
+        assert result[1]["value"] is None
 
     def test_empty_dataframe(self):
         """Test handling of empty DataFrame."""
@@ -208,18 +191,18 @@ class TestDataFrameToRecords:
 
     def test_different_orientations(self):
         """Test different orientation options."""
-        df = pd.DataFrame({'a': [1, 2], 'b': [3, 4]})
-        
+        df = pd.DataFrame({"a": [1, 2], "b": [3, 4]})
+
         # Records orientation
-        records = dataframe_to_records(df, orient='records')
-        assert records == [{'a': 1, 'b': 3}, {'a': 2, 'b': 4}]
-        
+        records = dataframe_to_records(df, orient="records")
+        assert records == [{"a": 1, "b": 3}, {"a": 2, "b": 4}]
+
         # Index orientation
-        index_result = dataframe_to_records(df, orient='index')
+        index_result = dataframe_to_records(df, orient="index")
         assert isinstance(index_result, dict)
-        
+
         # Values orientation
-        values_result = dataframe_to_records(df, orient='values')
+        values_result = dataframe_to_records(df, orient="values")
         assert values_result == [[1, 3], [2, 4]]
 
 
@@ -228,9 +211,9 @@ class TestSeriesToDict:
 
     def test_basic_conversion(self):
         """Test basic Series to dict conversion."""
-        series = pd.Series([1, 2, 3], index=['a', 'b', 'c'])
+        series = pd.Series([1, 2, 3], index=["a", "b", "c"])
         result = series_to_dict(series)
-        assert result == {'a': 1, 'b': 2, 'c': 3}
+        assert result == {"a": 1, "b": 2, "c": 3}
 
     def test_empty_series(self):
         """Test handling of empty Series."""
@@ -261,30 +244,32 @@ class TestEdgeCases:
 
     def test_custom_objects(self):
         """Test handling of custom objects."""
+
         class CustomObject:
             def __init__(self):
                 self.value = 42
-        
+
         obj = CustomObject()
         result = to_jsonable(obj)
-        assert result == {'value': 42}
+        assert result == {"value": 42}
 
     def test_objects_with_to_dict(self):
         """Test objects with to_dict method."""
+
         class ObjectWithToDict:
             def to_dict(self):
-                return {'custom': 'data'}
-        
+                return {"custom": "data"}
+
         obj = ObjectWithToDict()
         result = to_jsonable(obj)
-        assert result == {'custom': 'data'}
+        assert result == {"custom": "data"}
 
     def test_circular_references(self):
         """Test handling of circular references (should not hang)."""
         # Create a simple circular reference
-        data = {'a': 1}
-        data['self'] = data
-        
+        data = {"a": 1}
+        data["self"] = data
+
         # This should not hang or crash
         try:
             result = to_jsonable(data)
@@ -297,4 +282,4 @@ class TestEdgeCases:
 
 
 if __name__ == "__main__":
-    pytest.main([__file__]) 
+    pytest.main([__file__])

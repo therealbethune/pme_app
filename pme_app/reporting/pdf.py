@@ -1,12 +1,13 @@
-from reportlab.lib.pagesizes import letter
-from reportlab.pdfgen import canvas
-from reportlab.lib.styles import getSampleStyleSheet
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
-from reportlab.lib import colors
-from reportlab.lib.units import inch
-import pandas as pd
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
+
+import pandas as pd
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import letter
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.units import inch
+from reportlab.pdfgen import canvas
+from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
 
 def render_pdf(df: pd.DataFrame, path: Path) -> None:
@@ -26,36 +27,36 @@ def render_pdf(df: pd.DataFrame, path: Path) -> None:
         topMargin=72,
         bottomMargin=18
     )
-    
+
     # Container for the 'Flowable' objects
     story = []
-    
+
     # Get styles
     styles = getSampleStyleSheet()
     title_style = styles['Title']
     heading_style = styles['Heading1']
     normal_style = styles['Normal']
-    
+
     # Title
     title = Paragraph("Portfolio Analytics Report", title_style)
     story.append(title)
     story.append(Spacer(1, 12))
-    
+
     # Report metadata
     report_date = datetime.now().strftime("%B %d, %Y at %I:%M %p")
     date_para = Paragraph(f"Generated on {report_date}", normal_style)
     story.append(date_para)
     story.append(Spacer(1, 24))
-    
+
     if not df.empty:
         # Executive Summary
         summary_title = Paragraph("Executive Summary", heading_style)
         story.append(summary_title)
         story.append(Spacer(1, 12))
-        
+
         # Extract key metrics
         metrics = df.iloc[0]
-        
+
         # Create summary table
         summary_data = [
             ['Metric', 'Value'],
@@ -67,7 +68,7 @@ def render_pdf(df: pd.DataFrame, path: Path) -> None:
             ['Maximum Drawdown', f"{metrics.get('Max Drawdown', 0):.2%}"],
             ['Calmar Ratio', f"{metrics.get('Calmar Ratio', 0):.3f}"],
         ]
-        
+
         # Create table
         summary_table = Table(summary_data, colWidths=[3*inch, 2*inch])
         summary_table.setStyle(TableStyle([
@@ -82,19 +83,19 @@ def render_pdf(df: pd.DataFrame, path: Path) -> None:
             ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
             ('FONTSIZE', (0, 1), (-1, -1), 10),
         ]))
-        
+
         story.append(summary_table)
         story.append(Spacer(1, 24))
-        
+
         # Performance Analysis
         analysis_title = Paragraph("Performance Analysis", heading_style)
         story.append(analysis_title)
         story.append(Spacer(1, 12))
-        
+
         # Risk-adjusted performance commentary
         sharpe = metrics.get('Sharpe (rf=0)', 0)
         calmar = metrics.get('Calmar Ratio', 0)
-        
+
         if sharpe > 1.0:
             sharpe_comment = "Excellent risk-adjusted returns"
         elif sharpe > 0.5:
@@ -103,7 +104,7 @@ def render_pdf(df: pd.DataFrame, path: Path) -> None:
             sharpe_comment = "Moderate risk-adjusted returns"
         else:
             sharpe_comment = "Poor risk-adjusted returns"
-            
+
         analysis_text = f"""
         <b>Risk-Adjusted Performance:</b> The portfolio demonstrates {sharpe_comment} 
         with a Sharpe ratio of {sharpe:.3f}. The Calmar ratio of {calmar:.3f} indicates 
@@ -117,19 +118,19 @@ def render_pdf(df: pd.DataFrame, path: Path) -> None:
         <b>Portfolio Composition:</b> This analysis covers {int(metrics.get('Funds', 0))} 
         fund(s) with a combined NAV of ${metrics.get('Total NAV', 0):,.2f}.
         """
-        
+
         analysis_para = Paragraph(analysis_text, normal_style)
         story.append(analysis_para)
         story.append(Spacer(1, 24))
-        
+
         # Detailed Metrics
         details_title = Paragraph("Detailed Metrics", heading_style)
         story.append(details_title)
         story.append(Spacer(1, 12))
-        
+
         # All metrics table
         detailed_data = [['Metric', 'Value', 'Description']]
-        
+
         metric_descriptions = {
             'Total NAV': 'Sum of all fund net asset values',
             'Annualized Return': 'Geometric mean return annualized',
@@ -139,7 +140,7 @@ def render_pdf(df: pd.DataFrame, path: Path) -> None:
             'Max Drawdown': 'Maximum peak-to-trough decline',
             'Calmar Ratio': 'Annualized return divided by maximum drawdown'
         }
-        
+
         for key, value in metrics.items():
             if key in metric_descriptions:
                 if key == 'Total NAV':
@@ -150,13 +151,13 @@ def render_pdf(df: pd.DataFrame, path: Path) -> None:
                     formatted_value = f"{value:.2%}"
                 else:
                     formatted_value = f"{value:.3f}"
-                
+
                 detailed_data.append([
                     key,
                     formatted_value,
                     metric_descriptions[key]
                 ])
-        
+
         detailed_table = Table(detailed_data, colWidths=[2*inch, 1.5*inch, 2.5*inch])
         detailed_table.setStyle(TableStyle([
             ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
@@ -170,14 +171,14 @@ def render_pdf(df: pd.DataFrame, path: Path) -> None:
             ('VALIGN', (0, 0), (-1, -1), 'TOP'),
             ('FONTSIZE', (0, 1), (-1, -1), 9),
         ]))
-        
+
         story.append(detailed_table)
-        
+
     else:
         # No data available
         no_data = Paragraph("No portfolio data available for analysis.", normal_style)
         story.append(no_data)
-    
+
     # Footer
     story.append(Spacer(1, 36))
     footer_text = """
@@ -187,7 +188,7 @@ def render_pdf(df: pd.DataFrame, path: Path) -> None:
     """
     footer = Paragraph(footer_text, normal_style)
     story.append(footer)
-    
+
     # Build PDF
     doc.build(story)
 
@@ -202,25 +203,25 @@ def render_simple_pdf(df: pd.DataFrame, path: Path) -> None:
     """
     c = canvas.Canvas(str(path), pagesize=letter)
     width, height = letter
-    
+
     # Title
     c.setFont("Helvetica-Bold", 16)
     c.drawString(72, height - 72, "Portfolio Analytics Report")
-    
+
     # Date
     c.setFont("Helvetica", 10)
     report_date = datetime.now().strftime("%B %d, %Y")
     c.drawString(72, height - 100, f"Generated on {report_date}")
-    
+
     # Metrics
     if not df.empty:
         y_position = height - 140
         c.setFont("Helvetica-Bold", 12)
         c.drawString(72, y_position, "Portfolio Metrics:")
-        
+
         y_position -= 30
         c.setFont("Helvetica", 10)
-        
+
         for key, value in df.iloc[0].items():
             if isinstance(value, (int, float)):
                 if key == 'Total NAV':
@@ -233,14 +234,14 @@ def render_simple_pdf(df: pd.DataFrame, path: Path) -> None:
                     text = f"{key}: {value:.3f}"
             else:
                 text = f"{key}: {value}"
-            
+
             c.drawString(72, y_position, text)
             y_position -= 20
-            
+
             if y_position < 100:  # Start new page if needed
                 c.showPage()
                 y_position = height - 72
     else:
         c.drawString(72, height - 140, "No portfolio data available.")
-    
-    c.save() 
+
+    c.save()

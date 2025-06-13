@@ -5,10 +5,10 @@ from fastapi import APIRouter, File, HTTPException, UploadFile
 
 from pme_app.services.portfolio import calc_portfolio_metrics
 from pme_app.utils import (
-    create_success_response,
     create_error_response,
-    to_jsonable,
+    create_success_response,
     dataframe_to_records,
+    to_jsonable,
 )
 
 router = APIRouter(prefix="/portfolio", tags=["portfolio"])
@@ -63,8 +63,7 @@ async def portfolio_metrics(files: list[UploadFile] = File(...)):
 
         if metrics_df.empty:
             return create_error_response(
-                error="Unable to calculate metrics from provided data",
-                status_code=400
+                error="Unable to calculate metrics from provided data", status_code=400
             )
 
         # Convert to dict using our serialization utility
@@ -75,15 +74,12 @@ async def portfolio_metrics(files: list[UploadFile] = File(...)):
         result["file_names"] = list(data.keys())
 
         return create_success_response(
-            data=result,
-            message="Portfolio metrics calculated successfully"
+            data=result, message="Portfolio metrics calculated successfully"
         )
 
     except Exception as e:
         return create_error_response(
-            error="Error calculating portfolio metrics",
-            details=str(e),
-            status_code=500
+            error="Error calculating portfolio metrics", details=str(e), status_code=500
         )
 
 
@@ -92,7 +88,7 @@ async def portfolio_health():
     """Health check for portfolio service."""
     return create_success_response(
         data={"status": "healthy", "service": "portfolio"},
-        message="Portfolio service is healthy"
+        message="Portfolio service is healthy",
     )
 
 
@@ -132,5 +128,5 @@ async def preview_portfolio_data(files: list[UploadFile] = File(...)):
 
     return create_success_response(
         data={"files_processed": len(preview_data), "preview": preview_data},
-        message="File preview generated successfully"
+        message="File preview generated successfully",
     )

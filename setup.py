@@ -9,7 +9,9 @@ setup(
     packages=find_packages(include=["pme_app", "pme_app.*"]),
     python_requires=">=3.7",
     install_requires=["numpy", "pandas", "matplotlib", "numpy_financial", "scipy"],
-    extras_require={"dev": ["black", "ruff", "pytest", "pytest-cov", "pytest-asyncio", "polars"]},
+    extras_require={
+        "dev": ["black", "ruff", "pytest", "pytest-cov", "pytest-asyncio", "polars"]
+    },
     entry_points={
         "console_scripts": [
             # Entry point for web application

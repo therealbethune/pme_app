@@ -645,6 +645,7 @@ class DataManager:
     def _serialize_metrics(self, metrics: dict) -> dict:
         """Serialize metrics for JSON storage."""
         from pme_app.utils import to_jsonable
+
         return to_jsonable(metrics)
 
     def _load_preferences(self) -> dict:

@@ -177,6 +177,7 @@ class ApiBridge:
         """Convert numpy types to JSON-serializable types."""
         try:
             from pme_app.utils import to_jsonable
+
             return to_jsonable(metrics)
         except ImportError:
             # Fallback implementation

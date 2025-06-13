@@ -231,6 +231,7 @@ def make_json_serializable(data: Any) -> Any:
     # Import here to avoid circular imports
     try:
         from pme_app.utils import to_jsonable
+
         return to_jsonable(data)
     except ImportError:
         # Fallback implementation
