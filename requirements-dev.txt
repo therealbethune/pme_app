@@ -1,0 +1,4 @@
+pylint
+
+# Optional dependencies for enhanced functionality
+# Removed tkinterdnd2 as Tkinter GUI has been removed

@@ -1,0 +1,29 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+{
+  // High-level project context
+  "project_name": "pme_app",
+  "python_version": "3.12",
+
+  // Directory conventions
+  "src_root": "pme_app",             // tells the AI where code lives
+  "tests_root": "tests",             // keeps generated tests in the right folder
+
+  // Coding conventions
+  "pydantic_v2": true,               // FastAPI + Pydantic v2
+  "async_fastapi": true,             // use async def routes
+  "logging_library": "structlog",    // the logging style you want
+
+  // Tooling versions
+  "black_version": "24.4.2",
+  "ruff_version": "0.4.4",
+  "pytest_min_version": "8.2",
+
+  // Non-negotiables
+  "forbid_shell_true": true,         // no bare `shell=True` in subprocess
+  "forbid_plain_print": true,        // must use logger
+  "require_pytest_mocker": true      // prefer mocker fixture over unittest.mock
+}

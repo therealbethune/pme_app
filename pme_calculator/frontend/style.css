@@ -1,0 +1,281 @@
+/* ===== SPACE OPTIMIZATION & LAYOUT IMPROVEMENTS ===== */
+
+/* Container and Grid Optimizations */
+.container-fluid {
+    padding-left: 15px !important;
+    padding-right: 15px !important;
+}
+
+.container {
+    max-width: 1400px !important; /* Increase max width for better space usage */
+}
+
+/* Row and Column Spacing Optimization */
+.row {
+    margin-left: -10px !important;
+    margin-right: -10px !important;
+}
+
+.col, .col-md-6, .col-lg-4, .col-lg-6, .col-lg-8, .col-xl-3, .col-xl-4, .col-xl-6, .col-xl-8 {
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+}
+
+/* Card Optimizations - Reduce Padding and Margins */
+.card {
+    margin-bottom: 15px !important; /* Reduced from default 20px */
+    border-radius: 8px !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15) !important;
+}
+
+.card-body {
+    padding: 15px !important; /* Reduced from default 20px */
+}
+
+.card-header {
+    padding: 10px 15px !important; /* Reduced padding */
+    font-size: 14px !important;
+    font-weight: 600 !important;
+}
+
+/* Chart Container Optimizations */
+.chart-container {
+    position: relative;
+    width: 100%;
+    margin-bottom: 15px !important; /* Reduced spacing between charts */
+}
+
+/* Specific Chart Height Optimizations */
+#twrIndexPlot, #metricsChart {
+    height: 350px !important; /* Primary charts - slightly taller */
+}
+
+#cashFlowChart, #performanceChart, #riskReturnChart {
+    height: 300px !important; /* Secondary charts - more compact */
+}
+
+/* KPI Cards Optimization */
+.kpi-card {
+    min-height: 120px !important; /* Reduced from default */
+    margin-bottom: 15px !important;
+}
+
+.kpi-value {
+    font-size: 1.8rem !important; /* Slightly smaller but still prominent */
+    font-weight: 700 !important;
+    margin-bottom: 5px !important;
+}
+
+.kpi-label {
+    font-size: 0.85rem !important;
+    opacity: 0.8;
+    margin-bottom: 0 !important;
+}
+
+/* Section Spacing Optimization */
+.section-spacing {
+    margin-bottom: 20px !important; /* Reduced from default 30px */
+}
+
+/* Header and Title Optimizations */
+h1, h2, h3, h4, h5, h6 {
+    margin-bottom: 15px !important; /* Reduced title spacing */
+}
+
+.page-title {
+    margin-bottom: 20px !important;
+    font-size: 1.75rem !important; /* Slightly smaller page titles */
+}
+
+.section-title {
+    margin-bottom: 15px !important;
+    font-size: 1.25rem !important;
+}
+
+/* Form and Input Optimizations */
+.form-group {
+    margin-bottom: 15px !important; /* Reduced form spacing */
+}
+
+.btn {
+    padding: 8px 16px !important; /* More compact buttons */
+    font-size: 14px !important;
+}
+
+.btn-lg {
+    padding: 10px 20px !important;
+    font-size: 16px !important;
+}
+
+/* Alert and Status Message Optimizations */
+.alert {
+    padding: 10px 15px !important; /* More compact alerts */
+    margin-bottom: 15px !important;
+    font-size: 14px !important;
+}
+
+/* Navigation and Header Optimizations */
+.navbar {
+    padding: 8px 0 !important; /* More compact navbar */
+}
+
+.navbar-brand {
+    font-size: 1.1rem !important;
+}
+
+/* Responsive Grid Improvements */
+@media (min-width: 1200px) {
+    .container {
+        max-width: 1320px !important; /* Use more screen width on large displays */
+    }
+    
+    /* 4-column layout for KPIs on large screens */
+    .kpi-col-xl {
+        flex: 0 0 25% !important;
+        max-width: 25% !important;
+    }
+}
+
+@media (min-width: 1400px) {
+    .container {
+        max-width: 1400px !important; /* Maximum utilization on very large screens */
+    }
+    
+    /* Even more compact on very large screens */
+    .chart-container {
+        margin-bottom: 10px !important;
+    }
+    
+    .card {
+        margin-bottom: 10px !important;
+    }
+}
+
+/* Compact Mode for Dense Layouts */
+.compact-layout .card {
+    margin-bottom: 10px !important;
+}
+
+.compact-layout .card-body {
+    padding: 10px !important;
+}
+
+.compact-layout .chart-container {
+    margin-bottom: 10px !important;
+}
+
+/* Chart-Specific Optimizations */
+.plotly-graph-div {
+    width: 100% !important;
+}
+
+/* Remove unnecessary spacing from Plotly containers */
+.js-plotly-plot .plotly .modebar {
+    display: none !important; /* Hide modebar to save space */
+}
+
+/* Loading State Optimizations */
+.spinner-border {
+    width: 2rem !important;
+    height: 2rem !important;
+}
+
+.loading-text {
+    font-size: 12px !important;
+    margin-top: 8px !important;
+}
+
+/* Table Optimizations */
+.table {
+    margin-bottom: 15px !important;
+    font-size: 14px !important;
+}
+
+.table th, .table td {
+    padding: 8px !important; /* More compact table cells */
+    vertical-align: middle !important;
+}
+
+/* Modal Optimizations */
+.modal-body {
+    padding: 15px !important;
+}
+
+.modal-header {
+    padding: 10px 15px !important;
+}
+
+.modal-footer {
+    padding: 10px 15px !important;
+}
+
+/* Utility Classes for Space Management */
+.no-gutters-sm {
+    margin-left: -5px !important;
+    margin-right: -5px !important;
+}
+
+.no-gutters-sm > .col,
+.no-gutters-sm > [class*="col-"] {
+    padding-left: 5px !important;
+    padding-right: 5px !important;
+}
+
+.compact-spacing {
+    margin-bottom: 10px !important;
+}
+
+.tight-spacing {
+    margin-bottom: 5px !important;
+}
+
+/* Dashboard-Specific Optimizations */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.dashboard-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+/* Chart Title Optimizations */
+.chart-title {
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    margin-bottom: 10px !important;
+    padding: 0 !important;
+}
+
+/* Responsive Text Sizing */
+@media (max-width: 768px) {
+    .kpi-value {
+        font-size: 1.5rem !important;
+    }
+    
+    .chart-container {
+        height: 250px !important; /* More compact on mobile */
+    }
+    
+    .card-body {
+        padding: 10px !important;
+    }
+}
+
+/* Print Optimizations */
+@media print {
+    .chart-container {
+        height: 300px !important;
+        page-break-inside: avoid;
+    }
+    
+    .card {
+        margin-bottom: 10px !important;
+        page-break-inside: avoid;
+    }
+} 

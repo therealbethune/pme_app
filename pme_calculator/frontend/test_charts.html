@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chart Styling Test</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <link href="_dashboard.css" rel="stylesheet">
+    <style>
+        body {
+            background: #000000;
+            color: #ffffff;
+            font-family: 'Inter', sans-serif;
+            padding: 20px;
+        }
+        .chart-container {
+            background: linear-gradient(145deg, rgba(17, 17, 17, 0.9), rgba(10, 10, 10, 0.95));
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 20px;
+            margin: 20px 0;
+            backdrop-filter: blur(15px);
+        }
+        .chart-title {
+            color: #ffffff;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Chart Styling Test</h1>
+    <p>Testing the updated chart styling from the backend...</p>
+    
+    <div class="chart-container">
+        <div class="chart-title">
+            <i class="fas fa-chart-bar"></i>
+            IRR vs PME Chart
+        </div>
+        <div id="testChart1" style="height: 400px;"></div>
+    </div>
+    
+    <div class="chart-container">
+        <div class="chart-title">
+            <i class="fas fa-chart-line"></i>
+            TWR vs Index Chart
+        </div>
+        <div id="testChart2" style="height: 400px;"></div>
+    </div>
+    
+    <script src="static/js/charts.js"></script>
+    <script>
+        // Test the chart endpoints directly
+        async function testCharts() {
+            try {
+                // Test IRR vs PME chart
+                const response1 = await fetch('http://localhost:8000/v1/metrics/irr_pme');
+                const chartData1 = await response1.json();
+                
+                if (window.createProfessionalChart) {
+                    window.createProfessionalChart('testChart1', chartData1.data, chartData1.layout);
+                    console.log('✅ Professional chart function available');
+                } else {
+                    console.log('❌ Professional chart function not available');
+                    Plotly.newPlot('testChart1', chartData1.data, chartData1.layout);
+                }
+                
+                // Test TWR vs Index chart
+                const response2 = await fetch('http://localhost:8000/v1/metrics/twr_vs_index');
+                const chartData2 = await response2.json();
+                
+                if (window.createProfessionalChart) {
+                    window.createProfessionalChart('testChart2', chartData2.data, chartData2.layout);
+                } else {
+                    Plotly.newPlot('testChart2', chartData2.data, chartData2.layout);
+                }
+                
+                console.log('Charts loaded successfully!');
+                
+            } catch (error) {
+                console.error('Error loading charts:', error);
+                document.body.innerHTML += `<div style="color: red; padding: 20px;">Error: ${error.message}</div>`;
+            }
+        }
+        
+        // Load charts when page is ready
+        document.addEventListener('DOMContentLoaded', testCharts);
+    </script>
+</body>
+</html> 

@@ -1,0 +1,87 @@
+{
+  "css_optimizations": {
+    "status": "SUCCESS",
+    "found": [
+      "/* ===== SPACE OPTIMIZATION & LAYOUT IMPROVEMENTS ===== */",
+      ".chart-container",
+      "height: 350px !important",
+      "height: 300px !important",
+      "margin-bottom: 15px !important",
+      "padding: 15px !important",
+      ".dashboard-grid",
+      ".compact-layout",
+      "@media (min-width: 1400px)"
+    ],
+    "success_rate": 1.0
+  },
+  "js_optimizations": {
+    "status": "SUCCESS",
+    "found": [
+      "optimizedLayout",
+      "height = '400px'",
+      "margin: {",
+      "l: 60,",
+      "displayModeBar: false",
+      "responsive: true",
+      "Plotly.Plots.resize"
+    ],
+    "success_rate": 0.875
+  },
+  "chart_endpoints": {
+    "/v1/metrics/twr_vs_index": {
+      "status": "SUCCESS",
+      "load_time": "0.020s",
+      "has_data": true,
+      "has_layout": true,
+      "data_points": 2,
+      "response_size": 5062
+    },
+    "/v1/metrics/cashflow_overview": {
+      "status": "SUCCESS",
+      "load_time": "0.001s",
+      "has_data": true,
+      "has_layout": true,
+      "data_points": 2,
+      "response_size": 820
+    },
+    "/v1/metrics/irr_pme": {
+      "status": "SUCCESS",
+      "load_time": "0.013s",
+      "has_data": true,
+      "has_layout": true,
+      "data_points": 3,
+      "response_size": 1510
+    },
+    "/v1/metrics/pme_progression": {
+      "status": "SUCCESS",
+      "load_time": "0.001s",
+      "has_data": true,
+      "has_layout": true,
+      "data_points": 1,
+      "response_size": 780
+    },
+    "/v1/metrics/net_cf_market": {
+      "status": "SUCCESS",
+      "load_time": "0.001s",
+      "has_data": true,
+      "has_layout": true,
+      "data_points": 2,
+      "response_size": 1070
+    }
+  },
+  "kpi_endpoint": {
+    "status": "SUCCESS",
+    "metrics_found": [],
+    "total_metrics": 3,
+    "data": {
+      "success": true,
+      "metrics": {
+        "Fund IRR": 0.0,
+        "TVPI": 0.0,
+        "DPI": 0.0,
+        "RVPI": 0.0
+      },
+      "message": "No analysis results available. Please upload files and run analysis."
+    }
+  }
+}
