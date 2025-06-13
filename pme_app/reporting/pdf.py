@@ -13,7 +13,7 @@ from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, Tabl
 def render_pdf(df: pd.DataFrame, path: Path) -> None:
     """
     Render portfolio metrics to a professional PDF report.
-    
+
     Args:
         df: DataFrame containing portfolio metrics
         path: Output path for the PDF file
@@ -25,7 +25,7 @@ def render_pdf(df: pd.DataFrame, path: Path) -> None:
         rightMargin=72,
         leftMargin=72,
         topMargin=72,
-        bottomMargin=18
+        bottomMargin=18,
     )
 
     # Container for the 'Flowable' objects
@@ -33,9 +33,9 @@ def render_pdf(df: pd.DataFrame, path: Path) -> None:
 
     # Get styles
     styles = getSampleStyleSheet()
-    title_style = styles['Title']
-    heading_style = styles['Heading1']
-    normal_style = styles['Normal']
+    title_style = styles["Title"]
+    heading_style = styles["Heading1"]
+    normal_style = styles["Normal"]
 
     # Title
     title = Paragraph("Portfolio Analytics Report", title_style)
@@ -59,30 +59,34 @@ def render_pdf(df: pd.DataFrame, path: Path) -> None:
 
         # Create summary table
         summary_data = [
-            ['Metric', 'Value'],
-            ['Total Portfolio NAV', f"${metrics.get('Total NAV', 0):,.2f}"],
-            ['Number of Funds', f"{int(metrics.get('Funds', 0))}"],
-            ['Annualized Return', f"{metrics.get('Annualized Return', 0):.2%}"],
-            ['Volatility', f"{metrics.get('Volatility', 0):.2%}"],
-            ['Sharpe Ratio', f"{metrics.get('Sharpe (rf=0)', 0):.3f}"],
-            ['Maximum Drawdown', f"{metrics.get('Max Drawdown', 0):.2%}"],
-            ['Calmar Ratio', f"{metrics.get('Calmar Ratio', 0):.3f}"],
+            ["Metric", "Value"],
+            ["Total Portfolio NAV", f"${metrics.get('Total NAV', 0):,.2f}"],
+            ["Number of Funds", f"{int(metrics.get('Funds', 0))}"],
+            ["Annualized Return", f"{metrics.get('Annualized Return', 0):.2%}"],
+            ["Volatility", f"{metrics.get('Volatility', 0):.2%}"],
+            ["Sharpe Ratio", f"{metrics.get('Sharpe (rf=0)', 0):.3f}"],
+            ["Maximum Drawdown", f"{metrics.get('Max Drawdown', 0):.2%}"],
+            ["Calmar Ratio", f"{metrics.get('Calmar Ratio', 0):.3f}"],
         ]
 
         # Create table
-        summary_table = Table(summary_data, colWidths=[3*inch, 2*inch])
-        summary_table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
-            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-            ('FONTSIZE', (0, 0), (-1, 0), 12),
-            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
-            ('GRID', (0, 0), (-1, -1), 1, colors.black),
-            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-            ('FONTSIZE', (0, 1), (-1, -1), 10),
-        ]))
+        summary_table = Table(summary_data, colWidths=[3 * inch, 2 * inch])
+        summary_table.setStyle(
+            TableStyle(
+                [
+                    ("BACKGROUND", (0, 0), (-1, 0), colors.grey),
+                    ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
+                    ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+                    ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                    ("FONTSIZE", (0, 0), (-1, 0), 12),
+                    ("BOTTOMPADDING", (0, 0), (-1, 0), 12),
+                    ("BACKGROUND", (0, 1), (-1, -1), colors.beige),
+                    ("GRID", (0, 0), (-1, -1), 1, colors.black),
+                    ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                    ("FONTSIZE", (0, 1), (-1, -1), 10),
+                ]
+            )
+        )
 
         story.append(summary_table)
         story.append(Spacer(1, 24))
@@ -93,8 +97,8 @@ def render_pdf(df: pd.DataFrame, path: Path) -> None:
         story.append(Spacer(1, 12))
 
         # Risk-adjusted performance commentary
-        sharpe = metrics.get('Sharpe (rf=0)', 0)
-        calmar = metrics.get('Calmar Ratio', 0)
+        sharpe = metrics.get("Sharpe (rf=0)", 0)
+        calmar = metrics.get("Calmar Ratio", 0)
 
         if sharpe > 1.0:
             sharpe_comment = "Excellent risk-adjusted returns"
@@ -106,16 +110,16 @@ def render_pdf(df: pd.DataFrame, path: Path) -> None:
             sharpe_comment = "Poor risk-adjusted returns"
 
         analysis_text = f"""
-        <b>Risk-Adjusted Performance:</b> The portfolio demonstrates {sharpe_comment} 
-        with a Sharpe ratio of {sharpe:.3f}. The Calmar ratio of {calmar:.3f} indicates 
+        <b>Risk-Adjusted Performance:</b> The portfolio demonstrates {sharpe_comment}
+        with a Sharpe ratio of {sharpe:.3f}. The Calmar ratio of {calmar:.3f} indicates
         the return per unit of maximum drawdown risk.
-        
+
         <br/><br/>
-        <b>Volatility Analysis:</b> The portfolio exhibits {metrics.get('Volatility', 0):.2%} 
+        <b>Volatility Analysis:</b> The portfolio exhibits {metrics.get('Volatility', 0):.2%}
         annualized volatility, with a maximum drawdown of {metrics.get('Max Drawdown', 0):.2%}.
-        
+
         <br/><br/>
-        <b>Portfolio Composition:</b> This analysis covers {int(metrics.get('Funds', 0))} 
+        <b>Portfolio Composition:</b> This analysis covers {int(metrics.get('Funds', 0))}
         fund(s) with a combined NAV of ${metrics.get('Total NAV', 0):,.2f}.
         """
 
@@ -129,48 +133,50 @@ def render_pdf(df: pd.DataFrame, path: Path) -> None:
         story.append(Spacer(1, 12))
 
         # All metrics table
-        detailed_data = [['Metric', 'Value', 'Description']]
+        detailed_data = [["Metric", "Value", "Description"]]
 
         metric_descriptions = {
-            'Total NAV': 'Sum of all fund net asset values',
-            'Annualized Return': 'Geometric mean return annualized',
-            'Volatility': 'Standard deviation of returns (annualized)',
-            'Sharpe (rf=0)': 'Return per unit of risk (risk-free rate = 0)',
-            'Funds': 'Number of funds in portfolio',
-            'Max Drawdown': 'Maximum peak-to-trough decline',
-            'Calmar Ratio': 'Annualized return divided by maximum drawdown'
+            "Total NAV": "Sum of all fund net asset values",
+            "Annualized Return": "Geometric mean return annualized",
+            "Volatility": "Standard deviation of returns (annualized)",
+            "Sharpe (rf=0)": "Return per unit of risk (risk-free rate = 0)",
+            "Funds": "Number of funds in portfolio",
+            "Max Drawdown": "Maximum peak-to-trough decline",
+            "Calmar Ratio": "Annualized return divided by maximum drawdown",
         }
 
         for key, value in metrics.items():
             if key in metric_descriptions:
-                if key == 'Total NAV':
+                if key == "Total NAV":
                     formatted_value = f"${value:,.2f}"
-                elif key == 'Funds':
+                elif key == "Funds":
                     formatted_value = f"{int(value)}"
-                elif key in ['Annualized Return', 'Volatility', 'Max Drawdown']:
+                elif key in ["Annualized Return", "Volatility", "Max Drawdown"]:
                     formatted_value = f"{value:.2%}"
                 else:
                     formatted_value = f"{value:.3f}"
 
-                detailed_data.append([
-                    key,
-                    formatted_value,
-                    metric_descriptions[key]
-                ])
+                detailed_data.append([key, formatted_value, metric_descriptions[key]])
 
-        detailed_table = Table(detailed_data, colWidths=[2*inch, 1.5*inch, 2.5*inch])
-        detailed_table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
-            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-            ('FONTSIZE', (0, 0), (-1, 0), 10),
-            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
-            ('GRID', (0, 0), (-1, -1), 1, colors.black),
-            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-            ('FONTSIZE', (0, 1), (-1, -1), 9),
-        ]))
+        detailed_table = Table(
+            detailed_data, colWidths=[2 * inch, 1.5 * inch, 2.5 * inch]
+        )
+        detailed_table.setStyle(
+            TableStyle(
+                [
+                    ("BACKGROUND", (0, 0), (-1, 0), colors.grey),
+                    ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
+                    ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+                    ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                    ("FONTSIZE", (0, 0), (-1, 0), 10),
+                    ("BOTTOMPADDING", (0, 0), (-1, 0), 12),
+                    ("BACKGROUND", (0, 1), (-1, -1), colors.beige),
+                    ("GRID", (0, 0), (-1, -1), 1, colors.black),
+                    ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                    ("FONTSIZE", (0, 1), (-1, -1), 9),
+                ]
+            )
+        )
 
         story.append(detailed_table)
 
@@ -182,8 +188,8 @@ def render_pdf(df: pd.DataFrame, path: Path) -> None:
     # Footer
     story.append(Spacer(1, 36))
     footer_text = """
-    <i>This report is generated automatically based on uploaded portfolio data. 
-    Past performance does not guarantee future results. Please consult with a 
+    <i>This report is generated automatically based on uploaded portfolio data.
+    Past performance does not guarantee future results. Please consult with a
     financial advisor for investment decisions.</i>
     """
     footer = Paragraph(footer_text, normal_style)
@@ -196,7 +202,7 @@ def render_pdf(df: pd.DataFrame, path: Path) -> None:
 def render_simple_pdf(df: pd.DataFrame, path: Path) -> None:
     """
     Simple PDF renderer using basic canvas (fallback option).
-    
+
     Args:
         df: DataFrame containing portfolio metrics
         path: Output path for the PDF file
@@ -223,12 +229,12 @@ def render_simple_pdf(df: pd.DataFrame, path: Path) -> None:
         c.setFont("Helvetica", 10)
 
         for key, value in df.iloc[0].items():
-            if isinstance(value, (int, float)):
-                if key == 'Total NAV':
+            if isinstance(value, int | float):
+                if key == "Total NAV":
                     text = f"{key}: ${value:,.2f}"
-                elif key == 'Funds':
+                elif key == "Funds":
                     text = f"{key}: {int(value)}"
-                elif key in ['Annualized Return', 'Volatility', 'Max Drawdown']:
+                elif key in ["Annualized Return", "Volatility", "Max Drawdown"]:
                     text = f"{key}: {value:.2%}"
                 else:
                     text = f"{key}: {value:.3f}"

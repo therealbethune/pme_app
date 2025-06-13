@@ -33,7 +33,7 @@ async def process_datasets(request: Request):
         primary_dataset = None
 
         # Process uploaded files
-        for key, file in form.items():
+        for _key, file in form.items():
             if hasattr(file, "filename") and file.filename:
                 try:
                     # Read file content
@@ -93,7 +93,7 @@ async def process_datasets(request: Request):
                 if (
                     hasattr(meta, "date_range")
                     and meta.date_range
-                    and isinstance(meta.date_range, (list, tuple))
+                    and isinstance(meta.date_range, list | tuple)
                     and len(meta.date_range) >= 2
                 ):
                     date_range_formatted = [

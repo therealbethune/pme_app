@@ -181,10 +181,7 @@ async def analyze_column_mapping(
             # Read just the first row to get column names
             content = await file.read()
             lines = content.decode("utf-8").split("\n")
-            if lines:
-                columns = [col.strip() for col in lines[0].split(",")]
-            else:
-                columns = []
+            columns = [col.strip() for col in lines[0].split(",")] if lines else []
         else:
             # For Excel files, read just the header
             with tempfile.NamedTemporaryFile(

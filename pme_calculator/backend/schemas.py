@@ -60,14 +60,14 @@ class FundCashFlowRecord(BaseModel):
     @field_validator("cashflow")
     @classmethod
     def validate_cashflow(cls, v):
-        if pd.isna(v) or not isinstance(v, (int, float)):
+        if pd.isna(v) or not isinstance(v, int | float):
             raise ValueError("Cash flow must be a valid number")
         return float(v)
 
     @field_validator("nav")
     @classmethod
     def validate_nav(cls, v):
-        if pd.isna(v) or not isinstance(v, (int, float)):
+        if pd.isna(v) or not isinstance(v, int | float):
             raise ValueError("NAV must be a valid number")
         if v < 0:
             raise ValueError("NAV cannot be negative")
@@ -97,7 +97,7 @@ class IndexRecord(BaseModel):
     @field_validator("price")
     @classmethod
     def validate_price(cls, v):
-        if pd.isna(v) or not isinstance(v, (int, float)):
+        if pd.isna(v) or not isinstance(v, int | float):
             raise ValueError("Price must be a valid number")
         if v <= 0:
             raise ValueError("Price must be positive")

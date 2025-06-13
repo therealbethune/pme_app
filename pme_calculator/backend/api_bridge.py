@@ -182,7 +182,7 @@ class ApiBridge:
         except ImportError:
             # Fallback implementation
             def convert_value(value):
-                if isinstance(value, (np.integer, np.floating)):
+                if isinstance(value, np.integer | np.floating):
                     return float(value)
                 elif isinstance(value, np.ndarray):
                     return value.tolist()
@@ -371,7 +371,7 @@ class ApiBridge:
             # Convert numpy types to native Python types for JSON serialization
             serializable_metrics = {}
             for key, value in metrics.items():
-                if isinstance(value, (np.integer, np.floating)):
+                if isinstance(value, np.integer | np.floating):
                     serializable_metrics[key] = float(value)
                 elif isinstance(value, np.ndarray):
                     serializable_metrics[key] = value.tolist()

@@ -269,7 +269,7 @@ class IntelligentDataProcessor:
         numeric_values = []
         for v in clean_values:
             try:
-                if isinstance(v, (int, float)):
+                if isinstance(v, int | float):
                     numeric_values.append(float(v))
                 elif isinstance(v, str):
                     # Try to parse as number
@@ -354,7 +354,7 @@ class IntelligentDataProcessor:
 
     def _is_date_like(self, value: Any) -> bool:
         """Check if a value looks like a date"""
-        if isinstance(value, (datetime, date)):
+        if isinstance(value, datetime | date):
             return True
 
         if isinstance(value, str):
@@ -391,10 +391,7 @@ class IntelligentDataProcessor:
         Process a single dataset and return optimized structure
         """
         # Convert to DataFrame if needed
-        if isinstance(data, dict) or isinstance(data, list):
-            df = pd.DataFrame(data)
-        else:
-            df = data.copy()
+        df = pd.DataFrame(data) if isinstance(data, dict | list) else data.copy()
 
         list(df.columns)
 
@@ -462,7 +459,7 @@ class IntelligentDataProcessor:
             if pd.isna(value):
                 return None
 
-            if isinstance(value, (datetime, date)):
+            if isinstance(value, datetime | date):
                 return value
 
             if isinstance(value, str):
@@ -483,7 +480,7 @@ class IntelligentDataProcessor:
             if pd.isna(value):
                 return 0.0
 
-            if isinstance(value, (int, float)):
+            if isinstance(value, int | float):
                 return float(value)
 
             if isinstance(value, str):
@@ -510,7 +507,7 @@ class IntelligentDataProcessor:
             if pd.isna(value):
                 return 0.0
 
-            if isinstance(value, (int, float)):
+            if isinstance(value, int | float):
                 # If value is > 1, assume it's already in percentage form
                 return float(value) / 100 if abs(value) > 1 else float(value)
 
@@ -965,7 +962,7 @@ class IntelligentDataProcessor:
                         numeric_sample = []
                         for v in sample_values:
                             try:
-                                if isinstance(v, (int, float)):
+                                if isinstance(v, int | float):
                                     numeric_sample.append(float(v))
                                 elif isinstance(v, str):
                                     clean_v = re.sub(r"[,$%]", "", v.strip())

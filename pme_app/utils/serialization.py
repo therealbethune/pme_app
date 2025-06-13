@@ -1,7 +1,7 @@
 """
 Comprehensive serialization utilities for PME Calculator.
 
-This module provides utilities to convert pandas DataFrames, numpy arrays, 
+This module provides utilities to convert pandas DataFrames, numpy arrays,
 datetime objects, and other non-JSON-serializable types to JSON-compatible formats.
 """
 
@@ -61,7 +61,7 @@ def to_jsonable(obj: Any) -> Any:
         return _series_to_jsonable(obj)
     elif isinstance(obj, pd.Timestamp):
         return obj.isoformat()
-    elif isinstance(obj, (pd.Timedelta, pd.Interval)):
+    elif isinstance(obj, pd.Timedelta | pd.Interval):
         return str(obj)
     elif hasattr(obj, "__class__") and "pandas" in str(obj.__class__):
         # Handle pandas NaT and other pandas NA values
@@ -75,7 +75,7 @@ def to_jsonable(obj: Any) -> Any:
     # Handle numpy objects
     elif isinstance(obj, np.ndarray):
         return _array_to_jsonable(obj)
-    elif isinstance(obj, (np.integer, np.floating)):
+    elif isinstance(obj, np.integer | np.floating):
         return _numpy_scalar_to_jsonable(obj)
     elif isinstance(obj, np.bool_):
         return bool(obj)
@@ -83,7 +83,7 @@ def to_jsonable(obj: Any) -> Any:
         return {"real": float(obj.real), "imag": float(obj.imag)}
 
     # Handle datetime objects
-    elif isinstance(obj, datetime) or isinstance(obj, date) or isinstance(obj, time):
+    elif isinstance(obj, datetime | date | time):
         return obj.isoformat()
 
     # Handle other numeric types
@@ -107,11 +107,11 @@ def to_jsonable(obj: Any) -> Any:
     # Handle collections
     elif isinstance(obj, dict):
         return {key: to_jsonable(value) for key, value in obj.items()}
-    elif isinstance(obj, (list, tuple, set)):
+    elif isinstance(obj, list | tuple | set):
         return [to_jsonable(item) for item in obj]
 
     # Handle basic types (str, int, bool)
-    elif isinstance(obj, (str, int, bool)):
+    elif isinstance(obj, str | int | bool):
         return obj
 
     # Handle objects with custom serialization
@@ -123,7 +123,7 @@ def to_jsonable(obj: Any) -> Any:
     # Fallback: convert to string
     else:
         warnings.warn(
-            f"Converting {type(obj)} to string for JSON serialization", UserWarning
+            f"Converting {type(obj)} to string for JSON serialization", UserWarning, stacklevel=2
         )
         return str(obj)
 
@@ -168,9 +168,7 @@ def _array_to_jsonable(arr: np.ndarray) -> list[Any] | Any:
     return to_jsonable(arr.tolist())
 
 
-def _numpy_scalar_to_jsonable(
-    scalar: np.integer | np.floating
-) -> int | float | None:
+def _numpy_scalar_to_jsonable(scalar: np.integer | np.floating) -> int | float | None:
     """Convert numpy scalar to JSON-serializable format."""
     if np.isnan(scalar) or np.isinf(scalar):
         if np.isnan(scalar):

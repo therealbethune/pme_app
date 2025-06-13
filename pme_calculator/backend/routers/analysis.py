@@ -3,6 +3,7 @@ Enhanced Analysis Router with Charting Integration
 Provides comprehensive PME analysis with interactive visualizations.
 """
 
+import contextlib
 import io
 import json
 import os
@@ -532,7 +533,7 @@ async def process_datasets(
             if (
                 hasattr(meta, "date_range")
                 and meta.date_range
-                and isinstance(meta.date_range, (list, tuple))
+                and isinstance(meta.date_range, list | tuple)
                 and len(meta.date_range) >= 2
             ):
                 try:
@@ -702,7 +703,7 @@ async def apply_data_fix(
             if (
                 hasattr(meta, "date_range")
                 and meta.date_range
-                and isinstance(meta.date_range, (list, tuple))
+                and isinstance(meta.date_range, list | tuple)
                 and len(meta.date_range) >= 2
             ):
                 try:
@@ -830,10 +831,8 @@ async def upload_fund_data(
     except Exception as e:
         logger.error(f"Fund data upload failed: {e}")
         if "temp_path" in locals():
-            try:
+            with contextlib.suppress(Exception):
                 os.unlink(temp_path)
-            except:
-                pass
         raise HTTPException(status_code=500, detail=f"Upload failed: {str(e)}")
 
 
@@ -894,10 +893,8 @@ async def upload_benchmark_data(
     except Exception as e:
         logger.error(f"Benchmark data upload failed: {e}")
         if "temp_path" in locals():
-            try:
+            with contextlib.suppress(Exception):
                 os.unlink(temp_path)
-            except:
-                pass
         raise HTTPException(status_code=500, detail=f"Upload failed: {str(e)}")
 
 

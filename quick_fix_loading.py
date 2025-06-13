@@ -184,7 +184,7 @@ class PMEAnalysisEngine:
     def __init__(self):
         import warnings
         warnings.warn("PMEAnalysisEngine is deprecated", DeprecationWarning)
-    
+
     def analyze_fund(self, fund_data, index_data=None):
         from datetime import datetime
         return {
@@ -197,7 +197,7 @@ def make_json_serializable(obj):
     import pandas as pd
     import numpy as np
     from datetime import datetime
-    
+
     if isinstance(obj, (pd.DataFrame, pd.Series)):
         return obj.to_dict()
     elif isinstance(obj, np.ndarray):

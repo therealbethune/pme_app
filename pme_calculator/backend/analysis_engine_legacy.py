@@ -614,13 +614,13 @@ def make_json_serializable(obj):
             return {k: make_json_serializable(v) for k, v in obj.items()}
         elif isinstance(obj, list):
             return [make_json_serializable(item) for item in obj]
-        elif isinstance(obj, (np.integer, np.floating)):
+        elif isinstance(obj, np.integer | np.floating):
             if np.isnan(obj) or np.isinf(obj):
                 return 0.0
             return float(obj)
         elif isinstance(obj, np.ndarray):
             return [make_json_serializable(item) for item in obj.tolist()]
-        elif isinstance(obj, pd.Timestamp) or isinstance(obj, datetime):
+        elif isinstance(obj, pd.Timestamp | datetime):
             return obj.isoformat()
         elif obj is None or (
             isinstance(obj, float) and (np.isnan(obj) or np.isinf(obj))

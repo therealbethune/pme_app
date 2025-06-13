@@ -102,7 +102,7 @@ def ln_pme(
         synthetic_cashflows = []
         synthetic_dates = []
 
-        for i, (cf, idx_val, date) in enumerate(
+        for _i, (cf, idx_val, date) in enumerate(
             zip(cashflows, index_values, dates, strict=False)
         ):
             if cf != 0:

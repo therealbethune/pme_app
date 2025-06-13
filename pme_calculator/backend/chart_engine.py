@@ -139,7 +139,7 @@ class ChartEngine:
                 x=fund_df["date"],
                 y=fund_df["cumulative_nav"],
                 name="Fund NAV",
-                line=dict(color=self.color_palette["fund"], width=3),
+                line={"color": self.color_palette["fund"], "width": 3},
                 hovertemplate="<b>Fund NAV</b><br>Date: %{x}<br>Value: %{y:.2f}<extra></extra>",
             ),
             row=1,
@@ -152,9 +152,9 @@ class ChartEngine:
                     x=bench_df["date"],
                     y=bench_df["cumulative_price"],
                     name="Benchmark",
-                    line=dict(
-                        color=self.color_palette["benchmark"], width=2, dash="dash"
-                    ),
+                    line={
+                        "color": self.color_palette["benchmark"], "width": 2, "dash": "dash"
+                    },
                     hovertemplate="<b>Benchmark</b><br>Date: %{x}<br>Value: %{y:.2f}<extra></extra>",
                 ),
                 row=1,
@@ -206,7 +206,7 @@ class ChartEngine:
                 x=fund_df["date"],
                 y=fund_df["nav"],
                 name="NAV",
-                line=dict(color=self.color_palette["nav"], width=2),
+                line={"color": self.color_palette["nav"], "width": 2},
                 yaxis="y4",
                 hovertemplate="<b>NAV</b><br>Date: %{x}<br>NAV: $%{y:,.0f}<extra></extra>",
             ),
@@ -223,18 +223,18 @@ class ChartEngine:
                     y=cash_flows["cashflow"],
                     mode="markers",
                     name="Cash Flows",
-                    marker=dict(
-                        size=abs(cash_flows["cashflow"])
+                    marker={
+                        "size": abs(cash_flows["cashflow"])
                         / cash_flows["cashflow"].abs().max()
                         * 20
                         + 5,
-                        color=np.where(
+                        "color": np.where(
                             cash_flows["cashflow"] > 0,
                             self.color_palette["distribution"],
                             self.color_palette["contribution"],
                         ),
-                        opacity=0.8,
-                    ),
+                        "opacity": 0.8,
+                    },
                     yaxis="y4",
                     hovertemplate="<b>Cash Flow</b><br>Date: %{x}<br>Amount: $%{y:,.0f}<extra></extra>",
                 ),
@@ -248,7 +248,7 @@ class ChartEngine:
             showlegend=True,
             plot_bgcolor="white",
             height=700,
-            font=dict(size=12),
+            font={"size": 12},
             hovermode="x unified",
         )
 
@@ -302,7 +302,7 @@ class ChartEngine:
             plot_bgcolor="white",
             height=500,
             yaxis_title="Amount ($)",
-            font=dict(size=12),
+            font={"size": 12},
         )
 
         return {
@@ -382,7 +382,7 @@ class ChartEngine:
             )
 
         fig.update_layout(
-            title="Key Performance Metrics", height=600, font=dict(size=14)
+            title="Key Performance Metrics", height=600, font={"size": 14}
         )
 
         return {
@@ -431,9 +431,9 @@ class ChartEngine:
                 y=[fund_return * 100],
                 mode="markers",
                 name="Fund",
-                marker=dict(
-                    size=20, color=self.color_palette["fund"], symbol="diamond"
-                ),
+                marker={
+                    "size": 20, "color": self.color_palette["fund"], "symbol": "diamond"
+                },
                 hovertemplate="<b>Fund</b><br>Volatility: %{x:.1f}%<br>Return: %{y:.1f}%<extra></extra>",
             )
         )
@@ -446,9 +446,9 @@ class ChartEngine:
                     y=[bench_return * 100],
                     mode="markers",
                     name="Benchmark",
-                    marker=dict(
-                        size=15, color=self.color_palette["benchmark"], symbol="circle"
-                    ),
+                    marker={
+                        "size": 15, "color": self.color_palette["benchmark"], "symbol": "circle"
+                    },
                     hovertemplate="<b>Benchmark</b><br>Volatility: %{x:.1f}%<br>Return: %{y:.1f}%<extra></extra>",
                 )
             )
@@ -465,7 +465,7 @@ class ChartEngine:
                 y=y_line,
                 mode="lines",
                 name="Efficient Frontier",
-                line=dict(color="gray", dash="dot"),
+                line={"color": "gray", "dash": "dot"},
                 hoverinfo="skip",
             )
         )
@@ -477,7 +477,7 @@ class ChartEngine:
             plot_bgcolor="white",
             height=500,
             showlegend=True,
-            font=dict(size=12),
+            font={"size": 12},
         )
 
         fig.update_xaxes(showgrid=True, gridcolor=self.color_palette["grid"])
@@ -527,7 +527,7 @@ class ChartEngine:
                 x=fund_df["date"],
                 y=fund_df["rolling_return"] * 100,
                 name="Rolling Returns",
-                line=dict(color=self.color_palette["fund"]),
+                line={"color": self.color_palette["fund"]},
                 hovertemplate="<b>Rolling Return</b><br>Date: %{x}<br>Return: %{y:.1f}%<extra></extra>",
             ),
             row=1,
@@ -540,7 +540,7 @@ class ChartEngine:
                 x=fund_df["date"],
                 y=fund_df["rolling_volatility"] * 100,
                 name="Rolling Volatility",
-                line=dict(color=self.color_palette["benchmark"]),
+                line={"color": self.color_palette["benchmark"]},
                 hovertemplate="<b>Rolling Volatility</b><br>Date: %{x}<br>Volatility: %{y:.1f}%<extra></extra>",
             ),
             row=2,
@@ -552,7 +552,7 @@ class ChartEngine:
             height=600,
             plot_bgcolor="white",
             showlegend=False,
-            font=dict(size=12),
+            font={"size": 12},
         )
 
         fig.update_xaxes(showgrid=True, gridcolor=self.color_palette["grid"])
@@ -609,7 +609,7 @@ class ChartEngine:
                 x=fund_df["date"],
                 y=fund_df["cumulative_cf"],
                 name="Cumulative Cash Flow",
-                line=dict(color=self.color_palette["pme"], width=3),
+                line={"color": self.color_palette["pme"], "width": 3},
                 yaxis="y2",
                 hovertemplate="<b>Cumulative CF</b><br>Date: %{x}<br>Amount: $%{y:,.0f}<extra></extra>",
             )
@@ -619,11 +619,11 @@ class ChartEngine:
             title="Cash Flow Timeline",
             xaxis_title="Date",
             yaxis_title="Cash Flow ($)",
-            yaxis2=dict(title="Cumulative Cash Flow ($)", overlaying="y", side="right"),
+            yaxis2={"title": "Cumulative Cash Flow ($)", "overlaying": "y", "side": "right"},
             plot_bgcolor="white",
             height=500,
             showlegend=True,
-            font=dict(size=12),
+            font={"size": 12},
         )
 
         fig.update_xaxes(showgrid=True, gridcolor=self.color_palette["grid"])

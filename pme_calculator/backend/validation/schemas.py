@@ -26,7 +26,7 @@ class AnalysisMethodEnum(str, Enum):
 
 def parse_date_value(value):
     """Parse date from string or datetime object."""
-    if isinstance(value, (dt.date, datetime)):
+    if isinstance(value, dt.date | datetime):
         return value.date() if isinstance(value, datetime) else value
 
     if isinstance(value, str):

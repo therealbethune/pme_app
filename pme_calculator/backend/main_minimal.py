@@ -241,7 +241,7 @@ def make_json_serializable(data: Any) -> Any:
             return {key: make_json_serializable(value) for key, value in data.items()}
         elif isinstance(data, list):
             return [make_json_serializable(item) for item in data]
-        elif isinstance(data, (np.integer, np.floating)):
+        elif isinstance(data, np.integer | np.floating):
             return float(data)
         elif isinstance(data, np.ndarray):
             return data.tolist()
@@ -572,7 +572,7 @@ async def get_upload_by_id_endpoint(upload_id: int):
 
     try:
         # Search in memory storage
-        for file_id, info in uploaded_files.items():
+        for _file_id, info in uploaded_files.items():
             if info["id"] == upload_id:
                 return {
                     "success": True,

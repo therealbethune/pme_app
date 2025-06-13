@@ -151,7 +151,7 @@ def test_dependencies():
         ("fastapi", "FastAPI"),
     ]
 
-    for dep_name, import_name in dependencies:
+    for dep_name, _import_name in dependencies:
         try:
             if dep_name == "numpy":
                 import numpy as np

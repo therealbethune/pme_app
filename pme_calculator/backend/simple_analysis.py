@@ -21,7 +21,7 @@ async def run_simple_analysis():
 
         # Find fund file
         fund_file_id = None
-        for file_id in uploaded_files.keys():
+        for file_id in uploaded_files:
             if file_id.startswith("fund_"):
                 fund_file_id = file_id
                 break

@@ -30,27 +30,24 @@ def create_sample_data():
     dates = pd.date_range("2020-01-01", periods=100, freq="M")
 
     # Fund A - Growth fund
-    fund_a_nav = 100 * (1 + pd.Series([0.01, 0.02, -0.005, 0.015, 0.008] * 20)).cumprod()
-    fund_a = pd.DataFrame({
-        "Date": dates,
-        "NAV": fund_a_nav
-    })
+    fund_a_nav = (
+        100 * (1 + pd.Series([0.01, 0.02, -0.005, 0.015, 0.008] * 20)).cumprod()
+    )
+    fund_a = pd.DataFrame({"Date": dates, "NAV": fund_a_nav})
     fund_a.to_csv(sample_dir / "growth_fund.csv", index=False)
 
     # Fund B - Value fund
-    fund_b_nav = 100 * (1 + pd.Series([0.008, 0.012, -0.003, 0.01, 0.006] * 20)).cumprod()
-    fund_b = pd.DataFrame({
-        "Date": dates,
-        "NAV": fund_b_nav
-    })
+    fund_b_nav = (
+        100 * (1 + pd.Series([0.008, 0.012, -0.003, 0.01, 0.006] * 20)).cumprod()
+    )
+    fund_b = pd.DataFrame({"Date": dates, "NAV": fund_b_nav})
     fund_b.to_csv(sample_dir / "value_fund.csv", index=False)
 
     # Fund C - Balanced fund
-    fund_c_nav = 100 * (1 + pd.Series([0.006, 0.009, -0.002, 0.007, 0.005] * 20)).cumprod()
-    fund_c = pd.DataFrame({
-        "Date": dates,
-        "NAV": fund_c_nav
-    })
+    fund_c_nav = (
+        100 * (1 + pd.Series([0.006, 0.009, -0.002, 0.007, 0.005] * 20)).cumprod()
+    )
+    fund_c = pd.DataFrame({"Date": dates, "NAV": fund_c_nav})
     fund_c.to_csv(sample_dir / "balanced_fund.csv", index=False)
 
     print(f"✅ Created sample data in {sample_dir}")
@@ -60,10 +57,10 @@ def create_sample_data():
 def load_fund_data(data_dir: Path) -> dict[str, pd.DataFrame]:
     """
     Load fund data from CSV files in the specified directory.
-    
+
     Args:
         data_dir: Directory containing CSV files
-        
+
     Returns:
         Dictionary mapping fund names to DataFrames
     """
@@ -91,10 +88,12 @@ def load_fund_data(data_dir: Path) -> dict[str, pd.DataFrame]:
     return fund_data
 
 
-def generate_reports(fund_data: dict[str, pd.DataFrame], output_dir: Path, simple: bool = False):
+def generate_reports(
+    fund_data: dict[str, pd.DataFrame], output_dir: Path, simple: bool = False
+):
     """
     Generate PDF and Excel reports from fund data.
-    
+
     Args:
         fund_data: Dictionary of fund DataFrames
         output_dir: Directory to save reports
@@ -191,33 +190,34 @@ Examples:
   python scripts/build_report.py --data my_funds/   # Use custom data directory
   python scripts/build_report.py --simple           # Use simple rendering
   python scripts/build_report.py --create-sample    # Create sample data only
-        """
+        """,
     )
 
     parser.add_argument(
-        "--data", "-d",
+        "--data",
+        "-d",
         type=Path,
         default=Path("sample_funds"),
-        help="Directory containing fund CSV files (default: sample_funds)"
+        help="Directory containing fund CSV files (default: sample_funds)",
     )
 
     parser.add_argument(
-        "--output", "-o",
+        "--output",
+        "-o",
         type=Path,
         default=Path("reports"),
-        help="Output directory for reports (default: reports)"
+        help="Output directory for reports (default: reports)",
     )
 
     parser.add_argument(
-        "--simple", "-s",
+        "--simple",
+        "-s",
         action="store_true",
-        help="Use simple rendering (fallback for compatibility)"
+        help="Use simple rendering (fallback for compatibility)",
     )
 
     parser.add_argument(
-        "--create-sample",
-        action="store_true",
-        help="Create sample data and exit"
+        "--create-sample", action="store_true", help="Create sample data and exit"
     )
 
     args = parser.parse_args()
