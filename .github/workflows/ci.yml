@@ -12,5 +12,7 @@ jobs:
       - run: |
           python -m pip install --upgrade pip
           pip install -e .[dev]
+      - name: Type check with mypy
+        run: mypy pme_app/services
       - name: Run tests with coverage
-        run: pytest tests/test_pme_app_basic.py --cov=pme_app --cov-report=xml --cov-fail-under=1 -q 
+        run: pytest tests/test_pme_app_basic.py tests/services/test_analysis.py --cov=pme_app --cov-report=xml --cov-fail-under=5 -q 

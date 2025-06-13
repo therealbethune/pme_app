@@ -2,7 +2,8 @@
 
 import numpy as np
 import pandas as pd
-from typing import Tuple
+from typing import Tuple, Any
+from numpy.typing import NDArray
 
 
 def safe_div(num: float, denom: float) -> float:
@@ -10,7 +11,9 @@ def safe_div(num: float, denom: float) -> float:
     return num / denom if denom != 0 else np.nan
 
 
-def ks_pme(fund_cf: np.ndarray, idx_at_dates: np.ndarray) -> float:
+def ks_pme(
+    fund_cf: NDArray[np.floating[Any]], idx_at_dates: NDArray[np.floating[Any]]
+) -> float:
     """Calculate Kaplan-Schoar PME from fund cashflows and index values."""
     if len(fund_cf) == 0 or len(idx_at_dates) == 0:
         return np.nan
@@ -63,7 +66,7 @@ def compute_volatility(return_series: pd.Series, freq: str = "monthly") -> float
     else:
         scale = 1
 
-    return np.nanstd(return_series) * scale
+    return float(np.nanstd(return_series) * scale)
 
 
 def compute_drawdown(series: pd.Series) -> float:
@@ -75,7 +78,7 @@ def compute_drawdown(series: pd.Series) -> float:
 
     cumulative = np.maximum.accumulate(s)
     dd = (s - cumulative) / cumulative
-    return dd.min()
+    return float(dd.min())
 
 
 def compute_alpha_beta(
@@ -137,4 +140,4 @@ def calculate_annualized_return(
     # Annualize the result
     annualized_return = np.exp(mean_log_return * periods_per_year) - 1
 
-    return annualized_return
+    return float(annualized_return)
