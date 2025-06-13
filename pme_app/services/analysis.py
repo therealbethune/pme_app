@@ -5,6 +5,8 @@ import pandas as pd
 from typing import Tuple, Any
 from numpy.typing import NDArray
 
+from pme_app.logger import logger
+
 
 def safe_div(num: float, denom: float) -> float:
     """Safely divide two numbers, returning NaN if denominator is zero."""
@@ -16,6 +18,9 @@ def ks_pme(
 ) -> float:
     """Calculate Kaplan-Schoar PME from fund cashflows and index values."""
     if len(fund_cf) == 0 or len(idx_at_dates) == 0:
+        logger.warning(
+            "ks_pme_empty_input", fund_cf_len=len(fund_cf), idx_len=len(idx_at_dates)
+        )
         return np.nan
 
     index_end = idx_at_dates[-1]
@@ -34,7 +39,14 @@ def ks_pme(
         np.sum(distribs * (index_end / idx_distribs)) if len(distribs) > 0 else 0.0
     )
 
-    return safe_div(pv_distrib, pv_contrib)
+    result = safe_div(pv_distrib, pv_contrib)
+    logger.info(
+        "ks_pme_calculated",
+        pme_value=result,
+        contributions=len(contribs),
+        distributions=len(distribs),
+    )
+    return result
 
 
 def direct_alpha(fund_irr: float, index_irr: float) -> float:
@@ -47,7 +59,11 @@ def direct_alpha(fund_irr: float, index_irr: float) -> float:
         or (1 + index_irr) == 0
     ):
         return np.nan
-    return (1 + fund_irr) / (1 + index_irr) - 1
+    result = (1 + fund_irr) / (1 + index_irr) - 1
+    logger.info(
+        "direct_alpha_calculated", alpha=result, fund_irr=fund_irr, index_irr=index_irr
+    )
+    return result
 
 
 def compute_volatility(return_series: pd.Series, freq: str = "monthly") -> float:
