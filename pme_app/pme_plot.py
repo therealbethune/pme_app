@@ -3,20 +3,19 @@
 pme_plot.py – Visualizes Net Cash Flows vs Market Index
 """
 
-from pathlib import Path
-from typing import Optional
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 
-from .utils import ensure_datetime_index , load_fund_file , load_index_file
+from .utils import ensure_datetime_index
+
 
 def plot_cash_flows_vs_market(
     fund_df: pd.DataFrame,
     index_price_df: pd.DataFrame,
     title: str = "Net Cash Flows vs. Index",
     index_label: str = "Index Level",
-    show: bool = False
+    show: bool = False,
 ) -> plt.Figure:
     """
     Plot net fund cash flows (contributions, distributions) against market index price/level.
@@ -42,20 +41,25 @@ def plot_cash_flows_vs_market(
             missing_indices = merged[merged["index_level"].isna()].index
             if len(missing_indices) > 0:
                 first_missing = missing_indices[0]
-                raise ValueError(f"Index does not cover all fund dates (even after interpolation); first missing: {first_missing}")
+                raise ValueError(
+                    f"Index does not cover all fund dates (even after interpolation); first missing: {first_missing}"
+                )
 
     dates = merged.index
     # --- Dynamic bar width ---
     if len(dates) > 1:
         deltas = pd.Series(dates).diff().dropna()
         min_gap = deltas.min().days if hasattr(deltas.min(), "days") else deltas.min()
-        bar_width = max(5, min(int(min_gap * 0.7), 30))  # Clamp to [5, 30] for sensible bar size
+        bar_width = max(
+            5, min(int(min_gap * 0.7), 30)
+        )  # Clamp to [5, 30] for sensible bar size
     else:
         bar_width = 10
 
-
     fig, ax1 = plt.subplots(figsize=(12, 5))
-    ax1.plot(merged.index, merged["index_level"], color="black", label=index_label, zorder=1)
+    ax1.plot(
+        merged.index, merged["index_level"], color="black", label=index_label, zorder=1
+    )
     ax1.set_ylabel(index_label, color="black")
     ax1.tick_params(axis="y", labelcolor="black")
     ax1.set_title(title)
@@ -67,8 +71,22 @@ def plot_cash_flows_vs_market(
 
     # Second axis for cash flows
     ax2 = ax1.twinx()
-    ax2.bar(merged.index, merged["distributions"], width=bar_width, color="deepskyblue", label="Distributions", zorder=2)
-    ax2.bar(merged.index, merged["contributions"], width=bar_width, color="deeppink", label="Contributions", zorder=2)
+    ax2.bar(
+        merged.index,
+        merged["distributions"],
+        width=bar_width,
+        color="deepskyblue",
+        label="Distributions",
+        zorder=2,
+    )
+    ax2.bar(
+        merged.index,
+        merged["contributions"],
+        width=bar_width,
+        color="deeppink",
+        label="Contributions",
+        zorder=2,
+    )
     ax2.set_ylabel("Net Cash Flows", color="gray")
     ax2.tick_params(axis="y", labelcolor="gray")
 
@@ -82,5 +100,3 @@ def plot_cash_flows_vs_market(
         plt.show()
 
     return fig
-
-

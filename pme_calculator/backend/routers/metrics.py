@@ -6,25 +6,26 @@ from fastapi import APIRouter, Depends, Query
 from typing import Annotated, Optional
 import pandas as pd
 import numpy as np
-from datetime import datetime, timedelta
 
 router = APIRouter(prefix="/v1/metrics", tags=["metrics"])
+
 
 def get_filters(
     fund: Optional[str] = Query(None, description="Fund filter"),
     vintage: Optional[str] = Query(None, description="Vintage year filter"),
-    currency: Optional[str] = Query(None, description="Currency filter")
+    currency: Optional[str] = Query(None, description="Currency filter"),
 ) -> Optional[str]:
     """Extract filters from query parameters."""
     filters = {}
     if fund:
-        filters['fund'] = fund
+        filters["fund"] = fund
     if vintage:
-        filters['vintage'] = vintage
+        filters["vintage"] = vintage
     if currency:
-        filters['currency'] = currency
-    
+        filters["currency"] = currency
+
     return filters if filters else None
+
 
 def query_twr(filters: Optional[dict] = None) -> pd.DataFrame:
     """
@@ -32,28 +33,30 @@ def query_twr(filters: Optional[dict] = None) -> pd.DataFrame:
     Returns a DataFrame with fund and index TWR data.
     """
     # Generate sample TWR data for demonstration
-    dates = pd.date_range('2020-01-01', '2023-12-31', freq='M')
-    
+    dates = pd.date_range("2020-01-01", "2023-12-31", freq="M")
+
     # Simulate fund TWR (more volatile, potentially higher returns)
     np.random.seed(42)
-    fund_returns = np.random.normal(0.008, 0.04, len(dates))  # 0.8% monthly avg, 4% volatility
+    fund_returns = np.random.normal(
+        0.008, 0.04, len(dates)
+    )  # 0.8% monthly avg, 4% volatility
     fund_twr = (1 + pd.Series(fund_returns, index=dates)).cumprod() - 1
-    
+
     # Simulate index TWR (less volatile, steady growth)
-    index_returns = np.random.normal(0.007, 0.02, len(dates))  # 0.7% monthly avg, 2% volatility
+    index_returns = np.random.normal(
+        0.007, 0.02, len(dates)
+    )  # 0.7% monthly avg, 2% volatility
     index_twr = (1 + pd.Series(index_returns, index=dates)).cumprod() - 1
-    
-    df = pd.DataFrame({
-        'fund': fund_twr,
-        'index': index_twr
-    })
-    
+
+    df = pd.DataFrame({"fund": fund_twr, "index": index_twr})
+
     # Apply filters if provided
     if filters:
         # In a real implementation, you would filter based on the criteria
         pass
-    
+
     return df
+
 
 @router.get("/twr_vs_index")
 async def twr_vs_index(filters: Annotated[Optional[dict], Depends(get_filters)] = None):
@@ -62,26 +65,26 @@ async def twr_vs_index(filters: Annotated[Optional[dict], Depends(get_filters)] 
     Returns Plotly-compatible data and layout.
     """
     df = query_twr(filters)
-    
+
     data = [
         {
             "type": "scatter",
             "mode": "lines",
             "name": "Fund TWR",
             "x": [d.isoformat() for d in df.index],
-            "y": df['fund'].tolist(),
-            "line": {"color": "#00ff88", "width": 3}
+            "y": df["fund"].tolist(),
+            "line": {"color": "#00ff88", "width": 3},
         },
         {
             "type": "scatter",
             "mode": "lines",
             "name": "Index Return",
             "x": [d.isoformat() for d in df.index],
-            "y": df['index'].tolist(),
-            "line": {"dash": "dot", "color": "#0066cc", "width": 2}
-        }
+            "y": df["index"].tolist(),
+            "line": {"dash": "dot", "color": "#0066cc", "width": 2},
+        },
     ]
-    
+
     layout = {
         "autosize": True,
         "responsive": True,
@@ -91,20 +94,17 @@ async def twr_vs_index(filters: Annotated[Optional[dict], Depends(get_filters)] 
         "legend": {
             "bgcolor": "rgba(0,0,0,0)",
             "bordercolor": "rgba(255,255,255,0.2)",
-            "borderwidth": 1
+            "borderwidth": 1,
         },
         "margin": {"l": 50, "r": 50, "t": 50, "b": 50},
         "yaxis": {
             "tickformat": ".0%",
             "title": "Cumulative Return",
-            "gridcolor": "rgba(255,255,255,0.1)"
+            "gridcolor": "rgba(255,255,255,0.1)",
         },
-        "xaxis": {
-            "title": "Date",
-            "gridcolor": "rgba(255,255,255,0.1)"
-        },
+        "xaxis": {"title": "Date", "gridcolor": "rgba(255,255,255,0.1)"},
         "hovermode": "x unified",
-        "title": "Time-Weighted Return Comparison"
+        "title": "Time-Weighted Return Comparison",
     }
-    
-    return {"data": data, "layout": layout} 
+
+    return {"data": data, "layout": layout}

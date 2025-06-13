@@ -3,12 +3,12 @@ Simple analysis endpoint that bypasses complex Pydantic validation.
 """
 
 from fastapi import APIRouter
-from typing import Dict, Any
 import uuid
 from datetime import datetime
 from routers.upload import uploaded_files
 
 router = APIRouter(prefix="/simple-analysis", tags=["simple-analysis"])
+
 
 @router.post("/run")
 async def run_simple_analysis():
@@ -17,17 +17,17 @@ async def run_simple_analysis():
         # Check if we have any uploaded files
         if not uploaded_files:
             return {"success": False, "error": "No files uploaded"}
-        
+
         # Find fund file
         fund_file_id = None
         for file_id in uploaded_files.keys():
-            if file_id.startswith('fund_'):
+            if file_id.startswith("fund_"):
                 fund_file_id = file_id
                 break
-        
+
         if not fund_file_id:
             return {"success": False, "error": "No fund file found"}
-        
+
         # Return simple demo results
         return {
             "success": True,
@@ -39,20 +39,21 @@ async def run_simple_analysis():
                 "RVPI": 0.67,
                 "Total Contributions": 25236151,
                 "Total Distributions": 17012700,
-                "Final NAV": 8500000
+                "Final NAV": 8500000,
             },
             "summary": {
                 "fund_performance": "Strong performance with 18.5% IRR",
                 "vs_benchmark": "Outperformed benchmark by 6.5%",
-                "risk_profile": "Moderate risk with good diversification"
+                "risk_profile": "Moderate risk with good diversification",
             },
             "has_benchmark": True,
-            "analysis_date": datetime.utcnow().isoformat()
+            "analysis_date": datetime.utcnow().isoformat(),
         }
     except Exception as e:
         return {"success": False, "error": str(e)}
 
+
 @router.get("/health")
 async def simple_health():
     """Health check for simple analysis."""
-    return {"status": "healthy", "message": "Simple analysis endpoint is working"} 
+    return {"status": "healthy", "message": "Simple analysis endpoint is working"}
