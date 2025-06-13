@@ -228,20 +228,26 @@ def cleanup_old_temp_files():
 
 def make_json_serializable(data: Any) -> Any:
     """Convert numpy types and other non-serializable types to JSON-serializable types."""
-    import numpy as np
+    # Import here to avoid circular imports
+    try:
+        from pme_app.utils import to_jsonable
+        return to_jsonable(data)
+    except ImportError:
+        # Fallback implementation
+        import numpy as np
 
-    if isinstance(data, dict):
-        return {key: make_json_serializable(value) for key, value in data.items()}
-    elif isinstance(data, list):
-        return [make_json_serializable(item) for item in data]
-    elif isinstance(data, (np.integer, np.floating)):
-        return float(data)
-    elif isinstance(data, np.ndarray):
-        return data.tolist()
-    elif hasattr(data, "item"):  # numpy scalar
-        return data.item()
-    else:
-        return data
+        if isinstance(data, dict):
+            return {key: make_json_serializable(value) for key, value in data.items()}
+        elif isinstance(data, list):
+            return [make_json_serializable(item) for item in data]
+        elif isinstance(data, (np.integer, np.floating)):
+            return float(data)
+        elif isinstance(data, np.ndarray):
+            return data.tolist()
+        elif hasattr(data, "item"):  # numpy scalar
+            return data.item()
+        else:
+            return data
 
 
 @app.get("/")

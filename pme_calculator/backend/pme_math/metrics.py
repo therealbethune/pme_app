@@ -102,7 +102,9 @@ def ln_pme(
         synthetic_cashflows = []
         synthetic_dates = []
 
-        for i, (cf, idx_val, date) in enumerate(zip(cashflows, index_values, dates, strict=False)):
+        for i, (cf, idx_val, date) in enumerate(
+            zip(cashflows, index_values, dates, strict=False)
+        ):
             if cf != 0:
                 # Calculate shares bought/sold: Q_t = |CF_t| / I_t × sign(-CF_t)
                 shares_transacted = abs(cf) / idx_val * np.sign(-cf)

@@ -586,21 +586,27 @@ def safe_float(value, default=0.0):
 
 def make_json_serializable(obj):
     """Make object JSON serializable by handling NaN values."""
-    if isinstance(obj, dict):
-        return {k: make_json_serializable(v) for k, v in obj.items()}
-    elif isinstance(obj, list):
-        return [make_json_serializable(item) for item in obj]
-    elif isinstance(obj, (np.integer, np.floating)):
-        if np.isnan(obj) or np.isinf(obj):
+    # Import here to avoid circular imports
+    try:
+        from pme_app.utils import to_jsonable
+        return to_jsonable(obj)
+    except ImportError:
+        # Fallback implementation if utils not available
+        if isinstance(obj, dict):
+            return {k: make_json_serializable(v) for k, v in obj.items()}
+        elif isinstance(obj, list):
+            return [make_json_serializable(item) for item in obj]
+        elif isinstance(obj, (np.integer, np.floating)):
+            if np.isnan(obj) or np.isinf(obj):
+                return 0.0
+            return float(obj)
+        elif isinstance(obj, np.ndarray):
+            return [make_json_serializable(item) for item in obj.tolist()]
+        elif isinstance(obj, pd.Timestamp):
+            return obj.isoformat()
+        elif isinstance(obj, datetime):
+            return obj.isoformat()
+        elif obj is None or (isinstance(obj, float) and (np.isnan(obj) or np.isinf(obj))):
             return 0.0
-        return float(obj)
-    elif isinstance(obj, np.ndarray):
-        return [make_json_serializable(item) for item in obj.tolist()]
-    elif isinstance(obj, pd.Timestamp):
-        return obj.isoformat()
-    elif isinstance(obj, datetime):
-        return obj.isoformat()
-    elif obj is None or (isinstance(obj, float) and (np.isnan(obj) or np.isinf(obj))):
-        return 0.0
-    else:
-        return obj
+        else:
+            return obj

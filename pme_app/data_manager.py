@@ -644,17 +644,8 @@ class DataManager:
 
     def _serialize_metrics(self, metrics: dict) -> dict:
         """Serialize metrics for JSON storage."""
-        serialized = {}
-        for key, value in metrics.items():
-            if isinstance(value, np.integer | np.floating):
-                serialized[key] = float(value)
-            elif isinstance(value, np.ndarray):
-                serialized[key] = value.tolist()
-            elif pd.isna(value):
-                serialized[key] = None
-            else:
-                serialized[key] = value
-        return serialized
+        from pme_app.utils import to_jsonable
+        return to_jsonable(metrics)
 
     def _load_preferences(self) -> dict:
         """Load user preferences."""

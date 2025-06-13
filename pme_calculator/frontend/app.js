@@ -510,7 +510,10 @@ class PMECalculatorPro {
         `;
 
         // Initialize charts with proper error handling and loading states
-        await this.loadAllCharts();
+        // Add small delay to ensure DOM elements are fully rendered
+        setTimeout(async () => {
+            await this.loadAllCharts();
+        }, 100);
     }
 
     async loadAllCharts() {
@@ -570,7 +573,13 @@ class PMECalculatorPro {
         /**
          * Generic chart maker with optimized sizing and responsive layout
          */
+        console.log(`🔄 Making chart: ${elementId} from ${url}`);
         const element = document.getElementById(elementId);
+        
+        if (!element) {
+            console.error(`❌ Element not found: ${elementId}`);
+            return;
+        }
         
         try {
             // Set container height to prevent layout shifts
@@ -610,81 +619,55 @@ class PMECalculatorPro {
             if (element) {
                 element.innerHTML = '';
                 
+                // **FIX: Ensure element is visible and properly sized**
+                element.style.display = 'block';
+                element.style.width = '100%';
+                element.style.height = height;
+                element.style.minHeight = height;
+                
                 // Validate chart data
                 if (!chartData.data || !Array.isArray(chartData.data) || chartData.data.length === 0) {
                     throw new Error('Invalid chart data received');
                 }
                 
-                // **OPTIMIZED LAYOUT CONFIGURATION**
+                // **USE EXACT SAME CONFIG AS WORKING TEST**
                 const optimizedLayout = {
                     ...chartData.layout,
-                    // Responsive sizing
-                    autosize: true,
-                    // Optimized margins to reduce unused space
-                    margin: {
-                        l: 60,    // Left margin - reduced from default
-                        r: 30,    // Right margin - reduced
-                        t: 50,    // Top margin - reduced
-                        b: 60,    // Bottom margin - reduced
-                        pad: 5
-                    },
-                    // Professional styling
                     paper_bgcolor: 'rgba(0,0,0,0)',
                     plot_bgcolor: 'rgba(0,0,0,0)',
-                    font: { 
-                        color: '#ffffff', 
-                        family: 'Arial, sans-serif',
-                        size: 12  // Optimized font size
-                    },
-                    // Grid styling
-                    xaxis: {
-                        ...chartData.layout.xaxis,
-                        gridcolor: 'rgba(255,255,255,0.1)',
-                        tickfont: { size: 10 },
-                        title: {
-                            ...chartData.layout.xaxis?.title,
-                            font: { size: 11 }
-                        }
-                    },
-                    yaxis: {
-                        ...chartData.layout.yaxis,
-                        gridcolor: 'rgba(255,255,255,0.1)',
-                        tickfont: { size: 10 },
-                        title: {
-                            ...chartData.layout.yaxis?.title,
-                            font: { size: 11 }
-                        }
-                    },
-                    // Legend optimization
-                    legend: {
-                        ...chartData.layout.legend,
-                        font: { size: 10 },
-                        orientation: 'h',  // Horizontal legend to save vertical space
-                        x: 0.5,
-                        xanchor: 'center',
-                        y: -0.15,  // Position below chart
-                        bgcolor: 'rgba(0,0,0,0.5)',
-                        bordercolor: 'rgba(255,255,255,0.2)',
-                        borderwidth: 1
-                    }
+                    font: {color: '#ffffff'}
                 };
                 
                 // **FIX: Ensure Plotly is available**
                 if (typeof Plotly !== 'undefined') {
-                    await Plotly.newPlot(elementId, chartData.data, optimizedLayout, {
-                        responsive: true,
-                        displaylogo: false,
-                        displayModeBar: false,  // Hide mode bar to save space
-                        staticPlot: false
-                    });
+                    console.log(`📊 Rendering chart ${elementId} with data:`, chartData.data.length, 'traces');
+                    console.log(`📊 Chart data sample:`, JSON.stringify(chartData.data[0], null, 2));
+                    console.log(`📊 Layout:`, JSON.stringify(optimizedLayout, null, 2));
                     
-                    // **RESPONSIVE RESIZE HANDLER**
-                    window.addEventListener('resize', () => {
-                        Plotly.Plots.resize(elementId);
-                    });
+                    try {
+                        await Plotly.newPlot(elementId, chartData.data, optimizedLayout, {
+                            responsive: true,
+                            displaylogo: false,
+                            displayModeBar: false
+                        });
+                        
+                        console.log(`✅ Chart ${elementId} rendered successfully`);
+                        
+                        // Verify the chart was actually created
+                        const plotElement = document.getElementById(elementId);
+                        if (plotElement && plotElement.children.length > 0) {
+                            console.log(`✅ Chart ${elementId} DOM elements created:`, plotElement.children.length);
+                        } else {
+                            console.warn(`⚠️ Chart ${elementId} rendered but no DOM elements found`);
+                        }
+                        
+                    } catch (plotlyError) {
+                        console.error(`❌ Plotly rendering error for ${elementId}:`, plotlyError);
+                        throw plotlyError;
+                    }
                     
-                    console.log(`✅ Chart ${elementId} rendered with optimized layout`);
                 } else {
+                    console.error('❌ Plotly library not available');
                     throw new Error('Plotly library not available');
                 }
             }

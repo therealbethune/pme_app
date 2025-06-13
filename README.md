@@ -1,7 +1,8 @@
 # PME Calculator 📊
 
 ![Coverage](./coverage.svg)
-[![CI](https://github.com/username/pme_app/workflows/CI/badge.svg)](https://github.com/username/pme_app/actions)
+[![CI](https://github.com/charlesbethune/pme_app/workflows/CI/badge.svg)](https://github.com/charlesbethune/pme_app/actions)
+[![codecov](https://codecov.io/gh/charlesbethune/pme_app/branch/main/graph/badge.svg)](https://codecov.io/gh/charlesbethune/pme_app)
 
 **Professional Private Market Equivalent (PME) Analysis Platform**
 

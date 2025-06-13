@@ -23,6 +23,12 @@ from pme_app.services.analysis import (
 )
 from pme_app.logger import logger
 from pme_app.routers import portfolio
+from pme_app.utils import (
+    DefaultJSONResponse,
+    create_success_response,
+    create_error_response,
+    to_jsonable,
+)
 
 # Create FastAPI app
 app = FastAPI(
@@ -31,6 +37,7 @@ app = FastAPI(
     version="1.0.0",
     docs_url="/docs",
     redoc_url="/redoc",
+    default_response_class=DefaultJSONResponse,
 )
 
 # Add CORS middleware
@@ -113,15 +120,22 @@ async def calculate_ks_pme(request: PMERequest):
             "index_values_count": len(idx_values)
         })
         
-        return {
-            "pme_value": result,
-            "method": "Kaplan-Schoar PME",
-            "fund_cashflows_count": len(fund_cf),
-            "index_values_count": len(idx_values)
-        }
+        return create_success_response(
+            data={
+                "pme_value": result,
+                "method": "Kaplan-Schoar PME",
+                "fund_cashflows_count": len(fund_cf),
+                "index_values_count": len(idx_values)
+            },
+            message="KS PME calculation completed successfully"
+        )
     except Exception as e:
         logger.error(f"KS PME calculation failed: {str(e)}")
-        raise HTTPException(status_code=400, detail=f"Calculation failed: {str(e)}")
+        return create_error_response(
+            error="KS PME calculation failed",
+            details=str(e),
+            status_code=400
+        )
 
 @app.post("/api/alpha/direct")
 async def calculate_direct_alpha(request: AlphaRequest):
@@ -146,14 +160,21 @@ async def calculate_volatility(request: VolatilityRequest):
         returns_series = pd.Series(request.returns)
         result = compute_volatility(returns_series)
         
-        return {
-            "volatility": result,
-            "returns_count": len(request.returns),
-            "method": "Standard Deviation"
-        }
+        return create_success_response(
+            data={
+                "volatility": result,
+                "returns_count": len(request.returns),
+                "method": "Standard Deviation"
+            },
+            message="Volatility calculation completed successfully"
+        )
     except Exception as e:
         logger.error(f"Volatility calculation failed: {str(e)}")
-        raise HTTPException(status_code=400, detail=f"Calculation failed: {str(e)}")
+        return create_error_response(
+            error="Volatility calculation failed",
+            details=str(e),
+            status_code=400
+        )
 
 @app.post("/api/analysis/drawdown")
 async def calculate_drawdown(request: DrawdownRequest):

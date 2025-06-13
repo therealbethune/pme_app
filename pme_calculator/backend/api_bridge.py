@@ -175,20 +175,24 @@ class ApiBridge:
 
     def _serialize_metrics(self, metrics: dict[str, Any]) -> dict[str, Any]:
         """Convert numpy types to JSON-serializable types."""
+        try:
+            from pme_app.utils import to_jsonable
+            return to_jsonable(metrics)
+        except ImportError:
+            # Fallback implementation
+            def convert_value(value):
+                if isinstance(value, (np.integer, np.floating)):
+                    return float(value)
+                elif isinstance(value, np.ndarray):
+                    return value.tolist()
+                elif isinstance(value, dict):
+                    return {k: convert_value(v) for k, v in value.items()}
+                elif isinstance(value, list):
+                    return [convert_value(v) for v in value]
+                else:
+                    return value
 
-        def convert_value(value):
-            if isinstance(value, (np.integer, np.floating)):
-                return float(value)
-            elif isinstance(value, np.ndarray):
-                return value.tolist()
-            elif isinstance(value, dict):
-                return {k: convert_value(v) for k, v in value.items()}
-            elif isinstance(value, list):
-                return [convert_value(v) for v in value]
-            else:
-                return value
-
-        return convert_value(metrics)
+            return convert_value(metrics)
 
     def _extract_cashflow_data(self) -> list[dict[str, Any]]:
         """Extract cashflow data for charting."""

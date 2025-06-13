@@ -55,9 +55,7 @@ async def upload_fund_file(file: UploadFile = File(...)):
             raise HTTPException(status_code=400, detail=f"Invalid CSV file: {str(e)}")
 
         # Generate file ID
-        file_id = (
-            f"fund_{len([k for k in uploaded_files if k.startswith('fund_')])}"
-        )
+        file_id = f"fund_{len([k for k in uploaded_files if k.startswith('fund_')])}"
 
         # Store file info
         uploaded_files[file_id] = {
@@ -94,9 +92,7 @@ async def upload_index_file(file: UploadFile = File(...)):
             raise HTTPException(status_code=400, detail=f"Invalid CSV file: {str(e)}")
 
         # Generate file ID
-        file_id = (
-            f"index_{len([k for k in uploaded_files if k.startswith('index_')])}"
-        )
+        file_id = f"index_{len([k for k in uploaded_files if k.startswith('index_')])}"
 
         # Store file info
         uploaded_files[file_id] = {

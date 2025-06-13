@@ -4,6 +4,12 @@ import pandas as pd
 from fastapi import APIRouter, File, HTTPException, UploadFile
 
 from pme_app.services.portfolio import calc_portfolio_metrics
+from pme_app.utils import (
+    create_success_response,
+    create_error_response,
+    to_jsonable,
+    dataframe_to_records,
+)
 
 router = APIRouter(prefix="/portfolio", tags=["portfolio"])
 
@@ -56,29 +62,38 @@ async def portfolio_metrics(files: list[UploadFile] = File(...)):
         metrics_df = calc_portfolio_metrics(data)
 
         if metrics_df.empty:
-            raise HTTPException(
-                status_code=400, detail="Unable to calculate metrics from provided data"
+            return create_error_response(
+                error="Unable to calculate metrics from provided data",
+                status_code=400
             )
 
-        # Convert to dict and return
-        result = metrics_df.to_dict(orient="records")[0]
+        # Convert to dict using our serialization utility
+        result = dataframe_to_records(metrics_df)[0]
 
         # Add metadata
         result["files_processed"] = len(data)
         result["file_names"] = list(data.keys())
 
-        return result
+        return create_success_response(
+            data=result,
+            message="Portfolio metrics calculated successfully"
+        )
 
     except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"Error calculating portfolio metrics: {str(e)}"
-        ) from None
+        return create_error_response(
+            error="Error calculating portfolio metrics",
+            details=str(e),
+            status_code=500
+        )
 
 
 @router.get("/health")
 async def portfolio_health():
     """Health check for portfolio service."""
-    return {"status": "healthy", "service": "portfolio"}
+    return create_success_response(
+        data={"status": "healthy", "service": "portfolio"},
+        message="Portfolio service is healthy"
+    )
 
 
 @router.post("/preview")
@@ -107,12 +122,15 @@ async def preview_portfolio_data(files: list[UploadFile] = File(...)):
                 "rows": len(df),
                 "columns": list(df.columns),
                 "sample_data": (
-                    df.head(3).to_dict(orient="records") if not df.empty else []
+                    dataframe_to_records(df.head(3)) if not df.empty else []
                 ),
-                "data_types": df.dtypes.astype(str).to_dict(),
+                "data_types": to_jsonable(df.dtypes.astype(str).to_dict()),
             }
 
         except Exception as e:
             preview_data[f.filename or "unknown"] = {"error": str(e)}
 
-    return {"files_processed": len(preview_data), "preview": preview_data}
+    return create_success_response(
+        data={"files_processed": len(preview_data), "preview": preview_data},
+        message="File preview generated successfully"
+    )

@@ -29,16 +29,12 @@ ignore = [
 # Exclude legacy and test directories from strict linting
 exclude = [
     "assets/",
-    "pme_calculator/backend/analysis_engine_legacy.py",
-    "pme_calculator/backend/health_check.py", 
-    "pme_calculator/backend/simple_test.py",
-    "pme_calculator/backend/test_*.py",
-    "pme_calculator/backend/tests/",
-    "pme_calculator/backend/validation/",
+    "pme_calculator/",  # Legacy calculator directory - exclude entirely
     "pme_app/pme_calcs.py",  # legacy calculations
     "pme_app/performance_metrics_chart.py",  # legacy charts
     "pme_app/duration.py",  # legacy duration
     "check_localhost.py",  # utility script
+    "test_*.py",  # Legacy test files in root
     "*.py.bak",
     "__pycache__/",
     ".git/",

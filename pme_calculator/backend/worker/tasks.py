@@ -20,9 +20,7 @@ logger = get_logger(__name__)
 
 
 @celery.task(bind=True)
-def run_metrics(
-    self, fund_path: str, index_path: str | None = None
-) -> dict[str, Any]:
+def run_metrics(self, fund_path: str, index_path: str | None = None) -> dict[str, Any]:
     """
     Background task for intensive PME metrics calculation.
 

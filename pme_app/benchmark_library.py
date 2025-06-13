@@ -125,9 +125,7 @@ class BenchmarkLibrary:
 
     def get_categories(self) -> list[str]:
         """Get list of available benchmark categories."""
-        categories = {
-            benchmark["category"] for benchmark in self.benchmarks.values()
-        }
+        categories = {benchmark["category"] for benchmark in self.benchmarks.values()}
         return sorted(categories)
 
     def generate_benchmark_data(
