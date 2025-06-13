@@ -1,6 +1,7 @@
 """Structured JSON logging configuration for PME Calculator."""
 
 import logging
+
 import structlog
 
 

@@ -3,10 +3,11 @@ Benchmark Library for PME Calculator
 Provides built-in market indices and industry-specific benchmarks
 """
 
-import pandas as pd
-import numpy as np
 from datetime import datetime
-from typing import Dict, List, Optional
+from typing import Optional
+
+import numpy as np
+import pandas as pd
 
 
 class BenchmarkLibrary:
@@ -15,7 +16,7 @@ class BenchmarkLibrary:
     def __init__(self):
         self.benchmarks = self._initialize_benchmarks()
 
-    def _initialize_benchmarks(self) -> Dict:
+    def _initialize_benchmarks(self) -> dict:
         """Initialize the benchmark library with available indices."""
         return {
             # Broad Market Indices
@@ -114,7 +115,7 @@ class BenchmarkLibrary:
             },
         }
 
-    def get_available_benchmarks(self, category: Optional[str] = None) -> Dict:
+    def get_available_benchmarks(self, category: str | None = None) -> dict:
         """Get list of available benchmarks, optionally filtered by category."""
         if category:
             return {
@@ -122,12 +123,12 @@ class BenchmarkLibrary:
             }
         return self.benchmarks
 
-    def get_categories(self) -> List[str]:
+    def get_categories(self) -> list[str]:
         """Get list of available benchmark categories."""
-        categories = set(
+        categories = {
             benchmark["category"] for benchmark in self.benchmarks.values()
-        )
-        return sorted(list(categories))
+        }
+        return sorted(categories)
 
     def generate_benchmark_data(
         self,
@@ -235,13 +236,13 @@ class BenchmarkLibrary:
 
         return returns
 
-    def get_benchmark_info(self, benchmark_id: str) -> Dict:
+    def get_benchmark_info(self, benchmark_id: str) -> dict:
         """Get detailed information about a specific benchmark."""
         if benchmark_id not in self.benchmarks:
             raise ValueError(f"Benchmark {benchmark_id} not found in library")
         return self.benchmarks[benchmark_id].copy()
 
-    def search_benchmarks(self, query: str) -> Dict:
+    def search_benchmarks(self, query: str) -> dict:
         """Search benchmarks by name or description."""
         query_lower = query.lower()
         results = {}
@@ -259,7 +260,7 @@ class BenchmarkLibrary:
 
     def get_recommended_benchmarks(
         self, fund_type: str = "private_equity"
-    ) -> List[str]:
+    ) -> list[str]:
         """Get recommended benchmarks for a specific fund type."""
         recommendations = {
             "private_equity": ["sp500", "russell2000", "cambridge_pe"],

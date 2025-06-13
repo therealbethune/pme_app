@@ -10,17 +10,18 @@ Tests the high-performance Redis caching system including:
 """
 
 import asyncio
+from unittest.mock import AsyncMock, patch
+
 import pytest
-from unittest.mock import patch, AsyncMock
 
 from pme_calculator.backend.cache import (
-    make_cache_key,
+    cache_clear_pattern,
+    cache_delete,
     cache_get,
     cache_set,
-    cache_delete,
-    cache_clear_pattern,
     cache_stats,
     close_redis_pool,
+    make_cache_key,
 )
 
 

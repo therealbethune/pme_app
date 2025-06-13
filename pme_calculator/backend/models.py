@@ -1,17 +1,18 @@
 from datetime import datetime
-from typing import Optional, List
+from typing import List, Optional
+
 from sqlalchemy import (
-    Integer,
-    Float,
-    String,
-    DateTime,
-    ForeignKey,
     Boolean,
-    Text,
+    DateTime,
+    Float,
+    ForeignKey,
     Index,
+    Integer,
+    String,
+    Text,
 )
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship, Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 Base = declarative_base()
 
@@ -22,10 +23,10 @@ class Fund(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     name: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
     fund_type: Mapped[str] = mapped_column(String(100), nullable=True)  # PE, VC, etc.
-    vintage_year: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
-    target_size: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    vintage_year: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    target_size: Mapped[float | None] = mapped_column(Float, nullable=True)
     currency: Mapped[str] = mapped_column(String(10), default="USD")
-    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
@@ -33,13 +34,13 @@ class Fund(Base):
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
 
     # Relationships
-    cash_flows: Mapped[List["CashFlow"]] = relationship(
+    cash_flows: Mapped[list["CashFlow"]] = relationship(
         "CashFlow", back_populates="fund", cascade="all, delete-orphan"
     )
-    nav_entries: Mapped[List["NAV"]] = relationship(
+    nav_entries: Mapped[list["NAV"]] = relationship(
         "NAV", back_populates="fund", cascade="all, delete-orphan"
     )
-    portfolio_funds: Mapped[List["PortfolioFund"]] = relationship(
+    portfolio_funds: Mapped[list["PortfolioFund"]] = relationship(
         "PortfolioFund", back_populates="fund"
     )
 
@@ -51,7 +52,7 @@ class Portfolio(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     name: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
-    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
     benchmark_symbol: Mapped[str] = mapped_column(
         String(20), default="^GSPC"
     )  # S&P 500
@@ -63,7 +64,7 @@ class Portfolio(Base):
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
 
     # Relationships
-    portfolio_funds: Mapped[List["PortfolioFund"]] = relationship(
+    portfolio_funds: Mapped[list["PortfolioFund"]] = relationship(
         "PortfolioFund", back_populates="portfolio", cascade="all, delete-orphan"
     )
 
@@ -104,7 +105,7 @@ class CashFlow(Base):
     cash_flow_type: Mapped[str] = mapped_column(
         String(50), nullable=False
     )  # contribution, distribution, management_fee
-    description: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+    description: Mapped[str | None] = mapped_column(String(500), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     # Relationships
@@ -125,9 +126,9 @@ class NAV(Base):
     )
     date: Mapped[datetime] = mapped_column(DateTime, nullable=False, index=True)
     nav_value: Mapped[float] = mapped_column(Float, nullable=False)
-    called_capital: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
-    distributed_capital: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
-    remaining_value: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    called_capital: Mapped[float | None] = mapped_column(Float, nullable=True)
+    distributed_capital: Mapped[float | None] = mapped_column(Float, nullable=True)
+    remaining_value: Mapped[float | None] = mapped_column(Float, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     # Relationships
@@ -143,8 +144,8 @@ class BenchmarkPrice(Base):
     symbol: Mapped[str] = mapped_column(String(20), nullable=False, index=True)
     date: Mapped[datetime] = mapped_column(DateTime, nullable=False, index=True)
     price: Mapped[float] = mapped_column(Float, nullable=False)
-    adjusted_close: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
-    volume: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    adjusted_close: Mapped[float | None] = mapped_column(Float, nullable=True)
+    volume: Mapped[int | None] = mapped_column(Integer, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     __table_args__ = (Index("idx_benchmark_symbol_date", "symbol", "date"),)
@@ -163,8 +164,8 @@ class UploadHistory(Base):
     status: Mapped[str] = mapped_column(
         String(20), default="success"
     )  # success, error, partial
-    error_message: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    fund_id: Mapped[Optional[int]] = mapped_column(
+    error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
+    fund_id: Mapped[int | None] = mapped_column(
         Integer, ForeignKey("funds.id"), nullable=True
     )
 

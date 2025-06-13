@@ -2,27 +2,27 @@
 Celery background tasks for PME Calculator.
 """
 
-import sys
 import asyncio
-from typing import Dict, Any, Optional
+import sys
 from pathlib import Path
+from typing import Any, Dict, Optional
 
 # Add parent directory to path for imports
 sys.path.append(str(Path(__file__).parent.parent))
 
-from worker.celery_app import celery
 from analysis_engine import PMEAnalysisEngine
-from logger import get_logger
 from cache import cache_set, make_cache_key
 from db_views import refresh
+from logger import get_logger
+from worker.celery_app import celery
 
 logger = get_logger(__name__)
 
 
 @celery.task(bind=True)
 def run_metrics(
-    self, fund_path: str, index_path: Optional[str] = None
-) -> Dict[str, Any]:
+    self, fund_path: str, index_path: str | None = None
+) -> dict[str, Any]:
     """
     Background task for intensive PME metrics calculation.
 
@@ -118,8 +118,8 @@ def run_metrics(
 
 @celery.task(bind=True)
 def generate_pdf_report(
-    self, analysis_results: Dict[str, Any], report_config: Dict[str, Any]
-) -> Dict[str, Any]:
+    self, analysis_results: dict[str, Any], report_config: dict[str, Any]
+) -> dict[str, Any]:
     """
     Background task for PDF report generation.
 
@@ -203,7 +203,7 @@ POPULAR_FUNDS = [
 
 
 @celery.task(bind=True)
-def warm_cache(self) -> Dict[str, Any]:
+def warm_cache(self) -> dict[str, Any]:
     """
     Predictive cache warming task for popular funds.
 

@@ -1,6 +1,6 @@
 """Basic tests for pme_app package to establish coverage baseline."""
 
-from pme_app import utils, style
+from pme_app import style, utils
 
 
 def test_pme_app_imports():

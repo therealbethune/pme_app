@@ -3,8 +3,8 @@ Simplified Pydantic schemas for PME Calculator - optimized for production use.
 """
 
 from datetime import datetime
-from typing import List, Optional, Dict, Any
 from enum import Enum
+from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
@@ -28,32 +28,32 @@ class UploadMeta(BaseModel):
     file_size: int = Field(..., gt=0)
     file_type: FileTypeEnum
     upload_timestamp: datetime = Field(default_factory=datetime.utcnow)
-    row_count: Optional[int] = Field(None, ge=0)
-    column_count: Optional[int] = Field(None, ge=0)
-    date_range: Optional[Dict[str, str]] = None
-    detected_columns: Optional[Dict[str, str]] = None
+    row_count: int | None = Field(None, ge=0)
+    column_count: int | None = Field(None, ge=0)
+    date_range: dict[str, str] | None = None
+    detected_columns: dict[str, str] | None = None
 
 
 class ValidationResult(BaseModel):
     """Result of file validation."""
 
     is_valid: bool
-    errors: List[str] = Field(default_factory=list)
-    warnings: List[str] = Field(default_factory=list)
-    metadata: Optional[UploadMeta] = None
-    detected_mappings: Optional[Dict[str, str]] = None
+    errors: list[str] = Field(default_factory=list)
+    warnings: list[str] = Field(default_factory=list)
+    metadata: UploadMeta | None = None
+    detected_mappings: dict[str, str] | None = None
 
 
 class AnalysisRequest(BaseModel):
     """Request for PME analysis."""
 
     fund_file_id: str
-    index_file_id: Optional[str] = None
+    index_file_id: str | None = None
     method: AnalysisMethodEnum = AnalysisMethodEnum.KAPLAN_SCHOAR
     risk_free_rate: float = Field(0.025, ge=0, le=1)
     confidence_level: float = Field(0.95, gt=0, lt=1)
-    start_date: Optional[str] = None
-    end_date: Optional[str] = None
+    start_date: str | None = None
+    end_date: str | None = None
 
 
 class AnalysisResponse(BaseModel):
@@ -61,11 +61,11 @@ class AnalysisResponse(BaseModel):
 
     request_id: str
     success: bool
-    metrics: Optional[Dict[str, Any]] = None
-    charts: Optional[Dict[str, Any]] = None
-    summary: Optional[Dict[str, Any]] = None
-    errors: List[str] = Field(default_factory=list)
-    processing_time_ms: Optional[float] = None
+    metrics: dict[str, Any] | None = None
+    charts: dict[str, Any] | None = None
+    summary: dict[str, Any] | None = None
+    errors: list[str] = Field(default_factory=list)
+    processing_time_ms: float | None = None
 
 
 class UploadResponse(BaseModel):

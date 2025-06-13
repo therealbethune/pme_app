@@ -8,16 +8,17 @@ is not available.
 
 import asyncio
 import json
-import pytest
 from unittest.mock import AsyncMock, patch
 
+import pytest
+
 from pme_calculator.backend.cache import (
-    make_cache_key,
+    cache_clear_pattern,
+    cache_delete,
     cache_get,
     cache_set,
-    cache_delete,
-    cache_clear_pattern,
     cache_stats,
+    make_cache_key,
 )
 
 

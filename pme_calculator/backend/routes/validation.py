@@ -3,33 +3,33 @@ Phase 1C: API Endpoint Scaffold
 Advanced data validation endpoints with progress tracking.
 """
 
-from fastapi import APIRouter, UploadFile, File, HTTPException, BackgroundTasks
-from fastapi.responses import StreamingResponse
-from typing import Dict, List
-import pandas as pd
-import tempfile
-import os
 import asyncio
 import json
+import os
+import tempfile
 import uuid
 from datetime import datetime
+from typing import Dict, List
 
+import pandas as pd
+from fastapi import APIRouter, BackgroundTasks, File, HTTPException, UploadFile
+from fastapi.responses import StreamingResponse
 from schemas import (
-    DataValidator,
     ColumnMapping,
     DatasetMetadata,
+    DataValidator,
 )
 
 router = APIRouter(prefix="/api/validation", tags=["validation"])
 
 # In-memory storage for validation jobs (in production, use Redis/database)
-validation_jobs: Dict[str, Dict] = {}
+validation_jobs: dict[str, dict] = {}
 
 
-@router.post("/upload/fund", response_model=Dict[str, str])
+@router.post("/upload/fund", response_model=dict[str, str])
 async def upload_fund_data(
     background_tasks: BackgroundTasks, file: UploadFile = File(...)
-) -> Dict[str, str]:
+) -> dict[str, str]:
     """Upload and validate fund cash flow data."""
 
     # Validate file type
@@ -65,10 +65,10 @@ async def upload_fund_data(
     return {"job_id": job_id, "status": "processing"}
 
 
-@router.post("/upload/index", response_model=Dict[str, str])
+@router.post("/upload/index", response_model=dict[str, str])
 async def upload_index_data(
     background_tasks: BackgroundTasks, file: UploadFile = File(...)
-) -> Dict[str, str]:
+) -> dict[str, str]:
     """Upload and validate index/benchmark data."""
 
     if not file.filename.lower().endswith((".csv", ".xlsx", ".xls")):
@@ -102,7 +102,7 @@ async def upload_index_data(
 
 
 @router.get("/status/{job_id}")
-async def get_validation_status(job_id: str) -> Dict:
+async def get_validation_status(job_id: str) -> dict:
     """Get validation job status and results."""
 
     if job_id not in validation_jobs:
@@ -172,7 +172,7 @@ async def stream_validation_progress(job_id: str):
 @router.post("/analyze/column-mapping")
 async def analyze_column_mapping(
     file: UploadFile = File(...), data_type: str = "fund"
-) -> Dict[str, List[ColumnMapping]]:
+) -> dict[str, list[ColumnMapping]]:
     """Analyze file columns and suggest intelligent mappings."""
 
     try:
@@ -215,7 +215,7 @@ async def analyze_column_mapping(
 
 
 @router.delete("/jobs/{job_id}")
-async def cleanup_validation_job(job_id: str) -> Dict[str, str]:
+async def cleanup_validation_job(job_id: str) -> dict[str, str]:
     """Clean up validation job and temporary files."""
 
     if job_id not in validation_jobs:
@@ -234,7 +234,7 @@ async def cleanup_validation_job(job_id: str) -> Dict[str, str]:
 
 
 @router.get("/jobs")
-async def list_validation_jobs() -> Dict[str, List[Dict]]:
+async def list_validation_jobs() -> dict[str, list[dict]]:
     """List all validation jobs with their status."""
 
     jobs_list = []

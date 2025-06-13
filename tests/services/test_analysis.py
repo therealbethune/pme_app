@@ -3,14 +3,15 @@
 import numpy as np
 import pandas as pd
 import pytest
+
 from pme_app.services.analysis import (
-    safe_div,
-    ks_pme,
-    direct_alpha,
-    compute_volatility,
-    compute_drawdown,
-    compute_alpha_beta,
     calculate_annualized_return,
+    compute_alpha_beta,
+    compute_drawdown,
+    compute_volatility,
+    direct_alpha,
+    ks_pme,
+    safe_div,
 )
 
 

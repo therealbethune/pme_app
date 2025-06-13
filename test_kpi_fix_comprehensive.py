@@ -3,8 +3,9 @@
 Comprehensive test to verify KPI and loading fixes
 """
 
-import requests
 import time
+
+import requests
 
 
 def test_comprehensive_fix():

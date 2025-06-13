@@ -11,11 +11,11 @@ Key Features:
 - JSON serialization for complex data structures
 """
 
-import os
-import json
 import hashlib
+import json
 import logging
-from typing import Optional, Dict, Any
+import os
+from typing import Any, Dict, Optional
 
 import redis.asyncio as redis
 
@@ -41,7 +41,7 @@ DEFAULT_TTL = 86_400  # 24 hours
 CACHE_PREFIX = "pme"
 
 # Global connection pool
-_redis_pool: Optional[redis.Redis] = None
+_redis_pool: redis.Redis | None = None
 
 
 async def get_redis_pool() -> redis.Redis:
@@ -65,7 +65,7 @@ async def get_redis_pool() -> redis.Redis:
     return _redis_pool
 
 
-def make_cache_key(endpoint: str, payload: Dict[str, Any]) -> str:
+def make_cache_key(endpoint: str, payload: dict[str, Any]) -> str:
     """
     Generate a deterministic cache key from endpoint and payload.
 
@@ -86,7 +86,7 @@ def make_cache_key(endpoint: str, payload: Dict[str, Any]) -> str:
     return f"{CACHE_PREFIX}:{clean_endpoint}:{payload_hash}"
 
 
-async def cache_get(key: str) -> Optional[Dict[str, Any]]:
+async def cache_get(key: str) -> dict[str, Any] | None:
     """
     Get cached value by key.
 
@@ -113,8 +113,8 @@ async def cache_get(key: str) -> Optional[Dict[str, Any]]:
 
 
 async def cache_get_with_l3_fallback(
-    key: str, fund_id: Optional[str] = None
-) -> Optional[Dict[str, Any]]:
+    key: str, fund_id: str | None = None
+) -> dict[str, Any] | None:
     """
     Multi-tier cache retrieval: L1/L2 Redis -> L3 DuckDB fallback.
 
@@ -140,7 +140,7 @@ async def cache_get_with_l3_fallback(
     return None
 
 
-async def cache_set(key: str, value: Dict[str, Any], ttl: int = DEFAULT_TTL) -> bool:
+async def cache_set(key: str, value: dict[str, Any], ttl: int = DEFAULT_TTL) -> bool:
     """
     Set cached value with TTL.
 
@@ -200,7 +200,7 @@ async def cache_clear_pattern(pattern: str) -> int:
         return 0
 
 
-async def cache_stats() -> Dict[str, Any]:
+async def cache_stats() -> dict[str, Any]:
     """Get cache statistics."""
     try:
         redis = await get_redis_pool()

@@ -3,16 +3,18 @@
 
 import cProfile
 import pstats
+import time
+
 import numpy as np
 import pandas as pd
-import time
+
 from pme_app.services.analysis import (
-    ks_pme,
-    direct_alpha,
-    compute_volatility,
-    compute_drawdown,
-    compute_alpha_beta,
     calculate_annualized_return,
+    compute_alpha_beta,
+    compute_drawdown,
+    compute_volatility,
+    direct_alpha,
+    ks_pme,
 )
 
 

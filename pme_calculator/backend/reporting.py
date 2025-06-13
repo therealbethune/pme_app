@@ -2,18 +2,18 @@ import io
 import logging
 from datetime import datetime
 from typing import Dict
-import pandas as pd
-from weasyprint import HTML, CSS
-from jinja2 import Template
-import matplotlib.pyplot as plt
+
 import matplotlib
+import matplotlib.pyplot as plt
+import pandas as pd
+from jinja2 import Template
+from weasyprint import CSS, HTML
 
 matplotlib.use("Agg")  # Use non-interactive backend
 import seaborn as sns
-from sqlalchemy.orm import Session
-
 from models import Portfolio, PortfolioFund
 from portfolio_service import PortfolioService
+from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 
@@ -97,7 +97,7 @@ class ReportingService:
             raise
 
     def _render_pdf_template(
-        self, portfolio: Portfolio, analytics: Dict, charts: Dict
+        self, portfolio: Portfolio, analytics: dict, charts: dict
     ) -> str:
         """Render HTML template for PDF generation."""
 
@@ -267,7 +267,7 @@ class ReportingService:
         }
         """
 
-    async def _generate_charts(self, portfolio_id: int, analytics: Dict) -> Dict:
+    async def _generate_charts(self, portfolio_id: int, analytics: dict) -> dict:
         """Generate charts for PDF report."""
         charts = {}
 
@@ -390,7 +390,7 @@ class ReportingService:
                 optimal_weights = analytics["optimal_weights"]["optimal_weights"]
 
                 for i, (current, optimal) in enumerate(
-                    zip(current_weights, optimal_weights)
+                    zip(current_weights, optimal_weights, strict=False)
                 ):
                     weights_data.append(
                         {
@@ -409,7 +409,7 @@ class ReportingService:
 
 
 # Scheduled reporting function (for Celery)
-async def generate_monthly_performance_pack(portfolio_id: int) -> Dict:
+async def generate_monthly_performance_pack(portfolio_id: int) -> dict:
     """Generate monthly performance pack (for Celery scheduling)."""
     try:
 

@@ -3,13 +3,14 @@ Advanced Chart Engine for PME Calculator
 Generates interactive charts and visualizations for PME analysis.
 """
 
-import pandas as pd
+import logging
+from datetime import datetime
+from typing import Any, Dict
+
 import numpy as np
+import pandas as pd
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-from typing import Dict, Any
-from datetime import datetime
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -47,8 +48,8 @@ class ChartEngine:
         self,
         fund_data: pd.DataFrame,
         benchmark_data: pd.DataFrame,
-        metrics: Dict[str, Any],
-    ) -> Dict[str, Any]:
+        metrics: dict[str, Any],
+    ) -> dict[str, Any]:
         """Create comprehensive PME dashboard with multiple charts."""
 
         charts = {}
@@ -98,8 +99,8 @@ class ChartEngine:
         self,
         fund_data: pd.DataFrame,
         benchmark_data: pd.DataFrame,
-        metrics: Dict[str, Any],
-    ) -> Dict[str, Any]:
+        metrics: dict[str, Any],
+    ) -> dict[str, Any]:
         """Create performance comparison chart."""
 
         fig = make_subplots(
@@ -262,7 +263,7 @@ class ChartEngine:
             "title": "Performance Dashboard",
         }
 
-    def _create_cashflow_waterfall(self, fund_data: pd.DataFrame) -> Dict[str, Any]:
+    def _create_cashflow_waterfall(self, fund_data: pd.DataFrame) -> dict[str, Any]:
         """Create cash flow waterfall chart."""
 
         fund_df = fund_data.copy()
@@ -311,7 +312,7 @@ class ChartEngine:
             "title": "Cash Flow Waterfall",
         }
 
-    def _create_metrics_summary(self, metrics: Dict[str, Any]) -> Dict[str, Any]:
+    def _create_metrics_summary(self, metrics: dict[str, Any]) -> dict[str, Any]:
         """Create metrics summary visualization."""
 
         # Key metrics for display
@@ -393,7 +394,7 @@ class ChartEngine:
 
     def _create_risk_return_chart(
         self, fund_data: pd.DataFrame, benchmark_data: pd.DataFrame
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Create risk-return scatter plot."""
 
         fund_df = fund_data.copy()
@@ -491,7 +492,7 @@ class ChartEngine:
 
     def _create_rolling_performance_chart(
         self, fund_data: pd.DataFrame, benchmark_data: pd.DataFrame
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Create rolling performance chart."""
 
         fund_df = fund_data.copy()
@@ -564,7 +565,7 @@ class ChartEngine:
             "title": "Rolling Performance",
         }
 
-    def _create_distributions_timeline(self, fund_data: pd.DataFrame) -> Dict[str, Any]:
+    def _create_distributions_timeline(self, fund_data: pd.DataFrame) -> dict[str, Any]:
         """Create distributions timeline chart."""
 
         fund_df = fund_data.copy()
@@ -636,8 +637,8 @@ class ChartEngine:
         }
 
     def export_chart_data(
-        self, charts: Dict[str, Any], format: str = "json"
-    ) -> Dict[str, Any]:
+        self, charts: dict[str, Any], format: str = "json"
+    ) -> dict[str, Any]:
         """Export chart data in various formats."""
 
         if format == "json":

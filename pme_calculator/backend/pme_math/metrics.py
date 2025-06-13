@@ -5,14 +5,15 @@ This module contains standalone mathematical functions without any I/O or loggin
 All functions are pure mathematical operations that can be tested independently.
 """
 
+from typing import Dict, Tuple
+
 import numpy as np
-import pandas as pd
-from typing import Tuple, Dict
 import numpy_financial as npf
+import pandas as pd
 from scipy.optimize import brentq
 
 
-def xirr_wrapper(cashflows: Dict[str, float]) -> float:
+def xirr_wrapper(cashflows: dict[str, float]) -> float:
     """
     Calculate XIRR (Extended Internal Rate of Return) for irregular cash flows.
 
@@ -83,7 +84,7 @@ def ks_pme(fund_cf: np.ndarray, idx_at_dates: np.ndarray) -> float:
 
 def ln_pme(
     cashflows: pd.Series, index_values: pd.Series, dates: pd.Series
-) -> Tuple[float, float]:
+) -> tuple[float, float]:
     """
     Calculate Long-Nickels PME.
 
@@ -101,7 +102,7 @@ def ln_pme(
         synthetic_cashflows = []
         synthetic_dates = []
 
-        for i, (cf, idx_val, date) in enumerate(zip(cashflows, index_values, dates)):
+        for i, (cf, idx_val, date) in enumerate(zip(cashflows, index_values, dates, strict=False)):
             if cf != 0:
                 # Calculate shares bought/sold: Q_t = |CF_t| / I_t × sign(-CF_t)
                 shares_transacted = abs(cf) / idx_val * np.sign(-cf)
@@ -159,7 +160,7 @@ def pme_plus(
     nav_values: pd.Series,
     index_values: pd.Series,
     dates: pd.Series,
-) -> Tuple[float, float]:
+) -> tuple[float, float]:
     """
     Calculate PME+ metrics.
 
@@ -180,7 +181,7 @@ def pme_plus(
         distributions_value = 0.0
         contributions_value = 0.0
 
-        for cf, idx_val in zip(cashflows, index_values):
+        for cf, idx_val in zip(cashflows, index_values, strict=False):
             index_factor = final_index / idx_val
 
             if cf < 0:  # Contribution

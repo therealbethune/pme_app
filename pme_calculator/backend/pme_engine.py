@@ -4,12 +4,13 @@ The PME calculations have been integrated into analysis_engine.py for better mai
 This file provides compatibility layer for any code that still imports PMEEngine.
 """
 
-from analysis_engine import PMEAnalysisEngine
+import os
+import tempfile
 from enum import Enum
 from typing import Optional
+
 import pandas as pd
-import tempfile
-import os
+from analysis_engine import PMEAnalysisEngine
 
 
 class BenchmarkType(Enum):
@@ -22,7 +23,7 @@ class BenchmarkType(Enum):
 class PMEResult:
     """PME calculation result wrapper."""
 
-    def __init__(self, value: float, alpha: Optional[float] = None):
+    def __init__(self, value: float, alpha: float | None = None):
         self.value = value
         self.alpha = alpha
 

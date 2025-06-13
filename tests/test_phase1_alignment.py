@@ -5,31 +5,32 @@ Test suite verifying that the data alignment engine fixes the
 "boolean index did not match" error and error envelopes work correctly.
 """
 
-import pytest
-import pandas as pd
-import polars as pl
-from datetime import date, timedelta
-from typing import Tuple
+import os
 
 # Import Phase 1 components
 import sys
-import os
+from datetime import date, timedelta
+
+# from typing import Tuple  # Using built-in tuple instead
+import pandas as pd
+import polars as pl
+import pytest
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
 from pme_math.alignment_engine import DataAlignmentEngine
 from pme_math.error_envelope import (
-    ErrorEnvelope,
-    ErrorDetail,
-    ErrorSeverity,
     ErrorCategory,
-    envelope_ok,
-    envelope_fail,
-    envelope_partial,
     ErrorCollector,
-    wrap_with_envelope,
+    ErrorDetail,
+    ErrorEnvelope,
+    ErrorSeverity,
     create_alignment_error,
     create_missing_data_warning,
+    envelope_fail,
+    envelope_ok,
+    envelope_partial,
+    wrap_with_envelope,
 )
 
 
@@ -71,7 +72,7 @@ class TestDataAlignmentEngine:
         return pd.DataFrame({"date": dates, "value": values})
 
     @pytest.fixture
-    def mismatched_data(self) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    def mismatched_data(self) -> tuple[pd.DataFrame, pd.DataFrame]:
         """Create data that would cause 'boolean index did not match' error."""
         # Fund data: 132 rows (like in the error log)
         fund_dates = pd.date_range("2023-01-01", periods=132, freq="D")

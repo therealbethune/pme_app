@@ -2,19 +2,20 @@
 FastAPI router for metrics endpoints.
 """
 
-from fastapi import APIRouter, Depends, Query
 from typing import Annotated, Optional
-import pandas as pd
+
 import numpy as np
+import pandas as pd
+from fastapi import APIRouter, Depends, Query
 
 router = APIRouter(prefix="/v1/metrics", tags=["metrics"])
 
 
 def get_filters(
-    fund: Optional[str] = Query(None, description="Fund filter"),
-    vintage: Optional[str] = Query(None, description="Vintage year filter"),
-    currency: Optional[str] = Query(None, description="Currency filter"),
-) -> Optional[str]:
+    fund: str | None = Query(None, description="Fund filter"),
+    vintage: str | None = Query(None, description="Vintage year filter"),
+    currency: str | None = Query(None, description="Currency filter"),
+) -> str | None:
     """Extract filters from query parameters."""
     filters = {}
     if fund:
@@ -27,7 +28,7 @@ def get_filters(
     return filters if filters else None
 
 
-def query_twr(filters: Optional[dict] = None) -> pd.DataFrame:
+def query_twr(filters: dict | None = None) -> pd.DataFrame:
     """
     Query TWR data with optional filters.
     Returns a DataFrame with fund and index TWR data.
@@ -59,7 +60,7 @@ def query_twr(filters: Optional[dict] = None) -> pd.DataFrame:
 
 
 @router.get("/twr_vs_index")
-async def twr_vs_index(filters: Annotated[Optional[dict], Depends(get_filters)] = None):
+async def twr_vs_index(filters: Annotated[dict | None, Depends(get_filters)] = None):
     """
     Get TWR vs Index comparison data for charting.
     Returns Plotly-compatible data and layout.

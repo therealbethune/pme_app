@@ -3,13 +3,13 @@ Professional logging configuration for PME Calculator backend.
 Replaces print statements with structured logging.
 """
 
+import json
 import logging
 import logging.handlers
 import sys
+from datetime import UTC, datetime, timezone
 from pathlib import Path
 from typing import Optional
-import json
-from datetime import datetime, timezone
 
 
 class UTCFormatter(logging.Formatter):
@@ -17,7 +17,7 @@ class UTCFormatter(logging.Formatter):
 
     def formatTime(self, record, datefmt=None):
         """Override to use UTC time."""
-        dt = datetime.fromtimestamp(record.created, tz=timezone.utc)
+        dt = datetime.fromtimestamp(record.created, tz=UTC)
         if datefmt:
             return dt.strftime(datefmt)
         return dt.isoformat()
@@ -32,7 +32,7 @@ class JSONFormatter(logging.Formatter):
 
     def formatTime(self, record, datefmt=None):
         """Override to use UTC time."""
-        dt = datetime.fromtimestamp(record.created, tz=timezone.utc)
+        dt = datetime.fromtimestamp(record.created, tz=UTC)
         return dt.isoformat()
 
     def format(self, record: logging.LogRecord) -> str:
@@ -65,7 +65,7 @@ class JSONFormatter(logging.Formatter):
 
 def setup_logging(
     log_level: str = "INFO",
-    log_file: Optional[str] = None,
+    log_file: str | None = None,
     enable_console: bool = True,
     enable_json: bool = False,
 ) -> logging.Logger:

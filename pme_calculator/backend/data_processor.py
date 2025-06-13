@@ -9,13 +9,14 @@ This module provides intelligent data processing capabilities that can:
 5. Support multiple portfolio/fund datasets
 """
 
-import pandas as pd
-from typing import Dict, List, Any, Optional, Tuple, Union
-from datetime import datetime, date
+import logging
 import re
 from dataclasses import dataclass, field
+from datetime import date, datetime
 from enum import Enum
-import logging
+from typing import Any, Dict, List, Optional, Tuple, Union
+
+import pandas as pd
 
 logger = logging.getLogger(__name__)
 
@@ -45,10 +46,10 @@ class DataIssue:
     title: str
     description: str
     severity: str  # 'error', 'warning', 'info'
-    affected_columns: List[str]
-    affected_rows: List[int]
+    affected_columns: list[str]
+    affected_rows: list[int]
     fix_description: str
-    fix_parameters: Dict[str, Any]
+    fix_parameters: dict[str, Any]
     auto_fixable: bool = True
 
 
@@ -60,7 +61,7 @@ class ColumnMapping:
     standardized_name: str
     data_type: DataType
     confidence: float
-    transformations: List[str] = field(default_factory=list)
+    transformations: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -70,8 +71,8 @@ class DatasetMetadata:
     name: str
     rows: int
     columns: int
-    date_range: Tuple[datetime, datetime]
-    column_mappings: List[ColumnMapping]
+    date_range: tuple[datetime, datetime]
+    column_mappings: list[ColumnMapping]
     data_quality_score: float
     missing_data_percentage: float
 
@@ -81,9 +82,9 @@ class UnclassifiedColumn:
     """Represents a column that needs user classification"""
 
     column_name: str
-    sample_values: List[Union[str, float, int]]
-    detected_patterns: List[str]
-    suggested_type: Optional[str]
+    sample_values: list[str | float | int]
+    detected_patterns: list[str]
+    suggested_type: str | None
     confidence: float
     file_name: str
 
@@ -93,13 +94,13 @@ class OptimalDataStructure:
     """The optimal data structure for PME calculations"""
 
     fund_data: pd.DataFrame
-    index_data: Optional[pd.DataFrame]
-    metadata: Dict[str, DatasetMetadata]
+    index_data: pd.DataFrame | None
+    metadata: dict[str, DatasetMetadata]
     calculation_ready: bool
-    warnings: List[str] = field(default_factory=list)
-    suggestions: List[str] = field(default_factory=list)
-    unclassified_columns: List[UnclassifiedColumn] = field(default_factory=list)
-    data_issues: List[DataIssue] = field(default_factory=list)
+    warnings: list[str] = field(default_factory=list)
+    suggestions: list[str] = field(default_factory=list)
+    unclassified_columns: list[UnclassifiedColumn] = field(default_factory=list)
+    data_issues: list[DataIssue] = field(default_factory=list)
 
 
 class IntelligentDataProcessor:
@@ -128,7 +129,7 @@ class IntelligentDataProcessor:
             "%d %b %Y",
         ]
 
-    def _initialize_column_patterns(self) -> Dict[DataType, List[str]]:
+    def _initialize_column_patterns(self) -> dict[DataType, list[str]]:
         """Initialize regex patterns for column detection"""
         return {
             DataType.DATE: [
@@ -207,7 +208,7 @@ class IntelligentDataProcessor:
         }
 
     def detect_column_type(
-        self, column_name: str, sample_values: List[Any]
+        self, column_name: str, sample_values: list[Any]
     ) -> ColumnMapping:
         """
         Detect the type and purpose of a column based on name and sample values
@@ -248,8 +249,8 @@ class IntelligentDataProcessor:
         )
 
     def _analyze_sample_values(
-        self, sample_values: List[Any]
-    ) -> Tuple[DataType, float]:
+        self, sample_values: list[Any]
+    ) -> tuple[DataType, float]:
         """Analyze sample values to determine data type"""
         if not sample_values:
             return DataType.UNKNOWN, 0.0
@@ -299,7 +300,7 @@ class IntelligentDataProcessor:
 
         return DataType.TEXT, 0.5
 
-    def _detect_cash_flow_patterns(self, numeric_values: List[float]) -> Dict[str, Any]:
+    def _detect_cash_flow_patterns(self, numeric_values: list[float]) -> dict[str, Any]:
         """Detect patterns that indicate cash flow types"""
         if not numeric_values:
             return {"is_likely_cash_flow": False, "specific_type": None, "patterns": []}
@@ -383,16 +384,14 @@ class IntelligentDataProcessor:
 
     def process_dataset(
         self,
-        data: Union[pd.DataFrame, Dict[str, List], List[Dict]],
+        data: pd.DataFrame | dict[str, list] | list[dict],
         dataset_name: str = "dataset",
-    ) -> Tuple[pd.DataFrame, DatasetMetadata]:
+    ) -> tuple[pd.DataFrame, DatasetMetadata]:
         """
         Process a single dataset and return optimized structure
         """
         # Convert to DataFrame if needed
-        if isinstance(data, dict):
-            df = pd.DataFrame(data)
-        elif isinstance(data, list):
+        if isinstance(data, dict) or isinstance(data, list):
             df = pd.DataFrame(data)
         else:
             df = data.copy()
@@ -417,7 +416,7 @@ class IntelligentDataProcessor:
         return transformed_df, metadata
 
     def _apply_transformations(
-        self, df: pd.DataFrame, mappings: List[ColumnMapping]
+        self, df: pd.DataFrame, mappings: list[ColumnMapping]
     ) -> pd.DataFrame:
         """Apply necessary transformations to optimize the data structure"""
         result_df = df.copy()
@@ -528,7 +527,7 @@ class IntelligentDataProcessor:
         return series.apply(parse_percentage)
 
     def _calculate_metadata(
-        self, name: str, df: pd.DataFrame, mappings: List[ColumnMapping]
+        self, name: str, df: pd.DataFrame, mappings: list[ColumnMapping]
     ) -> DatasetMetadata:
         """Calculate metadata for the processed dataset"""
         date_columns = [
@@ -562,7 +561,7 @@ class IntelligentDataProcessor:
         )
 
     def _calculate_quality_score(
-        self, df: pd.DataFrame, mappings: List[ColumnMapping]
+        self, df: pd.DataFrame, mappings: list[ColumnMapping]
     ) -> float:
         """Calculate overall data quality score"""
         if df.empty:
@@ -583,9 +582,9 @@ class IntelligentDataProcessor:
     def detect_data_issues(
         self,
         df: pd.DataFrame,
-        mappings: List[ColumnMapping],
+        mappings: list[ColumnMapping],
         dataset_name: str = "dataset",
-    ) -> List[DataIssue]:
+    ) -> list[DataIssue]:
         """Detect common data issues that can be automatically fixed"""
         issues = []
 
@@ -616,8 +615,8 @@ class IntelligentDataProcessor:
         return issues
 
     def _detect_date_issues(
-        self, df: pd.DataFrame, mappings: List[ColumnMapping]
-    ) -> List[DataIssue]:
+        self, df: pd.DataFrame, mappings: list[ColumnMapping]
+    ) -> list[DataIssue]:
         """Detect date formatting and parsing issues"""
         issues = []
 
@@ -653,8 +652,8 @@ class IntelligentDataProcessor:
         return issues
 
     def _detect_missing_value_issues(
-        self, df: pd.DataFrame, mappings: List[ColumnMapping]
-    ) -> List[DataIssue]:
+        self, df: pd.DataFrame, mappings: list[ColumnMapping]
+    ) -> list[DataIssue]:
         """Detect critical missing values"""
         issues = []
 
@@ -696,8 +695,8 @@ class IntelligentDataProcessor:
         return issues
 
     def _detect_cash_flow_sign_issues(
-        self, df: pd.DataFrame, mappings: List[ColumnMapping]
-    ) -> List[DataIssue]:
+        self, df: pd.DataFrame, mappings: list[ColumnMapping]
+    ) -> list[DataIssue]:
         """Detect cash flow sign inconsistencies"""
         issues = []
 
@@ -765,7 +764,7 @@ class IntelligentDataProcessor:
 
         return issues
 
-    def _detect_duplicate_issues(self, df: pd.DataFrame) -> List[DataIssue]:
+    def _detect_duplicate_issues(self, df: pd.DataFrame) -> list[DataIssue]:
         """Detect duplicate rows"""
         issues = []
 
@@ -788,7 +787,7 @@ class IntelligentDataProcessor:
 
         return issues
 
-    def _detect_naming_issues(self, df: pd.DataFrame) -> List[DataIssue]:
+    def _detect_naming_issues(self, df: pd.DataFrame) -> list[DataIssue]:
         """Detect column naming inconsistencies"""
         issues = []
 
@@ -818,8 +817,8 @@ class IntelligentDataProcessor:
         return issues
 
     def _detect_numeric_issues(
-        self, df: pd.DataFrame, mappings: List[ColumnMapping]
-    ) -> List[DataIssue]:
+        self, df: pd.DataFrame, mappings: list[ColumnMapping]
+    ) -> list[DataIssue]:
         """Detect invalid numeric values"""
         issues = []
 
@@ -931,9 +930,9 @@ class IntelligentDataProcessor:
 
     def create_optimal_structure(
         self,
-        datasets: Dict[str, Union[pd.DataFrame, Dict, List]],
+        datasets: dict[str, pd.DataFrame | dict | list],
         primary_dataset: str = None,
-        column_classifications: Optional[Dict[str, str]] = None,
+        column_classifications: dict[str, str] | None = None,
     ) -> OptimalDataStructure:
         """
         Create the optimal data structure for PME calculations from multiple datasets
@@ -1076,9 +1075,9 @@ class IntelligentDataProcessor:
     def _validate_calculation_readiness(
         self,
         fund_data: pd.DataFrame,
-        index_data: Optional[pd.DataFrame],
-        warnings: List[str],
-        suggestions: List[str],
+        index_data: pd.DataFrame | None,
+        warnings: list[str],
+        suggestions: list[str],
     ) -> bool:
         """Validate if the data structure is ready for PME calculations"""
         ready = True
@@ -1138,7 +1137,7 @@ class IntelligentDataProcessor:
 
 # Convenience function for quick processing
 def process_multiple_datasets(
-    datasets: Dict[str, Any], primary_dataset: str = None
+    datasets: dict[str, Any], primary_dataset: str = None
 ) -> OptimalDataStructure:
     """
     Convenience function to quickly process multiple datasets

@@ -4,11 +4,13 @@ Comprehensive data validation for PME Calculator using Pydantic.
 """
 
 from __future__ import annotations
-from pydantic import BaseModel, field_validator, Field
-from typing import List, Optional, Union, Tuple
-from datetime import datetime, date
+
+from datetime import date, datetime
 from enum import Enum
+from typing import List, Optional, Tuple, Union
+
 import pandas as pd
+from pydantic import BaseModel, Field, field_validator
 
 
 # Data Quality Enums
@@ -37,11 +39,11 @@ class ValidationSeverity(str, Enum):
 class FundCashFlowRecord(BaseModel):
     """Individual fund cash flow record with validation."""
 
-    date: Union[datetime, date, str]
+    date: datetime | date | str
     cashflow: float
     nav: float
-    description: Optional[str] = None
-    type: Optional[CashFlowType] = CashFlowType.UNKNOWN
+    description: str | None = None
+    type: CashFlowType | None = CashFlowType.UNKNOWN
 
     @field_validator("date", mode="before")
     @classmethod
@@ -75,10 +77,10 @@ class FundCashFlowRecord(BaseModel):
 class IndexRecord(BaseModel):
     """Individual index/benchmark record with validation."""
 
-    date: Union[datetime, date, str]
+    date: datetime | date | str
     price: float
-    total_return_index: Optional[float] = None
-    dividend_yield: Optional[float] = None
+    total_return_index: float | None = None
+    dividend_yield: float | None = None
 
     @field_validator("date", mode="before")
     @classmethod
@@ -111,7 +113,7 @@ class ValidationError(BaseModel):
     error_type: str
     message: str
     severity: ValidationSeverity
-    suggested_fix: Optional[str] = None
+    suggested_fix: str | None = None
 
 
 class DataQualityReport(BaseModel):
@@ -123,11 +125,11 @@ class DataQualityReport(BaseModel):
     valid_records: int
     error_count: int
     warning_count: int
-    errors: List[ValidationError] = Field(default_factory=list)
+    errors: list[ValidationError] = Field(default_factory=list)
     completeness_score: float
     consistency_score: float
     timeliness_score: float
-    suggestions: List[str] = Field(default_factory=list)
+    suggestions: list[str] = Field(default_factory=list)
 
 
 class ColumnMapping(BaseModel):
@@ -137,7 +139,7 @@ class ColumnMapping(BaseModel):
     standardized_name: str
     data_type: str
     confidence: float = Field(..., ge=0, le=1)
-    transformations: List[str] = Field(default_factory=list)
+    transformations: list[str] = Field(default_factory=list)
 
 
 class DatasetMetadata(BaseModel):
@@ -146,10 +148,10 @@ class DatasetMetadata(BaseModel):
     name: str
     rows: int
     columns: int
-    date_range: Tuple[datetime, datetime]
+    date_range: tuple[datetime, datetime]
     data_quality_score: float
     missing_data_percentage: float
-    column_mappings: List[ColumnMapping] = Field(default_factory=list)
+    column_mappings: list[ColumnMapping] = Field(default_factory=list)
 
 
 # Analysis Request Models
@@ -157,11 +159,11 @@ class AnalysisRequest(BaseModel):
     """PME analysis request with parameters."""
 
     fund_file_id: str
-    index_file_id: Optional[str] = None
-    calculation_methods: List[str] = Field(
+    index_file_id: str | None = None
+    calculation_methods: list[str] = Field(
         default=["kaplan_schoar", "pme_plus", "direct_alpha"]
     )
-    benchmark_index: Optional[str] = "SP500"
+    benchmark_index: str | None = "SP500"
     risk_free_rate: float = 0.025
     confidence_level: float = 0.95
     include_monte_carlo: bool = False
@@ -367,8 +369,8 @@ class DataValidator:
 
     @staticmethod
     def intelligent_column_mapping(
-        columns: List[str], data_type: str = "fund"
-    ) -> List[ColumnMapping]:
+        columns: list[str], data_type: str = "fund"
+    ) -> list[ColumnMapping]:
         """Intelligent column mapping with confidence scoring."""
         mappings = []
 

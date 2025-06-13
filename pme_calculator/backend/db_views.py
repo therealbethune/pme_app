@@ -3,12 +3,13 @@ Materialised-view layer: summarised IRR/PME results per fund_id
 to serve as L-3 cache when Redis misses.
 """
 
-import duckdb
-import os
 import json
+import os
 import pathlib
 import tempfile
-from typing import Optional, Dict, Any
+from typing import Any, Dict, Optional
+
+import duckdb
 from logger import get_logger
 
 logger = get_logger(__name__)
@@ -52,7 +53,7 @@ def get_writable_db_path():
 DB_PATH = get_writable_db_path()
 
 # Global connection
-_conn: Optional[duckdb.DuckDBPyConnection] = None
+_conn: duckdb.DuckDBPyConnection | None = None
 
 
 def get_connection() -> duckdb.DuckDBPyConnection:
@@ -114,7 +115,7 @@ def refresh():
         raise
 
 
-def get(fund_id: str) -> Optional[Dict[str, Any]]:
+def get(fund_id: str) -> dict[str, Any] | None:
     """
     Get cached IRR/PME data for a fund from materialized view.
 
@@ -141,7 +142,7 @@ def get(fund_id: str) -> Optional[Dict[str, Any]]:
         return None
 
 
-def set(fund_id: str, data: Dict[str, Any]) -> bool:
+def set(fund_id: str, data: dict[str, Any]) -> bool:
     """
     Store IRR/PME data for a fund in the cache table.
 
@@ -173,7 +174,7 @@ def set(fund_id: str, data: Dict[str, Any]) -> bool:
         return False
 
 
-def clear(fund_id: Optional[str] = None) -> int:
+def clear(fund_id: str | None = None) -> int:
     """
     Clear cached data for a specific fund or all funds.
 
@@ -206,7 +207,7 @@ def clear(fund_id: Optional[str] = None) -> int:
         return 0
 
 
-def stats() -> Dict[str, Any]:
+def stats() -> dict[str, Any]:
     """Get DuckDB cache statistics."""
     try:
         conn = get_connection()

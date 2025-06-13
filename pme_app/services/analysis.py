@@ -1,8 +1,9 @@
 """Analysis service for PME calculations - pure business logic without dependencies."""
 
+from typing import Any
+
 import numpy as np
 import pandas as pd
-from typing import Tuple, Any
 from numpy.typing import NDArray
 
 from pme_app.logger import logger
@@ -99,7 +100,7 @@ def compute_drawdown(series: pd.Series) -> float:
 
 def compute_alpha_beta(
     fund_returns: pd.Series, index_returns: pd.Series
-) -> Tuple[float, float]:
+) -> tuple[float, float]:
     """Compute alpha and beta using linear regression."""
     fund_returns = pd.Series(fund_returns).dropna()
     index_returns = pd.Series(index_returns).dropna()
@@ -121,11 +122,11 @@ def compute_alpha_beta(
     index_returns_aligned = index_returns[idx]
 
     # Add a constant for linear regression
-    X = pd.DataFrame({"alpha": 1, "beta": index_returns_aligned})
+    x_matrix = pd.DataFrame({"alpha": 1, "beta": index_returns_aligned})
 
     try:
         # OLS regression to find alpha and beta
-        params = np.linalg.lstsq(X, fund_returns_aligned, rcond=None)[0]
+        params = np.linalg.lstsq(x_matrix, fund_returns_aligned, rcond=None)[0]
         alpha, beta = params[0], params[1]
     except (np.linalg.LinAlgError, ValueError):
         alpha, beta = np.nan, np.nan
