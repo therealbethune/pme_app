@@ -1,0 +1,8 @@
+fastapi
+pydantic
+numpy
+pandas
+polars
+uvicorn
+redis
+hiredis 

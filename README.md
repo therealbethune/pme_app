@@ -1,5 +1,6 @@
 # PME Calculator 📊
 
+![Coverage](./coverage.svg)
 [![CI](https://github.com/username/pme_app/workflows/CI/badge.svg)](https://github.com/username/pme_app/actions)
 
 **Professional Private Market Equivalent (PME) Analysis Platform**
