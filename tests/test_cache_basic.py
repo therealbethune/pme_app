@@ -13,6 +13,7 @@ import asyncio
 from unittest.mock import AsyncMock, patch
 
 import pytest
+import pytest_asyncio
 
 from pme_calculator.backend.cache import (
     cache_clear_pattern,
@@ -163,8 +164,18 @@ class TestCachePatterns:
 class TestCacheStats:
     """Test cache statistics and monitoring."""
 
-    async def test_cache_stats(self):
+    @patch("pme_calculator.backend.cache.get_redis_pool")
+    async def test_cache_stats(self, mock_get_pool):
         """Test cache statistics retrieval."""
+        # Mock Redis to avoid event loop issues in test environment
+        mock_redis = AsyncMock()
+        mock_redis.info.return_value = {
+            "used_memory_human": "1.23M",
+            "used_memory_peak_human": "2.34M",
+        }
+        mock_redis.keys.return_value = ["pme:key1", "pme:key2"]
+        mock_get_pool.return_value = mock_redis
+
         stats = await cache_stats()
 
         assert "connected" in stats
@@ -172,6 +183,7 @@ class TestCacheStats:
         assert "redis_memory_used" in stats
         assert "pme_cache_keys" in stats
         assert isinstance(stats["pme_cache_keys"], int)
+        assert stats["pme_cache_keys"] == 2
 
 
 @pytest.mark.asyncio
@@ -256,8 +268,11 @@ def test_cache_roundtrip_sprint_example():
 
 
 # Cleanup fixture
-@pytest.fixture(scope="session", autouse=True)
+@pytest_asyncio.fixture(scope="session", autouse=True)
 async def cleanup_cache():
     """Clean up cache connections after tests."""
     yield
-    await close_redis_pool()
+    try:
+        await close_redis_pool()
+    except Exception:
+        pass  # Ignore cleanup errors if event loop is already closed

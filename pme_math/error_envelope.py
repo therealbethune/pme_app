@@ -277,10 +277,12 @@ class ErrorCollector:
     ) -> ErrorEnvelope[T]:
         """Convert collector state to an error envelope."""
         if self.has_errors():
-            return envelope_fail(
-                errors=self.errors,
+            return ErrorEnvelope(
+                success=False,
                 data=data,
-                metadata=metadata,
+                errors=self.errors,
+                warnings=self.warnings,  # Include warnings even when there are errors
+                metadata=metadata or {},
                 performance=performance,
             )
         elif self.warnings:

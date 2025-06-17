@@ -8,7 +8,7 @@ import json
 # Import the modules we need to test
 import sys
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
@@ -53,16 +53,18 @@ async def test_cache_roundtrip():
 
     # Mock Redis operations to avoid needing actual Redis
     with patch("cache.get_redis_pool") as mock_redis:
-        mock_redis_instance = MagicMock()
+        mock_redis_instance = AsyncMock()
         mock_redis.return_value = mock_redis_instance
 
-        # Mock successful set
-        mock_redis_instance.set.return_value = True
+        # Mock successful set - use AsyncMock for async operations
+        mock_redis_instance.set = AsyncMock(return_value=True)
         result = await cache_set(key, test_data, ttl=300)
         assert result is True
 
-        # Mock successful get
-        mock_redis_instance.get.return_value = json.dumps(test_data, default=str)
+        # Mock successful get - use AsyncMock for async operations
+        mock_redis_instance.get = AsyncMock(
+            return_value=json.dumps(test_data, default=str)
+        )
         cached_data = await cache_get(key)
         assert cached_data == test_data
 
@@ -112,21 +114,21 @@ async def test_cache_miss_and_hit_pattern():
     key = make_cache_key("irr_pme", {"fund": "FUND_A"})
 
     with patch("cache.get_redis_pool") as mock_redis:
-        mock_redis_instance = MagicMock()
+        mock_redis_instance = AsyncMock()
         mock_redis.return_value = mock_redis_instance
 
-        # First call: cache miss
-        mock_redis_instance.get.return_value = None
+        # First call: cache miss - use AsyncMock for async operations
+        mock_redis_instance.get = AsyncMock(return_value=None)
         result1 = await cache_get(key)
         assert result1 is None
 
-        # Set data in cache
+        # Set data in cache - use AsyncMock for async operations
         test_data = {"fund_id": "FUND_A", "irr": 0.15}
-        mock_redis_instance.set.return_value = True
+        mock_redis_instance.set = AsyncMock(return_value=True)
         await cache_set(key, test_data)
 
-        # Second call: cache hit
-        mock_redis_instance.get.return_value = json.dumps(test_data)
+        # Second call: cache hit - use AsyncMock for async operations
+        mock_redis_instance.get = AsyncMock(return_value=json.dumps(test_data))
         result2 = await cache_get(key)
         assert result2 == test_data
 

@@ -15,7 +15,7 @@ import hashlib
 import json
 import logging
 import os
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 import redis.asyncio as redis
 
@@ -203,6 +203,16 @@ async def cache_clear_pattern(pattern: str) -> int:
 async def cache_stats() -> dict[str, Any]:
     """Get cache statistics."""
     try:
+        # Check if event loop is running and functional
+        import asyncio
+
+        try:
+            loop = asyncio.get_running_loop()
+            if loop.is_closed():
+                return {"connected": False, "error": "Event loop is closed"}
+        except RuntimeError:
+            return {"connected": False, "error": "No event loop available"}
+
         redis = await get_redis_pool()
         info = await redis.info("memory")
         keyspace = await redis.info("keyspace")
@@ -262,6 +272,146 @@ async def close_redis_pool():
     """Close Redis connection pool gracefully."""
     global _redis_pool
     if _redis_pool:
-        await _redis_pool.close()
+        await _redis_pool.aclose()
         _redis_pool = None
         logger.info("Redis connection pool closed")
+
+
+# Compatibility aliases for tests
+get_cache = cache_get
+set_cache = cache_set
+delete_cache = cache_delete
+
+
+async def cache_exists(key: str) -> bool:
+    """Check if a cache key exists."""
+    try:
+        redis = await get_redis_pool()
+        exists = await redis.exists(key)
+        return bool(exists)
+    except Exception as e:
+        logger.error(f"Cache exists error for key {key}: {e}")
+        return False
+
+
+async def init_cache() -> bool:
+    """Initialize cache connection."""
+    try:
+        await get_redis_pool()
+        return True
+    except Exception:
+        return False
+
+
+def cached(ttl: int = DEFAULT_TTL, key_prefix: str = ""):
+    """
+    Decorator for caching function results with custom key prefix.
+
+    Args:
+        ttl: Time to live in seconds
+        key_prefix: Custom prefix for cache keys
+
+    Usage:
+        @cached(ttl=3600, key_prefix="my_func")
+        async def my_function(arg1, arg2):
+            return expensive_calculation()
+    """
+
+    def decorator(func):
+        async def wrapper(*args, **kwargs):
+            # Generate cache key from function name and arguments
+            func_name = key_prefix or func.__name__
+            cache_key = make_cache_key(func_name, {"args": str(args), "kwargs": kwargs})
+
+            # Try cache first
+            cached_result = await cache_get(cache_key)
+            if cached_result:
+                return cached_result
+
+            # Execute function and cache result
+            result = await func(*args, **kwargs)
+            await cache_set(cache_key, result, ttl)
+            return result
+
+        return wrapper
+
+    return decorator
+
+
+class CacheManager:
+    """
+    Cache manager singleton for backward compatibility with tests.
+    This provides a class-based interface to the cache functions.
+    """
+
+    _instance = None
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+            cls._instance._initialized = False
+        return cls._instance
+
+    def __init__(self):
+        if not self._initialized:
+            self._redis_url = REDIS_URL
+            self.redis = None
+            self.is_connected = False
+            self._initialized = True
+
+    async def initialize(self) -> bool:
+        """Initialize Redis connection."""
+        try:
+            self.redis = await get_redis_pool()
+            self.is_connected = True
+            return True
+        except Exception:
+            self.is_connected = False
+            self.redis = None
+            return False
+
+    async def close(self):
+        """Close Redis connection."""
+        if self.redis:
+            await close_redis_pool()
+            self.is_connected = False
+            self.redis = None
+
+    async def get(self, key: str):
+        """Get cached value."""
+        if not self.is_connected:
+            return None
+        return await cache_get(key)
+
+    async def set(self, key: str, value, ttl: int = DEFAULT_TTL) -> bool:
+        """Set cached value."""
+        if not self.is_connected:
+            return False
+        return await cache_set(key, value, ttl)
+
+    async def delete(self, key: str) -> bool:
+        """Delete cached value."""
+        if not self.is_connected:
+            return False
+        return await cache_delete(key)
+
+    async def exists(self, key: str) -> bool:
+        """Check if key exists."""
+        if not self.is_connected:
+            return False
+        return await cache_exists(key)
+
+    async def expire(self, key: str, ttl: int) -> bool:
+        """Set TTL for existing key."""
+        if not self.is_connected:
+            return False
+        try:
+            redis = await get_redis_pool()
+            result = await redis.expire(key, ttl)
+            return bool(result)
+        except Exception:
+            return False
+
+    def generate_key(self, *args, **kwargs) -> str:
+        """Generate cache key from arguments."""
+        return make_cache_key("generated", {"args": args, "kwargs": kwargs})
