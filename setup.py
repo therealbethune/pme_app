@@ -9,7 +9,7 @@ setup(
     packages=find_packages(
         include=["pme_app", "pme_app.*", "pme_calculator", "pme_calculator.*"]
     ),
-    python_requires=">=3.7",
+    python_requires=">=3.11",
     install_requires=[
         "numpy",
         "pandas",
