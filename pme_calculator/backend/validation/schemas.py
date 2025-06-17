@@ -7,7 +7,7 @@ import datetime as dt
 import re
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
@@ -61,8 +61,8 @@ def parse_decimal_value(value):
         value = cleaned
     try:
         return float(value)
-    except (ValueError, TypeError):
-        raise ValueError(f"Invalid numeric value: {value}")
+    except (ValueError, TypeError) as err:
+        raise ValueError(f"Invalid numeric value: {value}") from err
 
 
 class CashflowRow(BaseModel):
@@ -100,7 +100,9 @@ class CashflowRow(BaseModel):
             expected_cashflow = self.contributions - self.distributions
             if abs(self.cashflow - expected_cashflow) > 0.01:
                 raise ValueError(
-                    f"Cashflow {self.cashflow} doesn't match contributions {self.contributions} - distributions {self.distributions}"
+                    f"Cashflow {self.cashflow} doesn't match "
+                    f"contributions {self.contributions} - "
+                    f"distributions {self.distributions}"
                 )
         return self
 
@@ -128,9 +130,7 @@ class NavRow(BaseModel):
 class FundDataSchema(BaseModel):
     """Complete fund dataset validation."""
 
-    rows: list[CashflowRow] = Field(
-        ..., min_length=3, description="Minimum 3 data points required"
-    )
+    rows: list[CashflowRow] = Field(..., min_length=3, description="Minimum 3 data points required")
     metadata: dict[str, Any] = Field(default_factory=dict)
 
     @field_validator("rows")
@@ -156,9 +156,7 @@ class FundDataSchema(BaseModel):
 class IndexDataSchema(BaseModel):
     """Complete index dataset validation."""
 
-    rows: list[NavRow] = Field(
-        ..., min_length=3, description="Minimum 3 data points required"
-    )
+    rows: list[NavRow] = Field(..., min_length=3, description="Minimum 3 data points required")
     metadata: dict[str, Any] = Field(default_factory=dict)
 
     @field_validator("rows")
@@ -202,9 +200,7 @@ class UploadMeta(BaseModel):
         # Check for potentially dangerous characters
         forbidden_chars = ["<", ">", ":", '"', "|", "?", "*"]
         if any(char in v for char in forbidden_chars):
-            raise ValueError(
-                f"Filename contains forbidden characters: {forbidden_chars}"
-            )
+            raise ValueError(f"Filename contains forbidden characters: {forbidden_chars}")
 
         return v.strip()
 
@@ -233,12 +229,8 @@ class AnalysisRequest(BaseModel):
     fund_file_id: str
     index_file_id: str | None = None
     method: AnalysisMethodEnum = AnalysisMethodEnum.KAPLAN_SCHOAR
-    risk_free_rate: float = Field(
-        0.025, ge=0, le=1, description="Risk-free rate (default 2.5%)"
-    )
-    confidence_level: float = Field(
-        0.95, gt=0, lt=1, description="Confidence level (default 95%)"
-    )
+    risk_free_rate: float = Field(0.025, ge=0, le=1, description="Risk-free rate (default 2.5%)")
+    confidence_level: float = Field(0.95, gt=0, lt=1, description="Confidence level (default 95%)")
     start_date: str | None = None
     end_date: str | None = None
 
