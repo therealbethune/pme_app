@@ -8,16 +8,26 @@ setup(
     author_email="you@example.com",
     packages=find_packages(include=["pme_app", "pme_app.*"]),
     python_requires=">=3.7",
-    install_requires=["numpy", "pandas", "matplotlib", "numpy_financial", "scipy"],
+    install_requires=[
+        "numpy",
+        "pandas",
+        "matplotlib",
+        "numpy_financial",
+        "scipy",
+        "mplcursors",
+        "ttkbootstrap",
+        "fastapi>=0.111,<1.0",
+    ],
     extras_require={
         "dev": [
             "black",
-            "ruff",
-            "pytest",
-            "pytest-cov",
-            "pytest-asyncio",
-            "polars",
             "mypy==1.10.0",
+            "pytest",
+            "pytest-asyncio",
+            "pytest-cov",
+            "polars",
+            "ruff",
+            "uvicorn[standard]>=0.30",
         ]
     },
     entry_points={
