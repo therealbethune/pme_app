@@ -16,4 +16,16 @@ disallow_untyped_decorators = true
 
 # Allow some flexibility for gradual adoption
 allow_redefinition = true
-implicit_reexport = true 
+implicit_reexport = true
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.black]
+line-length = 88
+
+[tool.ruff]
+line-length = 88
+select = ["E", "F", "W", "I", "N"]
+fixable = ["ALL"] 

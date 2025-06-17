@@ -16,17 +16,13 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt', 'setup.py') }}
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt', 'setup.py', 'tox.ini') }}
           restore-keys: |
             ${{ runner.os }}-pip-
-      - name: Install backend deps
-        run: |
-          python -m pip install --upgrade pip
-          pip install tox>=4.0.0
-          pip install -r requirements.txt
-          pip install -r pme_calculator/backend/requirements.txt
-      - name: Run type checking and tests
-        run: tox -e all
+      - name: Install tox
+        run: python -m pip install --upgrade pip tox
+      - name: Run checks with tox
+        run: tox
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v4
         with:
