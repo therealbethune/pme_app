@@ -201,7 +201,7 @@ def _ln_pme(cf, idx, dates):
     try:
         # Simplified Long-Nickels calculation
         # Calculate IRR-like metric
-        cf_dict = dict(zip(dates, cf, strict=False))
+        cf_dict = dict(zip(dates, cf, strict=True))
         ln_irr = xirr_wrapper(cf_dict)
 
         return (safe_float(ln_irr, 0.0), 0.0)
@@ -367,7 +367,7 @@ class PMEAnalysisEngine:
                     cf_dates.append(fund_dates.iloc[-1])
                     cf_values.append(final_nav)
 
-                fund_irr = xirr_wrapper(dict(zip(cf_dates, cf_values, strict=False)))
+                fund_irr = xirr_wrapper(dict(zip(cf_dates, cf_values, strict=True)))
                 fund_irr = safe_float(fund_irr, 0.0)
             except Exception as e:
                 logger.warning(f"Could not calculate IRR: {e}")
@@ -458,7 +458,7 @@ class PMEAnalysisEngine:
                                     - 1
                                 )
                                 index_cf_dict = dict(
-                                    zip(common_dates[1:], index_returns, strict=False)
+                                    zip(common_dates[1:], index_returns, strict=True)
                                 )
                                 index_irr = xirr_wrapper(index_cf_dict)
                                 index_irr = safe_float(index_irr, 0.0)

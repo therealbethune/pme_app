@@ -103,7 +103,7 @@ def ln_pme(
         synthetic_dates = []
 
         for _i, (cf, idx_val, date) in enumerate(
-            zip(cashflows, index_values, dates, strict=False)
+            zip(cashflows, index_values, dates, strict=True)
         ):
             if cf != 0:
                 # Calculate shares bought/sold: Q_t = |CF_t| / I_t × sign(-CF_t)
@@ -183,7 +183,7 @@ def pme_plus(
         distributions_value = 0.0
         contributions_value = 0.0
 
-        for cf, idx_val in zip(cashflows, index_values, strict=False):
+        for cf, idx_val in zip(cashflows, index_values, strict=True):
             index_factor = final_index / idx_val
 
             if cf < 0:  # Contribution

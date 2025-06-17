@@ -151,7 +151,7 @@ class PortfolioService:
             values = [m.get(metric, 0) for m in fund_metrics]
             if all(isinstance(v, int | float) and not np.isnan(v) for v in values):
                 weighted_kpis[f"Portfolio {metric}"] = sum(
-                    v * w for v, w in zip(values, normalized_weights, strict=False)
+                    v * w for v, w in zip(values, normalized_weights, strict=True)
                 )
 
         # Total values (sum, not weighted average)

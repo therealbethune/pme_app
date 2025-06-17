@@ -390,7 +390,7 @@ class ReportingService:
                 optimal_weights = analytics["optimal_weights"]["optimal_weights"]
 
                 for i, (current, optimal) in enumerate(
-                    zip(current_weights, optimal_weights, strict=False)
+                    zip(current_weights, optimal_weights, strict=True)
                 ):
                     weights_data.append(
                         {
