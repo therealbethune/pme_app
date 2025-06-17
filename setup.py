@@ -10,7 +10,15 @@ setup(
     python_requires=">=3.7",
     install_requires=["numpy", "pandas", "matplotlib", "numpy_financial", "scipy"],
     extras_require={
-        "dev": ["black", "ruff", "pytest", "pytest-cov", "pytest-asyncio", "polars"]
+        "dev": [
+            "black",
+            "ruff",
+            "pytest",
+            "pytest-cov",
+            "pytest-asyncio",
+            "polars",
+            "mypy==1.10.0",
+        ]
     },
     entry_points={
         "console_scripts": [
