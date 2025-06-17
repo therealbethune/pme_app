@@ -30,6 +30,7 @@ setup(
             "polars",
             "ruff",
             "uvicorn[standard]>=0.30",
+            "tox>=4.0.0",
         ]
     },
     entry_points={

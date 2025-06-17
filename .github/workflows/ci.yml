@@ -12,17 +12,21 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: {python-version: "3.13"}
+      - name: Cache pip packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt', 'setup.py') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
       - name: Install backend deps
         run: |
           python -m pip install --upgrade pip
+          pip install tox>=4.0.0
           pip install -r requirements.txt
-          pip install mypy pytest coverage
-      - name: Type check with mypy
-        run: mypy pme_app/services
-      - name: Run tests with coverage
-        run: |
-          pytest tests/ --cov=pme_app --cov-report=xml --cov-report=html --cov-fail-under=5 -q
-          cd pme_calculator/backend && pytest tests/ --cov=pme_math --cov-report=term-missing --cov-fail-under=80 -q
+          pip install -r pme_calculator/backend/requirements.txt
+      - name: Run type checking and tests
+        run: tox -e all
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v4
         with:
