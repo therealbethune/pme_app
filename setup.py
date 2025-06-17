@@ -6,7 +6,9 @@ setup(
     description="PME Calculator Core Libraries",
     author="Your Name",
     author_email="you@example.com",
-    packages=find_packages(include=["pme_app", "pme_app.*"]),
+    packages=find_packages(
+        include=["pme_app", "pme_app.*", "pme_calculator", "pme_calculator.*"]
+    ),
     python_requires=">=3.7",
     install_requires=[
         "numpy",

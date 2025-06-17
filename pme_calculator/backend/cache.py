@@ -40,6 +40,9 @@ REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
 DEFAULT_TTL = 86_400  # 24 hours
 CACHE_PREFIX = "pme"
 
+# Redis availability flag for testing
+REDIS_AVAILABLE = True
+
 # Global connection pool
 _redis_pool: redis.Redis | None = None
 
@@ -154,7 +157,10 @@ async def cache_set(key: str, value: dict[str, Any], ttl: int = DEFAULT_TTL) -> 
     """
     try:
         redis = await get_redis_pool()
-        serialized_value = json.dumps(value, default=str)  # Handle datetime objects
+        if isinstance(value, dict | list):
+            serialized_value = json.dumps(value, default=str)
+        else:
+            serialized_value = str(value)
 
         await redis.set(key, serialized_value, ex=ttl)
         logger.debug(f"💾 Cache SET: {key} (TTL: {ttl}s)")
@@ -355,12 +361,21 @@ class CacheManager:
     def __init__(self):
         if not self._initialized:
             self._redis_url = REDIS_URL
+            self._default_ttl = DEFAULT_TTL  # Add missing attribute
             self.redis = None
             self.is_connected = False
             self._initialized = True
 
     async def initialize(self) -> bool:
         """Initialize Redis connection."""
+        import pme_calculator.backend.cache as cache_module
+
+        # Check if Redis is available (for testing purposes)
+        if not getattr(cache_module, "REDIS_AVAILABLE", True):
+            self.is_connected = False
+            self.redis = None
+            return False
+
         try:
             self.redis = await get_redis_pool()
             self.is_connected = True
@@ -373,45 +388,114 @@ class CacheManager:
     async def close(self):
         """Close Redis connection."""
         if self.redis:
-            await close_redis_pool()
+            # For testing, check if redis has close method
+            if hasattr(self.redis, "close"):
+                await self.redis.close()
+            else:
+                await close_redis_pool()
             self.is_connected = False
             self.redis = None
 
     async def get(self, key: str):
         """Get cached value."""
-        if not self.is_connected:
+        if not self.is_connected or not self.redis:
             return None
-        return await cache_get(key)
+        try:
+            cached_value = await self.redis.get(key)
+            if cached_value:
+                try:
+                    return json.loads(cached_value)
+                except (json.JSONDecodeError, TypeError):
+                    return cached_value  # Return as string if not JSON
+            return None
+        except Exception:
+            return None
 
-    async def set(self, key: str, value, ttl: int = DEFAULT_TTL) -> bool:
+    async def set(self, key: str, value, ttl: int = None) -> bool:
         """Set cached value."""
-        if not self.is_connected:
+        if not self.is_connected or not self.redis:
             return False
-        return await cache_set(key, value, ttl)
+        try:
+            # Use instance default TTL if none provided
+            if ttl is None:
+                ttl = self._default_ttl
+
+            if isinstance(value, dict | list):
+                serialized_value = json.dumps(value, default=str)
+            else:
+                serialized_value = str(value)
+            await self.redis.set(key, serialized_value, ex=ttl)
+            return True
+        except Exception:
+            return False
 
     async def delete(self, key: str) -> bool:
         """Delete cached value."""
-        if not self.is_connected:
+        if not self.is_connected or not self.redis:
             return False
-        return await cache_delete(key)
+        try:
+            result = await self.redis.delete(key)
+            return result > 0
+        except Exception:
+            return False
 
     async def exists(self, key: str) -> bool:
         """Check if key exists."""
-        if not self.is_connected:
-            return False
-        return await cache_exists(key)
-
-    async def expire(self, key: str, ttl: int) -> bool:
-        """Set TTL for existing key."""
-        if not self.is_connected:
+        if not self.is_connected or not self.redis:
             return False
         try:
-            redis = await get_redis_pool()
-            result = await redis.expire(key, ttl)
+            result = await self.redis.exists(key)
             return bool(result)
         except Exception:
             return False
 
-    def generate_key(self, *args, **kwargs) -> str:
-        """Generate cache key from arguments."""
-        return make_cache_key("generated", {"args": args, "kwargs": kwargs})
+    async def expire(self, key: str, ttl: int) -> bool:
+        """Set TTL for existing key."""
+        if not self.is_connected or not self.redis:
+            return False
+        try:
+            result = await self.redis.expire(key, ttl)
+            return bool(result)
+        except Exception:
+            return False
+
+    def generate_key(self, func_name: str, *args, **kwargs) -> str:
+        """Generate cache key from arguments in the format expected by tests."""
+        # Start with function name
+        key_parts = [str(func_name)]
+
+        # Check if we have only simple arguments (strings, numbers, None)
+        def is_simple(obj):
+            return obj is None or isinstance(obj, str | int | float | bool)
+
+        all_simple = all(is_simple(arg) for arg in args) and all(
+            is_simple(val) for val in kwargs.values()
+        )
+
+        if all_simple and (args or kwargs):
+            # Simple case: create colon-separated key
+            for arg in args:
+                key_parts.append(str(arg) if arg is not None else "None")
+
+            for key, value in sorted(kwargs.items()):
+                key_parts.append(f"{key}:{value if value is not None else 'None'}")
+
+            return ":".join(key_parts)
+
+        elif args or kwargs:
+            # Complex case: use hash for complex objects
+            complex_data = {"args": args, "kwargs": kwargs}
+            data_str = json.dumps(complex_data, sort_keys=True, default=str)
+            data_hash = hashlib.sha256(data_str.encode()).hexdigest()[:8]
+            return f"{func_name}:{data_hash}"
+        else:
+            # No arguments: just return function name
+            return func_name
+
+    def _generate_key(self, *args, **kwargs) -> str:
+        """Private method alias for generate_key (for backward compatibility)."""
+        return self.generate_key(*args, **kwargs)
+
+
+# Create a default cache instance for compatibility
+cache = CacheManager()

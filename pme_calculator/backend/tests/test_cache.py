@@ -46,7 +46,7 @@ class TestCacheManager:
     @pytest.mark.asyncio
     async def test_initialize_without_redis(self):
         """Test initialization when Redis is not available."""
-        with patch("cache.REDIS_AVAILABLE", False):
+        with patch("pme_calculator.backend.cache.REDIS_AVAILABLE", False):
             cache_manager = CacheManager()
             result = await cache_manager.initialize()
             assert result is False

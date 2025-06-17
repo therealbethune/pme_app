@@ -375,9 +375,12 @@ class TestSystemIntegration:
     def test_module_imports(self):
         """Test that all modules can be imported without errors."""
         try:
-            from cache import CacheManager
-            from math_engine import MathEngine
-            from validation.schemas import CashflowRow, ValidationResult
+            from pme_calculator.backend.cache import CacheManager
+            from pme_calculator.backend.math_engine import MathEngine
+            from pme_calculator.backend.validation.schemas import (
+                CashflowRow,
+                ValidationResult,
+            )
 
             assert True  # If we get here, imports worked
         except ImportError as e:
