@@ -1,13 +1,13 @@
+import logging
+from datetime import datetime
+from typing import Dict, List, Optional
+
 import numpy as np
 import pandas as pd
-from typing import List, Dict, Optional
-from datetime import datetime
-from sqlalchemy.orm import Session
-from scipy.optimize import minimize
-import logging
-
-from models import Fund, Portfolio, PortfolioFund, CashFlow, NAV
 from analysis_engine import PMEAnalysisEngine
+from models import NAV, CashFlow, Fund, Portfolio, PortfolioFund
+from scipy.optimize import minimize
+from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +20,7 @@ class PortfolioService:
         self.analysis_engine = PMEAnalysisEngine()
 
     async def build_portfolio(
-        self, fund_ids: List[int], portfolio_name: str = "New Portfolio"
+        self, fund_ids: list[int], portfolio_name: str = "New Portfolio"
     ) -> Portfolio:
         """Build a new portfolio from fund IDs."""
         try:
@@ -54,7 +54,7 @@ class PortfolioService:
             logger.error(f"Error building portfolio: {str(e)}")
             raise
 
-    async def calc_portfolio_kpis(self, portfolio_id: int) -> Dict:
+    async def calc_portfolio_kpis(self, portfolio_id: int) -> dict:
         """Calculate comprehensive portfolio KPIs including Markowitz optimal weights."""
         try:
             portfolio = (
@@ -130,8 +130,8 @@ class PortfolioService:
             raise
 
     def _calc_weighted_kpis(
-        self, fund_metrics: List[Dict], weights: List[float]
-    ) -> Dict:
+        self, fund_metrics: list[dict], weights: list[float]
+    ) -> dict:
         """Calculate portfolio-weighted KPIs."""
         if not fund_metrics or not weights:
             return {}
@@ -149,9 +149,9 @@ class PortfolioService:
 
         for metric in metrics_to_weight:
             values = [m.get(metric, 0) for m in fund_metrics]
-            if all(isinstance(v, (int, float)) and not np.isnan(v) for v in values):
+            if all(isinstance(v, int | float) and not np.isnan(v) for v in values):
                 weighted_kpis[f"Portfolio {metric}"] = sum(
-                    v * w for v, w in zip(values, normalized_weights)
+                    v * w for v, w in zip(values, normalized_weights, strict=True)
                 )
 
         # Total values (sum, not weighted average)
@@ -175,8 +175,8 @@ class PortfolioService:
         return weighted_kpis
 
     def _calc_correlation_matrix(
-        self, fund_returns: List[List[float]]
-    ) -> Optional[np.ndarray]:
+        self, fund_returns: list[list[float]]
+    ) -> np.ndarray | None:
         """Calculate correlation matrix of fund returns."""
         if len(fund_returns) < 2:
             return None
@@ -196,8 +196,8 @@ class PortfolioService:
             return None
 
     def _calc_optimal_weights(
-        self, fund_returns: List[List[float]], current_weights: List[float]
-    ) -> Dict:
+        self, fund_returns: list[list[float]], current_weights: list[float]
+    ) -> dict:
         """Calculate Markowitz optimal weights."""
         if len(fund_returns) < 2:
             return {"message": "Need at least 2 funds for optimization"}
@@ -262,8 +262,8 @@ class PortfolioService:
             return {"error": str(e), "optimization_success": False}
 
     def _calc_portfolio_risk(
-        self, fund_returns: List[List[float]], weights: List[float]
-    ) -> Dict:
+        self, fund_returns: list[list[float]], weights: list[float]
+    ) -> dict:
         """Calculate portfolio risk metrics."""
         if not fund_returns or not weights:
             return {}
@@ -309,9 +309,9 @@ class PortfolioService:
             return {}
 
     def _calc_diversification_score(
-        self, correlation_matrix: Optional[np.ndarray], weights: List[float]
+        self, correlation_matrix: np.ndarray | None, weights: list[float]
     ) -> float:
-        """Calculate diversification score (0-1, higher is better)."""
+        """Calculate diversification score (0-1, higher is better) - OPTIMIZED vectorized."""
         if correlation_matrix is None or len(weights) < 2:
             return 0.0
 
@@ -323,18 +323,25 @@ class PortfolioService:
             )
             weights_array = np.array(normalized_weights)
 
-            # Portfolio correlation is weighted average of pairwise correlations
-            portfolio_correlation = 0.0
-            total_pairs = 0
+            # OPTIMIZED: Vectorized calculation - eliminates O(n²) nested loops
+            # Portfolio correlation using matrix operations
+            weights_outer = np.outer(weights_array, weights_array)
 
-            for i in range(len(weights)):
-                for j in range(i + 1, len(weights)):
-                    weight_product = weights_array[i] * weights_array[j]
-                    portfolio_correlation += correlation_matrix[i, j] * weight_product
-                    total_pairs += weight_product
+            # Get upper triangular part (excluding diagonal) for pairwise correlations
+            upper_tri_mask = np.triu(np.ones_like(correlation_matrix, dtype=bool), k=1)
 
-            if total_pairs > 0:
-                portfolio_correlation /= total_pairs
+            # Calculate weighted portfolio correlation using vectorized operations
+            correlation_products = (
+                correlation_matrix[upper_tri_mask] * weights_outer[upper_tri_mask]
+            )
+            weight_products = weights_outer[upper_tri_mask]
+
+            if np.sum(weight_products) > 0:
+                portfolio_correlation = np.sum(correlation_products) / np.sum(
+                    weight_products
+                )
+            else:
+                portfolio_correlation = 0.0
 
             # Diversification score: 1 - average correlation
             diversification_score = max(0.0, 1.0 - abs(portfolio_correlation))
@@ -352,7 +359,7 @@ class PortfolioService:
         drawdown = (cumulative - rolling_max) / rolling_max
         return float(np.min(drawdown))
 
-    def _calculate_quarterly_returns(self, fund_data: Dict) -> List[float]:
+    def _calculate_quarterly_returns(self, fund_data: dict) -> list[float]:
         """Calculate quarterly returns for a fund."""
         try:
             nav_data = fund_data.get("nav_data", [])
@@ -377,7 +384,7 @@ class PortfolioService:
             logger.error(f"Error calculating quarterly returns: {str(e)}")
             return [0.0]
 
-    async def _get_fund_data(self, fund_id: int) -> Optional[Dict]:
+    async def _get_fund_data(self, fund_id: int) -> dict | None:
         """Get cash flow and NAV data for a fund."""
         try:
             fund = self.db.query(Fund).filter(Fund.id == fund_id).first()

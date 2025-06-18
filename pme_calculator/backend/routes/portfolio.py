@@ -1,16 +1,16 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.responses import StreamingResponse
-from fastapi.concurrency import run_in_threadpool
-from sqlalchemy.orm import Session
-from typing import List, Dict, Optional
-from datetime import datetime
 import io
 import logging
+from datetime import datetime
+from typing import Dict, List, Optional
 
-from models import Portfolio, Fund, PortfolioFund
+from database import get_db  # Assume this exists
+from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.concurrency import run_in_threadpool
+from fastapi.responses import StreamingResponse
+from models import Fund, Portfolio, PortfolioFund
 from portfolio_service import PortfolioService
 from reporting import ReportingService
-from database import get_db  # Assume this exists
+from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/portfolio", tags=["portfolio"])
@@ -21,23 +21,23 @@ from pydantic import BaseModel
 
 class PortfolioCreate(BaseModel):
     name: str
-    description: Optional[str] = None
+    description: str | None = None
     benchmark_symbol: str = "^GSPC"
     risk_free_rate: float = 0.025
-    fund_ids: List[int]
+    fund_ids: list[int]
 
 
 class PortfolioUpdate(BaseModel):
-    name: Optional[str] = None
-    description: Optional[str] = None
-    benchmark_symbol: Optional[str] = None
-    risk_free_rate: Optional[float] = None
+    name: str | None = None
+    description: str | None = None
+    benchmark_symbol: str | None = None
+    risk_free_rate: float | None = None
 
 
 class PortfolioResponse(BaseModel):
     id: int
     name: str
-    description: Optional[str]
+    description: str | None
     benchmark_symbol: str
     risk_free_rate: float
     created_at: datetime
@@ -102,7 +102,7 @@ async def create_portfolio(
         )
 
 
-@router.get("/", response_model=List[PortfolioResponse])
+@router.get("/", response_model=list[PortfolioResponse])
 async def get_portfolios(
     skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
 ):
@@ -286,7 +286,7 @@ async def get_portfolio_analytics(portfolio_id: int, db: Session = Depends(get_d
         )
 
 
-def _calculate_portfolio_analytics_sync(portfolio_id: int, db: Session) -> Dict:
+def _calculate_portfolio_analytics_sync(portfolio_id: int, db: Session) -> dict:
     """Synchronous portfolio analytics calculation for thread pool execution."""
     portfolio_service = PortfolioService(db)
     return portfolio_service.calc_portfolio_kpis(portfolio_id)
@@ -294,7 +294,7 @@ def _calculate_portfolio_analytics_sync(portfolio_id: int, db: Session) -> Dict:
 
 @router.put("/{portfolio_id}/weights")
 async def update_portfolio_weights(
-    portfolio_id: int, weights: List[WeightUpdate], db: Session = Depends(get_db)
+    portfolio_id: int, weights: list[WeightUpdate], db: Session = Depends(get_db)
 ):
     """Update portfolio fund weights."""
     try:

@@ -3,11 +3,11 @@ Pydantic schemas for PME Calculator data validation.
 Enhanced version with proper validation functionality.
 """
 
-from datetime import datetime
 import datetime as dt
-from typing import List, Optional, Dict, Any
-from enum import Enum
 import re
+from datetime import datetime
+from enum import Enum
+from typing import Any, Optional
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
@@ -26,7 +26,7 @@ class AnalysisMethodEnum(str, Enum):
 
 def parse_date_value(value):
     """Parse date from string or datetime object."""
-    if isinstance(value, (dt.date, datetime)):
+    if isinstance(value, dt.date | datetime):
         return value.date() if isinstance(value, datetime) else value
 
     if isinstance(value, str):
@@ -61,8 +61,8 @@ def parse_decimal_value(value):
         value = cleaned
     try:
         return float(value)
-    except (ValueError, TypeError):
-        raise ValueError(f"Invalid numeric value: {value}")
+    except (ValueError, TypeError) as err:
+        raise ValueError(f"Invalid numeric value: {value}") from err
 
 
 class CashflowRow(BaseModel):
@@ -74,10 +74,10 @@ class CashflowRow(BaseModel):
         description="Net cashflow (positive = contribution, negative = distribution)",
     )
     nav: float = Field(..., ge=0, description="Net Asset Value, must be non-negative")
-    contributions: Optional[float] = Field(
+    contributions: float | None = Field(
         None, ge=0, description="Explicit contributions if separate from cashflow"
     )
-    distributions: Optional[float] = Field(
+    distributions: float | None = Field(
         None, ge=0, description="Explicit distributions if separate from cashflow"
     )
 
@@ -100,7 +100,9 @@ class CashflowRow(BaseModel):
             expected_cashflow = self.contributions - self.distributions
             if abs(self.cashflow - expected_cashflow) > 0.01:
                 raise ValueError(
-                    f"Cashflow {self.cashflow} doesn't match contributions {self.contributions} - distributions {self.distributions}"
+                    f"Cashflow {self.cashflow} doesn't match "
+                    f"contributions {self.contributions} - "
+                    f"distributions {self.distributions}"
                 )
         return self
 
@@ -110,7 +112,7 @@ class NavRow(BaseModel):
 
     date: dt.date = Field(..., description="Date in YYYY-MM-DD format")
     price: float = Field(..., gt=0, description="Index price/level, must be positive")
-    returns: Optional[float] = Field(None, description="Period returns if available")
+    returns: float | None = Field(None, description="Period returns if available")
 
     @field_validator("date", mode="before")
     @classmethod
@@ -128,10 +130,8 @@ class NavRow(BaseModel):
 class FundDataSchema(BaseModel):
     """Complete fund dataset validation."""
 
-    rows: List[CashflowRow] = Field(
-        ..., min_length=3, description="Minimum 3 data points required"
-    )
-    metadata: Dict[str, Any] = Field(default_factory=dict)
+    rows: list[CashflowRow] = Field(..., min_length=3, description="Minimum 3 data points required")
+    metadata: dict[str, Any] = Field(default_factory=dict)
 
     @field_validator("rows")
     @classmethod
@@ -156,10 +156,8 @@ class FundDataSchema(BaseModel):
 class IndexDataSchema(BaseModel):
     """Complete index dataset validation."""
 
-    rows: List[NavRow] = Field(
-        ..., min_length=3, description="Minimum 3 data points required"
-    )
-    metadata: Dict[str, Any] = Field(default_factory=dict)
+    rows: list[NavRow] = Field(..., min_length=3, description="Minimum 3 data points required")
+    metadata: dict[str, Any] = Field(default_factory=dict)
 
     @field_validator("rows")
     @classmethod
@@ -187,10 +185,10 @@ class UploadMeta(BaseModel):
     file_size: int = Field(..., gt=0, description="File size in bytes")
     file_type: FileTypeEnum
     upload_timestamp: datetime = Field(default_factory=datetime.utcnow)
-    row_count: Optional[int] = Field(None, ge=0)
-    column_count: Optional[int] = Field(None, ge=0)
-    date_range: Optional[Dict[str, str]] = None
-    detected_columns: Optional[Dict[str, str]] = None
+    row_count: int | None = Field(None, ge=0)
+    column_count: int | None = Field(None, ge=0)
+    date_range: dict[str, str] | None = None
+    detected_columns: dict[str, str] | None = None
 
     @field_validator("filename")
     @classmethod
@@ -202,9 +200,7 @@ class UploadMeta(BaseModel):
         # Check for potentially dangerous characters
         forbidden_chars = ["<", ">", ":", '"', "|", "?", "*"]
         if any(char in v for char in forbidden_chars):
-            raise ValueError(
-                f"Filename contains forbidden characters: {forbidden_chars}"
-            )
+            raise ValueError(f"Filename contains forbidden characters: {forbidden_chars}")
 
         return v.strip()
 
@@ -213,10 +209,10 @@ class ValidationResult(BaseModel):
     """Result of file validation."""
 
     is_valid: bool
-    errors: List[str] = Field(default_factory=list)
-    warnings: List[str] = Field(default_factory=list)
-    metadata: Optional[UploadMeta] = None
-    detected_mappings: Optional[Dict[str, str]] = None
+    errors: list[str] = Field(default_factory=list)
+    warnings: list[str] = Field(default_factory=list)
+    metadata: UploadMeta | None = None
+    detected_mappings: dict[str, str] | None = None
 
     @property
     def has_errors(self) -> bool:
@@ -231,16 +227,12 @@ class AnalysisRequest(BaseModel):
     """Request for PME analysis."""
 
     fund_file_id: str
-    index_file_id: Optional[str] = None
+    index_file_id: str | None = None
     method: AnalysisMethodEnum = AnalysisMethodEnum.KAPLAN_SCHOAR
-    risk_free_rate: float = Field(
-        0.025, ge=0, le=1, description="Risk-free rate (default 2.5%)"
-    )
-    confidence_level: float = Field(
-        0.95, gt=0, lt=1, description="Confidence level (default 95%)"
-    )
-    start_date: Optional[str] = None
-    end_date: Optional[str] = None
+    risk_free_rate: float = Field(0.025, ge=0, le=1, description="Risk-free rate (default 2.5%)")
+    confidence_level: float = Field(0.95, gt=0, lt=1, description="Confidence level (default 95%)")
+    start_date: str | None = None
+    end_date: str | None = None
 
 
 class AnalysisResponse(BaseModel):
@@ -248,8 +240,8 @@ class AnalysisResponse(BaseModel):
 
     request_id: str
     success: bool
-    metrics: Optional[Dict[str, Any]] = None
-    charts: Optional[Dict[str, List[Dict]]] = None
-    summary: Optional[Dict[str, Any]] = None
-    errors: List[str] = Field(default_factory=list)
-    processing_time_ms: Optional[float] = None
+    metrics: dict[str, Any] | None = None
+    charts: dict[str, list[dict]] | None = None
+    summary: dict[str, Any] | None = None
+    errors: list[str] = Field(default_factory=list)
+    processing_time_ms: float | None = None

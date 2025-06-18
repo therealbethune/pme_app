@@ -4,8 +4,9 @@ Simple script to create a Glasfunds logo placeholder.
 Replace this with the actual Glasfunds logo PNG when available.
 """
 
-from PIL import Image, ImageDraw, ImageFont
 import os
+
+from PIL import Image, ImageDraw, ImageFont
 
 
 def create_glasfunds_logo():

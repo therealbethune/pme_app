@@ -4,7 +4,8 @@ Upload file metadata model.
 
 from datetime import datetime
 from typing import Optional
-from sqlmodel import SQLModel, Field
+
+from sqlmodel import Field, SQLModel
 
 
 class UploadFileMeta(SQLModel, table=True):
@@ -14,8 +15,8 @@ class UploadFileMeta(SQLModel, table=True):
 
     __tablename__ = "upload_files"
 
-    id: Optional[int] = Field(default=None, primary_key=True)
+    id: int | None = Field(default=None, primary_key=True)
     filename: str
     user: str
     created_at: datetime = Field(default_factory=datetime.utcnow)
-    s3_key: Optional[str] = None  # optional future use
+    s3_key: str | None = None  # optional future use

@@ -6,32 +6,49 @@ This file is deprecated. For mathematical functions, use pme_math.metrics direct
 PMEAnalysisEngine class is maintained here for backward compatibility only.
 """
 
-import pandas as pd
-import numpy as np
-from datetime import datetime
-from typing import Dict, Any
 import logging
-import warnings
-import numpy_financial as npf
 import os
+import warnings
+from datetime import datetime
+from typing import Any, Dict
+
+import numpy as np
+import numpy_financial as npf
+import pandas as pd
 
 # Import PME math functions with correct names
 try:
     from .pme_math.metrics import (
-        xirr_wrapper as _xirr_wrapper,
-        ks_pme as _ks_pme,
-        ln_pme as _ln_pme,
         direct_alpha as _direct_alpha,
+    )
+    from .pme_math.metrics import (
+        ks_pme as _ks_pme,
+    )
+    from .pme_math.metrics import (
+        ln_pme as _ln_pme,
+    )
+    from .pme_math.metrics import (
         pme_plus as _pme_plus,
+    )
+    from .pme_math.metrics import (
+        xirr_wrapper as _xirr_wrapper,
     )
 except ImportError:
     try:
         from pme_math.metrics import (
-            xirr_wrapper as _xirr_wrapper,
-            ks_pme as _ks_pme,
-            ln_pme as _ln_pme,
             direct_alpha as _direct_alpha,
+        )
+        from pme_math.metrics import (
+            ks_pme as _ks_pme,
+        )
+        from pme_math.metrics import (
+            ln_pme as _ln_pme,
+        )
+        from pme_math.metrics import (
             pme_plus as _pme_plus,
+        )
+        from pme_math.metrics import (
+            xirr_wrapper as _xirr_wrapper,
         )
     except ImportError:
         # Create fallback functions if imports fail
@@ -66,15 +83,15 @@ logger = logging.getLogger(__name__)
 
 # Import real PME calculation functions
 try:
-    import sys
     import os
+    import sys
 
     # Add pme_app directory to path
     pme_app_path = os.path.join(os.path.dirname(__file__), "..", "pme_app")
     if pme_app_path not in sys.path:
         sys.path.insert(0, pme_app_path)
 
-    from pme_calcs import ks_pme, direct_alpha, xirr_wrapper
+    from pme_calcs import direct_alpha, ks_pme, xirr_wrapper
 
     logger.info("Successfully imported real PME calculation functions")
 except ImportError as e:
@@ -184,7 +201,7 @@ def _ln_pme(cf, idx, dates):
     try:
         # Simplified Long-Nickels calculation
         # Calculate IRR-like metric
-        cf_dict = dict(zip(dates, cf))
+        cf_dict = dict(zip(dates, cf, strict=True))
         ln_irr = xirr_wrapper(cf_dict)
 
         return (safe_float(ln_irr, 0.0), 0.0)
@@ -203,7 +220,7 @@ class PMEAnalysisEngine:
         self.index_data = None
         logger.info("PME Analysis Engine initialized")
 
-    def load_fund_data(self, file_path: str) -> Dict[str, Any]:
+    def load_fund_data(self, file_path: str) -> dict[str, Any]:
         """Load and validate fund data with enhanced error handling."""
         try:
             # Try different encodings and separators
@@ -238,7 +255,7 @@ class PMEAnalysisEngine:
             logger.error(f"Failed to load fund data: {e}")
             return {"success": False, "error": str(e)}
 
-    def load_index_data(self, file_path: str) -> Dict[str, Any]:
+    def load_index_data(self, file_path: str) -> dict[str, Any]:
         """Load and validate index data with enhanced error handling."""
         try:
             # Try different encodings and separators
@@ -273,7 +290,7 @@ class PMEAnalysisEngine:
             logger.error(f"Failed to load index data: {e}")
             return {"success": False, "error": str(e)}
 
-    def calculate_pme_metrics(self) -> Dict[str, Any]:
+    def calculate_pme_metrics(self) -> dict[str, Any]:
         """Calculate PME metrics with proper data alignment and error handling."""
         if self.fund_data is None:
             return {
@@ -350,7 +367,7 @@ class PMEAnalysisEngine:
                     cf_dates.append(fund_dates.iloc[-1])
                     cf_values.append(final_nav)
 
-                fund_irr = xirr_wrapper(dict(zip(cf_dates, cf_values)))
+                fund_irr = xirr_wrapper(dict(zip(cf_dates, cf_values, strict=True)))
                 fund_irr = safe_float(fund_irr, 0.0)
             except Exception as e:
                 logger.warning(f"Could not calculate IRR: {e}")
@@ -441,7 +458,7 @@ class PMEAnalysisEngine:
                                     - 1
                                 )
                                 index_cf_dict = dict(
-                                    zip(common_dates[1:], index_returns)
+                                    zip(common_dates[1:], index_returns, strict=True)
                                 )
                                 index_irr = xirr_wrapper(index_cf_dict)
                                 index_irr = safe_float(index_irr, 0.0)
@@ -543,7 +560,7 @@ class PMEAnalysisEngine:
                 "error": str(e),
             }
 
-    def get_analysis_summary(self) -> Dict[str, Any]:
+    def get_analysis_summary(self) -> dict[str, Any]:
         """Get a summary of the analysis results."""
         results = self.calculate_pme_metrics()
 
@@ -586,21 +603,28 @@ def safe_float(value, default=0.0):
 
 def make_json_serializable(obj):
     """Make object JSON serializable by handling NaN values."""
-    if isinstance(obj, dict):
-        return {k: make_json_serializable(v) for k, v in obj.items()}
-    elif isinstance(obj, list):
-        return [make_json_serializable(item) for item in obj]
-    elif isinstance(obj, (np.integer, np.floating)):
-        if np.isnan(obj) or np.isinf(obj):
+    # Import here to avoid circular imports
+    try:
+        from pme_app.utils import to_jsonable
+
+        return to_jsonable(obj)
+    except ImportError:
+        # Fallback implementation if utils not available
+        if isinstance(obj, dict):
+            return {k: make_json_serializable(v) for k, v in obj.items()}
+        elif isinstance(obj, list):
+            return [make_json_serializable(item) for item in obj]
+        elif isinstance(obj, np.integer | np.floating):
+            if np.isnan(obj) or np.isinf(obj):
+                return 0.0
+            return float(obj)
+        elif isinstance(obj, np.ndarray):
+            return [make_json_serializable(item) for item in obj.tolist()]
+        elif isinstance(obj, pd.Timestamp | datetime):
+            return obj.isoformat()
+        elif obj is None or (
+            isinstance(obj, float) and (np.isnan(obj) or np.isinf(obj))
+        ):
             return 0.0
-        return float(obj)
-    elif isinstance(obj, np.ndarray):
-        return [make_json_serializable(item) for item in obj.tolist()]
-    elif isinstance(obj, pd.Timestamp):
-        return obj.isoformat()
-    elif isinstance(obj, datetime):
-        return obj.isoformat()
-    elif obj is None or (isinstance(obj, float) and (np.isnan(obj) or np.isinf(obj))):
-        return 0.0
-    else:
-        return obj
+        else:
+            return obj

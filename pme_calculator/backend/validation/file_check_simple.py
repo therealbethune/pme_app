@@ -2,17 +2,18 @@
 Simplified file validation service for PME Calculator.
 """
 
-import pandas as pd
-from pathlib import Path
-from typing import List, Dict, Tuple, Union
 import logging
+from pathlib import Path
+from typing import Dict, List, Tuple, Union
 
-from .schemas_simple import ValidationResult, UploadMeta, FileTypeEnum
+import pandas as pd
+
+from .schemas_simple import FileTypeEnum, UploadMeta, ValidationResult
 
 logger = logging.getLogger(__name__)
 
 
-def detect_column_mappings(df: pd.DataFrame, file_type: str = "fund") -> Dict[str, str]:
+def detect_column_mappings(df: pd.DataFrame, file_type: str = "fund") -> dict[str, str]:
     """
     Detect column mappings by analyzing column names.
     Returns mapping of standard names to actual column names.
@@ -67,8 +68,8 @@ def detect_column_mappings(df: pd.DataFrame, file_type: str = "fund") -> Dict[st
 
 
 def validate_csv_structure(
-    file_path: Union[str, Path],
-) -> Tuple[pd.DataFrame, List[str]]:
+    file_path: str | Path,
+) -> tuple[pd.DataFrame, list[str]]:
     """
     Validate basic CSV structure and return DataFrame with errors.
     """
@@ -134,7 +135,7 @@ def validate_csv_structure(
     return df, errors
 
 
-def validate_fund_file(file_path: Union[str, Path]) -> List[str]:
+def validate_fund_file(file_path: str | Path) -> list[str]:
     """
     Validate fund cashflow file and return list of error strings.
     """
@@ -171,7 +172,7 @@ def validate_fund_file(file_path: Union[str, Path]) -> List[str]:
     return errors
 
 
-def validate_index_file(file_path: Union[str, Path]) -> List[str]:
+def validate_index_file(file_path: str | Path) -> list[str]:
     """
     Validate index price file and return list of error strings.
     """
@@ -250,7 +251,7 @@ def create_upload_metadata(file_path: Path, df: pd.DataFrame = None) -> UploadMe
 
 
 def validate_file_comprehensive(
-    file_path: Union[str, Path], file_type: str = "fund"
+    file_path: str | Path, file_type: str = "fund"
 ) -> ValidationResult:
     """
     Comprehensive file validation returning detailed ValidationResult.

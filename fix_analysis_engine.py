@@ -77,10 +77,9 @@ def main():
     print("🔧 Analysis Engine Quick Fix")
     print("=" * 30)
 
-    if fix_analysis_engine():
-        if test_import():
-            print("\n🎉 Analysis engine fixed successfully!")
-            return True
+    if fix_analysis_engine() and test_import():
+        print("\n🎉 Analysis engine fixed successfully!")
+        return True
 
     print("\n❌ Fix unsuccessful. Manual intervention needed.")
     return False

@@ -1,0 +1,56 @@
+# Ruff configuration for PME Calculator
+target-version = "py312"
+line-length = 88
+
+[lint]
+# Enable important rule categories
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings  
+    "F",   # pyflakes
+    "I",   # isort
+    "N",   # pep8-naming
+    "UP",  # pyupgrade
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "SIM", # flake8-simplify
+]
+
+# Ignore specific rules that are problematic in legacy code
+ignore = [
+    "E722",  # bare except (legacy code has many)
+    "F401",  # unused imports (test files often import for availability checks)
+    "F403",  # star imports (legacy compatibility)
+    "F811",  # redefined function (legacy code)
+    "F821",  # undefined name (legacy code)
+    "E402",  # module level import not at top (legacy structure)
+]
+
+# Exclude legacy and test directories from strict linting
+exclude = [
+    "assets/",
+    "pme_calculator/",  # Legacy calculator directory - exclude entirely
+    "pme_app/pme_calcs.py",  # legacy calculations
+    "pme_app/performance_metrics_chart.py",  # legacy charts
+    "pme_app/duration.py",  # legacy duration
+    "check_localhost.py",  # utility script
+    "test_*.py",  # Legacy test files in root
+    "*.py.bak",
+    "__pycache__/",
+    ".git/",
+]
+
+[lint.per-file-ignores]
+# Allow test files to have more relaxed rules
+"test_*.py" = ["F401", "F811", "E402"]
+"**/tests/**/*.py" = ["F401", "F811", "E402"]
+# Allow scripts to have imports anywhere
+"scripts/*.py" = ["E402"]
+"profile_*.py" = ["E402"]
+# Allow longer lines in legacy files and docstrings
+"pme_app/cashflow_overview_chart.py" = ["E501"]
+"pme_app/data_manager.py" = ["E501"]
+"pme_app/pme_logic.py" = ["E501"]
+"pme_app/pme_plot.py" = ["E501"]
+"pme_app/utils.py" = ["E501"]
+"pme_math/error_envelope.py" = ["E501"] 

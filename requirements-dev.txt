@@ -1,4 +1,5 @@
 pylint
+fakeredis==2.25.3
 
 # Optional dependencies for enhanced functionality
 # Removed tkinterdnd2 as Tkinter GUI has been removed

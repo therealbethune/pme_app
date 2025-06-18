@@ -3,45 +3,46 @@ Enhanced Analysis Router with Charting Integration
 Provides comprehensive PME analysis with interactive visualizations.
 """
 
-from fastapi import (
-    APIRouter,
-    HTTPException,
-    BackgroundTasks,
-    File,
-    UploadFile,
-    Form,
-)
-from fastapi.responses import JSONResponse
-from fastapi.concurrency import run_in_threadpool
-from typing import Dict, Any, Optional, List
-import uuid
-import time
-from datetime import datetime
-import json
-import pandas as pd
+import contextlib
 import io
-import tempfile
+import json
 import os
-import numpy as np
+import tempfile
+import time
+import uuid
+from datetime import datetime
+from typing import Any, Dict, List, Optional
 
-from validation.schemas_simple import (
-    AnalysisRequest,
-    AnalysisResponse,
-    AnalysisMethodEnum,
-)
-from logger import get_logger
+import numpy as np
+import pandas as pd
+from analysis_engine import PMEAnalysisEngine
+from chart_engine import ChartEngine
 
 # Remove circular import - we'll get uploaded_files from main_minimal.py
 # from routers.upload import uploaded_files
-from data_processor import IntelligentDataProcessor, DataIssue
-from analysis_engine import PMEAnalysisEngine
-from chart_engine import ChartEngine
+from data_processor import DataIssue, IntelligentDataProcessor
+from fastapi import (
+    APIRouter,
+    BackgroundTasks,
+    File,
+    Form,
+    HTTPException,
+    UploadFile,
+)
+from fastapi.concurrency import run_in_threadpool
+from fastapi.responses import JSONResponse
+from logger import get_logger
+from validation.schemas_simple import (
+    AnalysisMethodEnum,
+    AnalysisRequest,
+    AnalysisResponse,
+)
 
 logger = get_logger(__name__)
 router = APIRouter(prefix="/api/v1/analysis", tags=["analysis"])
 
 # In-memory cache for analysis results (replace with Redis in production)
-analysis_cache: Dict[str, Dict[str, Any]] = {}
+analysis_cache: dict[str, dict[str, Any]] = {}
 
 # Global data processor instance
 data_processor = IntelligentDataProcessor()
@@ -51,10 +52,10 @@ analysis_engine = PMEAnalysisEngine()
 chart_engine = ChartEngine()
 
 # Global reference to uploaded files - will be set by main_minimal.py
-uploaded_files: Dict[str, Dict[str, Any]] = {}
+uploaded_files: dict[str, dict[str, Any]] = {}
 
 
-def set_uploaded_files_reference(files_dict: Dict[str, Dict[str, Any]]):
+def set_uploaded_files_reference(files_dict: dict[str, dict[str, Any]]):
     """Set reference to uploaded files dictionary to avoid circular imports."""
     global uploaded_files
     uploaded_files = files_dict
@@ -70,7 +71,7 @@ async def run_analysis_simple():
 
         # Find fund file
         fund_file_id = None
-        for file_id in uploaded_files.keys():
+        for file_id in uploaded_files:
             if file_id.startswith("fund_"):
                 fund_file_id = file_id
                 break
@@ -105,7 +106,7 @@ async def run_analysis_simple():
 
 @router.post("/run", response_model=AnalysisResponse)
 async def run_analysis(
-    request: Optional[AnalysisRequest] = None, background_tasks: BackgroundTasks = None
+    request: AnalysisRequest | None = None, background_tasks: BackgroundTasks = None
 ):
     """
     Run PME analysis on uploaded files.
@@ -120,7 +121,7 @@ async def run_analysis(
         fund_file_id = None
         index_file_id = None
 
-        for file_id in uploaded_files.keys():
+        for file_id in uploaded_files:
             if file_id.startswith("fund_"):
                 fund_file_id = file_id
             elif file_id.startswith("index_"):
@@ -239,8 +240,8 @@ async def run_analysis(
 
 
 def calculate_pme_metrics_sync(
-    request: AnalysisRequest, fund_file_data: Dict
-) -> Dict[str, Any]:
+    request: AnalysisRequest, fund_file_data: dict
+) -> dict[str, Any]:
     """
     Synchronous PME metrics calculation for threadpool execution.
     """
@@ -314,8 +315,8 @@ def calculate_pme_metrics_sync(
 
 
 def generate_charts_data_sync(
-    request: AnalysisRequest, fund_file_data: Dict
-) -> Dict[str, Any]:
+    request: AnalysisRequest, fund_file_data: dict
+) -> dict[str, Any]:
     """
     Synchronous charts data generation for threadpool execution.
     """
@@ -325,7 +326,7 @@ def generate_charts_data_sync(
     time.sleep(0.05)  # Simulate computation
 
     # Generate sample chart data
-    dates = pd.date_range("2020-01-01", periods=24, freq="M")
+    dates = pd.date_range("2020-01-01", periods=24, freq="ME")
 
     charts = {
         "nav_chart": {
@@ -361,8 +362,8 @@ def generate_charts_data_sync(
 
 
 def create_analysis_summary(
-    metrics: Dict[str, Any], request: AnalysisRequest
-) -> Dict[str, Any]:
+    metrics: dict[str, Any], request: AnalysisRequest
+) -> dict[str, Any]:
     """Create executive summary of analysis results."""
     fund_irr = metrics.get("Fund IRR", 0)
     index_irr = metrics.get("Index IRR", 0)
@@ -401,7 +402,7 @@ def create_analysis_summary(
     }
 
 
-def get_investment_recommendation(metrics: Dict[str, Any]) -> str:
+def get_investment_recommendation(metrics: dict[str, Any]) -> str:
     """Generate investment recommendation based on metrics."""
     pme_ratio = metrics.get("PME Ratio", 1)
     sharpe_ratio = metrics.get("Fund Sharpe Ratio", 0)
@@ -468,8 +469,8 @@ async def get_analysis_result(request_id: str):
 
 @router.post("/process-datasets")
 async def process_datasets(
-    files: List[UploadFile] = File(...),
-    column_classifications: Optional[str] = Form(None),
+    files: list[UploadFile] = File(...),
+    column_classifications: str | None = Form(None),
 ):
     """
     Process multiple datasets with intelligent data processing and issue detection.
@@ -532,7 +533,7 @@ async def process_datasets(
             if (
                 hasattr(meta, "date_range")
                 and meta.date_range
-                and isinstance(meta.date_range, (list, tuple))
+                and isinstance(meta.date_range, list | tuple)
                 and len(meta.date_range) >= 2
             ):
                 try:
@@ -620,7 +621,7 @@ async def process_datasets(
 
 @router.post("/apply-data-fix")
 async def apply_data_fix(
-    files: List[UploadFile] = File(...), issue_data: str = Form(...)
+    files: list[UploadFile] = File(...), issue_data: str = Form(...)
 ):
     """
     Apply a specific data fix to uploaded datasets.
@@ -702,7 +703,7 @@ async def apply_data_fix(
             if (
                 hasattr(meta, "date_range")
                 and meta.date_range
-                and isinstance(meta.date_range, (list, tuple))
+                and isinstance(meta.date_range, list | tuple)
                 and len(meta.date_range) >= 2
             ):
                 try:
@@ -830,10 +831,8 @@ async def upload_fund_data(
     except Exception as e:
         logger.error(f"Fund data upload failed: {e}")
         if "temp_path" in locals():
-            try:
+            with contextlib.suppress(Exception):
                 os.unlink(temp_path)
-            except:
-                pass
         raise HTTPException(status_code=500, detail=f"Upload failed: {str(e)}")
 
 
@@ -894,10 +893,8 @@ async def upload_benchmark_data(
     except Exception as e:
         logger.error(f"Benchmark data upload failed: {e}")
         if "temp_path" in locals():
-            try:
+            with contextlib.suppress(Exception):
                 os.unlink(temp_path)
-            except:
-                pass
         raise HTTPException(status_code=500, detail=f"Upload failed: {str(e)}")
 
 
@@ -973,12 +970,12 @@ async def run_comprehensive_analysis(
 
 
 def _run_comprehensive_analysis_sync(
-    fund_data: Dict,
-    benchmark_file_id: Optional[str],
+    fund_data: dict,
+    benchmark_file_id: str | None,
     risk_free_rate: float,
     include_charts: bool,
     include_monte_carlo: bool,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Synchronous comprehensive analysis for threadpool execution.
     """
@@ -1009,7 +1006,7 @@ def _run_comprehensive_analysis_sync(
     return result
 
 
-def _run_monte_carlo_simulation_sync() -> Dict[str, Any]:
+def _run_monte_carlo_simulation_sync() -> dict[str, Any]:
     """
     Synchronous Monte Carlo simulation for threadpool execution.
     """
@@ -1061,7 +1058,7 @@ async def get_analysis_status(file_id: str):
 
 @router.get("/export-charts/{file_id}")
 async def export_charts(
-    file_id: str, format: str = "json", chart_types: Optional[str] = None
+    file_id: str, format: str = "json", chart_types: str | None = None
 ):
     """Export charts in various formats."""
 
@@ -1149,7 +1146,7 @@ async def calculate_scenario_analysis(
         )
 
 
-def _generate_analysis_summary(metrics: Dict[str, Any]) -> Dict[str, str]:
+def _generate_analysis_summary(metrics: dict[str, Any]) -> dict[str, str]:
     """Generate human-readable analysis summary."""
 
     summary = {}
@@ -1190,7 +1187,7 @@ def _generate_analysis_summary(metrics: Dict[str, Any]) -> Dict[str, str]:
 
 
 def _apply_scenario(
-    fund_data: pd.DataFrame, scenario_params: Dict[str, Any]
+    fund_data: pd.DataFrame, scenario_params: dict[str, Any]
 ) -> pd.DataFrame:
     """Apply scenario parameters to fund data."""
 

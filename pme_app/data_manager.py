@@ -3,16 +3,17 @@ Data Management System for PME Calculator
 Handles project management, session persistence, data validation, and user preferences
 """
 
-import json
-import sqlite3
-import pandas as pd
-import numpy as np
-from datetime import datetime, timedelta
-from typing import Dict, List, Tuple
 import hashlib
-import shutil
-from pathlib import Path
+import json
 import logging
+import shutil
+import sqlite3
+from datetime import datetime, timedelta
+from pathlib import Path
+from typing import Any
+
+import numpy as np
+import pandas as pd
 
 
 class DataManager:
@@ -131,7 +132,7 @@ class DataManager:
         description: str = "",
         fund_name: str = "",
         fund_type: str = "private_equity",
-        tags: List[str] = None,
+        tags: list[str] = None,
     ) -> str:
         """Create a new project."""
         project_id = self._generate_project_id(name)
@@ -192,8 +193,8 @@ class DataManager:
         session_name: str,
         fund_data: pd.DataFrame,
         index_data: pd.DataFrame,
-        metrics: Dict,
-        settings: Dict,
+        metrics: dict,
+        settings: dict,
     ) -> str:
         """Save a complete analysis session."""
         session_id = f"{project_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
@@ -271,7 +272,7 @@ class DataManager:
 
     def load_project_session(
         self, session_id: str
-    ) -> Tuple[pd.DataFrame, pd.DataFrame, Dict, Dict]:
+    ) -> tuple[pd.DataFrame, pd.DataFrame, dict, dict]:
         """Load a complete analysis session."""
         # Find session directory
         session_dir = None
@@ -295,10 +296,10 @@ class DataManager:
             )
 
             # Load metrics and settings
-            with open(session_dir / "metrics.json", "r") as f:
+            with open(session_dir / "metrics.json") as f:
                 metrics = json.load(f)
 
-            with open(session_dir / "settings.json", "r") as f:
+            with open(session_dir / "settings.json") as f:
                 settings = json.load(f)
 
             self.logger.info(f"Loaded session: {session_id}")
@@ -308,7 +309,7 @@ class DataManager:
             self.logger.error(f"Failed to load session {session_id}: {str(e)}")
             raise
 
-    def get_projects(self, status: str = "active") -> List[Dict]:
+    def get_projects(self, status: str = "active") -> list[dict]:
         """Get list of all projects."""
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
@@ -340,7 +341,7 @@ class DataManager:
 
             return projects
 
-    def get_project_sessions(self, project_id: str) -> List[Dict]:
+    def get_project_sessions(self, project_id: str) -> list[dict]:
         """Get all analysis sessions for a project."""
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
@@ -368,7 +369,7 @@ class DataManager:
 
     def validate_data(
         self, project_id: str, fund_data: pd.DataFrame, index_data: pd.DataFrame
-    ) -> Dict:
+    ) -> dict:
         """Comprehensive data validation."""
         issues = []
         warnings = []
@@ -421,7 +422,7 @@ class DataManager:
 
         return validation_report
 
-    def _validate_fund_data(self, df: pd.DataFrame) -> List[str]:
+    def _validate_fund_data(self, df: pd.DataFrame) -> list[str]:
         """Validate fund cash flow data."""
         issues = []
 
@@ -463,7 +464,7 @@ class DataManager:
 
         return issues
 
-    def _validate_index_data(self, df: pd.DataFrame) -> List[str]:
+    def _validate_index_data(self, df: pd.DataFrame) -> list[str]:
         """Validate index/benchmark data."""
         issues = []
 
@@ -494,7 +495,7 @@ class DataManager:
 
     def _validate_data_alignment(
         self, fund_df: pd.DataFrame, index_df: pd.DataFrame
-    ) -> List[str]:
+    ) -> list[str]:
         """Validate alignment between fund and index data."""
         issues = []
 
@@ -526,7 +527,7 @@ class DataManager:
         return issues
 
     def _calculate_quality_score(
-        self, fund_df: pd.DataFrame, index_df: pd.DataFrame, issues: List[str]
+        self, fund_df: pd.DataFrame, index_df: pd.DataFrame, issues: list[str]
     ) -> float:
         """Calculate data quality score (0-100)."""
         base_score = 100.0
@@ -563,7 +564,7 @@ class DataManager:
 
         try:
             # Load project metadata
-            with open(project_dir / "metadata.json", "r") as f:
+            with open(project_dir / "metadata.json") as f:
                 metadata = json.load(f)
 
             if export_format.lower() == "excel":
@@ -578,7 +579,7 @@ class DataManager:
             raise
 
     def _export_to_excel(
-        self, project_id: str, export_dir: Path, metadata: Dict
+        self, project_id: str, export_dir: Path, metadata: dict
     ) -> str:
         """Export project to Excel format."""
 
@@ -631,7 +632,7 @@ class DataManager:
     def _generate_project_id(self, name: str) -> str:
         """Generate unique project ID."""
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        name_hash = hashlib.md5(name.encode()).hexdigest()[:8]
+        name_hash = hashlib.sha256(name.encode()).hexdigest()[:8]
         return f"proj_{timestamp}_{name_hash}"
 
     def _calculate_data_hash(
@@ -639,23 +640,15 @@ class DataManager:
     ) -> str:
         """Calculate hash for data integrity checking."""
         combined_str = f"{fund_data.to_string()}{index_data.to_string()}"
-        return hashlib.md5(combined_str.encode()).hexdigest()
+        return hashlib.sha256(combined_str.encode()).hexdigest()
 
-    def _serialize_metrics(self, metrics: Dict) -> Dict:
+    def _serialize_metrics(self, metrics: dict) -> dict:
         """Serialize metrics for JSON storage."""
-        serialized = {}
-        for key, value in metrics.items():
-            if isinstance(value, (np.integer, np.floating)):
-                serialized[key] = float(value)
-            elif isinstance(value, np.ndarray):
-                serialized[key] = value.tolist()
-            elif pd.isna(value):
-                serialized[key] = None
-            else:
-                serialized[key] = value
-        return serialized
+        from pme_app.utils import to_jsonable
 
-    def _load_preferences(self) -> Dict:
+        return to_jsonable(metrics)
+
+    def _load_preferences(self) -> dict:
         """Load user preferences."""
         preferences_file = self.settings_dir / "preferences.json"
         default_preferences = {
@@ -670,7 +663,7 @@ class DataManager:
 
         if preferences_file.exists():
             try:
-                with open(preferences_file, "r") as f:
+                with open(preferences_file) as f:
                     loaded_prefs = json.load(f)
                 default_preferences.update(loaded_prefs)
             except Exception as e:
@@ -678,7 +671,7 @@ class DataManager:
 
         return default_preferences
 
-    def save_preferences(self, preferences: Dict):
+    def save_preferences(self, preferences: dict):
         """Save user preferences."""
         self.preferences.update(preferences)
         preferences_file = self.settings_dir / "preferences.json"
@@ -706,7 +699,7 @@ class DataManager:
             self.logger.error(f"Failed to save preferences: {str(e)}")
             raise
 
-    def get_recent_projects(self, limit: int = None) -> List[Dict]:
+    def get_recent_projects(self, limit: int = None) -> list[dict]:
         """Get recently modified projects."""
         if limit is None:
             limit = self.preferences.get("max_recent_projects", 10)

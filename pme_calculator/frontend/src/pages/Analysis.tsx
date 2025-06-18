@@ -11,6 +11,7 @@ import { useColorMode } from '../contexts/ColorModeContext';
 import { AnalysisDashboard } from '../components/AnalysisDashboard';
 import { PMECharts } from '../components/PMECharts';
 import { InteractiveFilters } from '../components/InteractiveFilters';
+import { ChartsDashboard } from '../components/ChartsDashboard';
 
 interface PMEMetrics {
   kaplan_schoar_pme?: number;
@@ -232,6 +233,7 @@ const Analysis: React.FC = () => {
                 <Tab label="PME Metrics" icon={<Calculate />} iconPosition="start" />
                 <Tab label="Performance Summary" icon={<TrendingUp />} iconPosition="start" />
                 <Tab label="Charts & Visualizations" icon={<Timeline />} iconPosition="start" />
+                <Tab label="Interactive Charts" icon={<PieChart />} iconPosition="start" />
               </Tabs>
             </Card>
 
@@ -450,6 +452,10 @@ const Analysis: React.FC = () => {
                   }}
                 />
               </>
+            )}
+
+            {activeTab === 4 && (
+              <ChartsDashboard analysisComplete={true} />
             )}
 
             {!analysisData.has_benchmark && (

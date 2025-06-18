@@ -2,35 +2,35 @@
 Enhanced FastAPI server for PME Calculator with real analysis engine.
 """
 
-from fastapi import FastAPI, HTTPException, UploadFile, File, BackgroundTasks
-from contextlib import asynccontextmanager
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.concurrency import run_in_threadpool
-import uvicorn
-import tempfile
-import os
 import json
+import os
 import socket
+import tempfile
 import time
-from pathlib import Path
+from contextlib import asynccontextmanager
 from datetime import datetime
-from analysis_engine import PMEAnalysisEngine
-from analysis_engine import make_json_serializable
-from typing import Dict, Optional, Any
+from pathlib import Path
+from typing import Any, Dict, Optional
+
+import uvicorn
+from analysis_engine import PMEAnalysisEngine, make_json_serializable
+from fastapi import BackgroundTasks, FastAPI, File, HTTPException, UploadFile
+from fastapi.concurrency import run_in_threadpool
+from fastapi.middleware.cors import CORSMiddleware
 
 # Database dependencies - make optional
 try:
-    from sqlalchemy.ext.asyncio import AsyncSession
     from database import (
-        init_db,
-        get_session,
         UploadFileMeta,
         create_upload_record,
+        delete_upload_record,
+        get_session,
         get_upload_by_id,
         get_uploads_by_user,
+        init_db,
         update_upload_record,
-        delete_upload_record,
     )
+    from sqlalchemy.ext.asyncio import AsyncSession
 
     DATABASE_AVAILABLE = True
 except ImportError as e:
@@ -96,7 +96,7 @@ logger = get_logger(__name__)
 
 # Import Redis cache
 try:
-    from cache import make_cache_key, cache_get, cache_set
+    from cache import cache_get, cache_set, make_cache_key
 
     CACHE_AVAILABLE = True
     logger.info("Redis cache module loaded successfully")
@@ -121,6 +121,7 @@ async def lifespan(app: FastAPI):
     # Early DB availability check with exit option
     import os
     import sys
+
     import asyncpg
 
     if os.getenv("REQUIRE_DATABASE", "false").lower() == "true":
@@ -203,7 +204,7 @@ app.add_middleware(
 )
 
 # In-memory storage for uploaded files - MUST be defined before router imports
-uploaded_files: Dict[str, Dict[str, Any]] = {}
+uploaded_files: dict[str, dict[str, Any]] = {}
 
 # Note: Enhanced analysis router removed to prevent circular import issues
 # The analysis functionality is already available through routes.analysis
@@ -227,20 +228,27 @@ def cleanup_old_temp_files():
 
 def make_json_serializable(data: Any) -> Any:
     """Convert numpy types and other non-serializable types to JSON-serializable types."""
-    import numpy as np
+    # Import here to avoid circular imports
+    try:
+        from pme_app.utils import to_jsonable
 
-    if isinstance(data, dict):
-        return {key: make_json_serializable(value) for key, value in data.items()}
-    elif isinstance(data, list):
-        return [make_json_serializable(item) for item in data]
-    elif isinstance(data, (np.integer, np.floating)):
-        return float(data)
-    elif isinstance(data, np.ndarray):
-        return data.tolist()
-    elif hasattr(data, "item"):  # numpy scalar
-        return data.item()
-    else:
-        return data
+        return to_jsonable(data)
+    except ImportError:
+        # Fallback implementation
+        import numpy as np
+
+        if isinstance(data, dict):
+            return {key: make_json_serializable(value) for key, value in data.items()}
+        elif isinstance(data, list):
+            return [make_json_serializable(item) for item in data]
+        elif isinstance(data, np.integer | np.floating):
+            return float(data)
+        elif isinstance(data, np.ndarray):
+            return data.tolist()
+        elif hasattr(data, "item"):  # numpy scalar
+            return data.item()
+        else:
+            return data
 
 
 @app.get("/")
@@ -564,7 +572,7 @@ async def get_upload_by_id_endpoint(upload_id: int):
 
     try:
         # Search in memory storage
-        for file_id, info in uploaded_files.items():
+        for _file_id, info in uploaded_files.items():
             if info["id"] == upload_id:
                 return {
                     "success": True,
@@ -652,7 +660,7 @@ async def get_portfolio_analytics(portfolio_id: int):
     return analytics
 
 
-def _calculate_portfolio_analytics_sync(portfolio_id: int) -> Dict:
+def _calculate_portfolio_analytics_sync(portfolio_id: int) -> dict:
     """Synchronous portfolio analytics calculation for thread pool execution."""
     # Simulate heavy computation
     import time
@@ -687,7 +695,7 @@ def _calculate_portfolio_analytics_sync(portfolio_id: int) -> Dict:
 
 
 @app.post("/api/analysis/run-sync")
-async def run_analysis_sync(fund_file_id: str, index_file_id: Optional[str] = None):
+async def run_analysis_sync(fund_file_id: str, index_file_id: str | None = None):
     """Run comprehensive PME analysis synchronously (for testing)."""
     if (
         fund_file_id not in uploaded_files
@@ -798,7 +806,7 @@ async def run_analysis_sync(fund_file_id: str, index_file_id: Optional[str] = No
         }
 
 
-def _run_pme_analysis_sync(fund_path: str, index_path: Optional[str]) -> Dict:
+def _run_pme_analysis_sync(fund_path: str, index_path: str | None) -> dict:
     """Synchronous PME analysis for thread pool execution."""
     from analysis_engine import PMEAnalysisEngine
 
@@ -813,7 +821,7 @@ def _run_pme_analysis_sync(fund_path: str, index_path: Optional[str]) -> Dict:
 
 @app.post("/api/analysis/upload")
 async def upload_analysis_files(
-    fund_file: UploadFile = File(...), index_file: Optional[UploadFile] = File(None)
+    fund_file: UploadFile = File(...), index_file: UploadFile | None = File(None)
 ):
     """Combined upload endpoint for both fund and index files."""
     try:
@@ -841,7 +849,7 @@ async def upload_analysis_files(
 
 
 @app.post("/api/analysis/run")
-async def run_analysis(fund_file_id: str, index_file_id: Optional[str] = None):
+async def run_analysis(fund_file_id: str, index_file_id: str | None = None):
     """Start comprehensive PME analysis as background task."""
     if (
         fund_file_id not in uploaded_files
@@ -1607,7 +1615,7 @@ def get_port_config() -> int:
 
 def start_server_with_fallback(
     preferred_port: int = 8000, dry_run: bool = False
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Start server with automatic port fallback on conflicts."""
     try:
         # Try preferred port first
@@ -1634,8 +1642,8 @@ def start_server_with_fallback(
 
 
 def create_app_with_config(
-    port: Optional[int] = None,
-) -> tuple[FastAPI, Dict[str, Any]]:
+    port: int | None = None,
+) -> tuple[FastAPI, dict[str, Any]]:
     """Create app with configuration for testing."""
     config_port = port or get_port_config()
     config = {"host": "0.0.0.0", "port": config_port, "reload": True}

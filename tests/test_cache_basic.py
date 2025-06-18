@@ -10,17 +10,20 @@ Tests the high-performance Redis caching system including:
 """
 
 import asyncio
+from unittest.mock import AsyncMock, patch
+
 import pytest
-from unittest.mock import patch, AsyncMock
+import pytest_asyncio
 
 from pme_calculator.backend.cache import (
-    make_cache_key,
+    cache_clear_pattern,
+    cache_delete,
     cache_get,
     cache_set,
-    cache_delete,
-    cache_clear_pattern,
     cache_stats,
     close_redis_pool,
+    make_cache_key,
+    reset_cache_for_testing,
 )
 
 
@@ -58,6 +61,10 @@ class TestCacheKeyGeneration:
 @pytest.mark.asyncio
 class TestCacheOperations:
     """Test Redis cache operations."""
+
+    def setup_method(self):
+        """Reset cache state before each test."""
+        reset_cache_for_testing()
 
     async def test_cache_roundtrip_basic(self):
         """Test basic cache set and get operations."""
@@ -131,6 +138,10 @@ class TestCacheOperations:
 class TestCachePatterns:
     """Test cache pattern operations."""
 
+    def setup_method(self):
+        """Reset cache state before each test."""
+        reset_cache_for_testing()
+
     async def test_cache_clear_pattern(self):
         """Test clearing cache keys by pattern."""
         # Set multiple keys with same pattern
@@ -162,8 +173,22 @@ class TestCachePatterns:
 class TestCacheStats:
     """Test cache statistics and monitoring."""
 
-    async def test_cache_stats(self):
+    def setup_method(self):
+        """Reset cache state before each test."""
+        reset_cache_for_testing()
+
+    @patch("pme_calculator.backend.cache.get_redis_pool")
+    async def test_cache_stats(self, mock_get_pool):
         """Test cache statistics retrieval."""
+        # Mock Redis to avoid event loop issues in test environment
+        mock_redis = AsyncMock()
+        mock_redis.info.return_value = {
+            "used_memory_human": "1.23M",
+            "used_memory_peak_human": "2.34M",
+        }
+        mock_redis.keys.return_value = ["pme:key1", "pme:key2"]
+        mock_get_pool.return_value = mock_redis
+
         stats = await cache_stats()
 
         assert "connected" in stats
@@ -171,11 +196,16 @@ class TestCacheStats:
         assert "redis_memory_used" in stats
         assert "pme_cache_keys" in stats
         assert isinstance(stats["pme_cache_keys"], int)
+        assert stats["pme_cache_keys"] == 2
 
 
 @pytest.mark.asyncio
 class TestCacheErrorHandling:
     """Test cache error handling and resilience."""
+
+    def setup_method(self):
+        """Reset cache state before each test."""
+        reset_cache_for_testing()
 
     @patch("pme_calculator.backend.cache.get_redis_pool")
     async def test_cache_get_error_handling(self, mock_get_pool):
@@ -207,6 +237,10 @@ class TestCacheErrorHandling:
 @pytest.mark.asyncio
 class TestCachePerformance:
     """Test cache performance characteristics."""
+
+    def setup_method(self):
+        """Reset cache state before each test."""
+        reset_cache_for_testing()
 
     async def test_cache_performance_basic(self):
         """Test basic cache performance."""
@@ -255,8 +289,11 @@ def test_cache_roundtrip_sprint_example():
 
 
 # Cleanup fixture
-@pytest.fixture(scope="session", autouse=True)
+@pytest_asyncio.fixture(scope="session", autouse=True)
 async def cleanup_cache():
     """Clean up cache connections after tests."""
     yield
-    await close_redis_pool()
+    try:
+        await close_redis_pool()
+    except Exception:
+        pass  # Ignore cleanup errors if event loop is already closed

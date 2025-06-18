@@ -1,8 +1,8 @@
-import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
-import pandas as pd
-import numpy as np
+import matplotlib.pyplot as plt
 import mplcursors
+import numpy as np
+import pandas as pd
 
 
 def plot_cashflow_overview(

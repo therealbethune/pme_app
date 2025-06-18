@@ -11,12 +11,12 @@ Key Features:
 - Performance and diagnostic information
 """
 
-from typing import Any, Dict, List, Optional, TypeVar, Generic
-from enum import Enum
+import logging
+import traceback
 from dataclasses import dataclass, field
 from datetime import datetime
-import traceback
-import logging
+from enum import Enum
+from typing import Any, Generic, Optional, TypeVar
 
 logger = logging.getLogger(__name__)
 
@@ -51,8 +51,8 @@ class ErrorDetail:
     severity: ErrorSeverity
     message: str
     code: str
-    context: Dict[str, Any] = field(default_factory=dict)
-    suggestion: Optional[str] = None
+    context: dict[str, Any] = field(default_factory=dict)
+    suggestion: str | None = None
     timestamp: datetime = field(default_factory=datetime.now)
 
 
@@ -61,9 +61,9 @@ class PerformanceMetrics:
     """Performance metrics for operations."""
 
     execution_time_ms: float
-    memory_usage_mb: Optional[float] = None
-    rows_processed: Optional[int] = None
-    cache_hit_rate: Optional[float] = None
+    memory_usage_mb: float | None = None
+    rows_processed: int | None = None
+    cache_hit_rate: float | None = None
 
 
 @dataclass
@@ -76,11 +76,11 @@ class ErrorEnvelope(Generic[T]):
     """
 
     success: bool
-    data: Optional[T] = None
-    errors: List[ErrorDetail] = field(default_factory=list)
-    warnings: List[ErrorDetail] = field(default_factory=list)
-    metadata: Dict[str, Any] = field(default_factory=dict)
-    performance: Optional[PerformanceMetrics] = None
+    data: T | None = None
+    errors: list[ErrorDetail] = field(default_factory=list)
+    warnings: list[ErrorDetail] = field(default_factory=list)
+    metadata: dict[str, Any] = field(default_factory=dict)
+    performance: PerformanceMetrics | None = None
 
     @property
     def has_errors(self) -> bool:
@@ -115,8 +115,8 @@ class ErrorEnvelope(Generic[T]):
 
 def envelope_ok(
     data: T,
-    metadata: Optional[Dict[str, Any]] = None,
-    performance: Optional[PerformanceMetrics] = None,
+    metadata: dict[str, Any] | None = None,
+    performance: PerformanceMetrics | None = None,
 ) -> ErrorEnvelope[T]:
     """Create a successful envelope with data."""
     return ErrorEnvelope(
@@ -125,10 +125,10 @@ def envelope_ok(
 
 
 def envelope_partial(
-    data: Optional[T],
-    warnings: List[ErrorDetail],
-    metadata: Optional[Dict[str, Any]] = None,
-    performance: Optional[PerformanceMetrics] = None,
+    data: T | None,
+    warnings: list[ErrorDetail],
+    metadata: dict[str, Any] | None = None,
+    performance: PerformanceMetrics | None = None,
 ) -> ErrorEnvelope[T]:
     """Create a partial success envelope with warnings."""
     return ErrorEnvelope(
@@ -141,10 +141,10 @@ def envelope_partial(
 
 
 def envelope_fail(
-    errors: List[ErrorDetail],
-    data: Optional[T] = None,
-    metadata: Optional[Dict[str, Any]] = None,
-    performance: Optional[PerformanceMetrics] = None,
+    errors: list[ErrorDetail],
+    data: T | None = None,
+    metadata: dict[str, Any] | None = None,
+    performance: PerformanceMetrics | None = None,
 ) -> ErrorEnvelope[T]:
     """Create a failed envelope with errors."""
     return ErrorEnvelope(
@@ -210,8 +210,8 @@ class ErrorCollector:
     """Helper class to collect and manage errors during complex operations."""
 
     def __init__(self):
-        self.errors: List[ErrorDetail] = []
-        self.warnings: List[ErrorDetail] = []
+        self.errors: list[ErrorDetail] = []
+        self.warnings: list[ErrorDetail] = []
 
     def add_error(
         self,
@@ -219,8 +219,8 @@ class ErrorCollector:
         severity: ErrorSeverity,
         message: str,
         code: str,
-        context: Optional[Dict[str, Any]] = None,
-        suggestion: Optional[str] = None,
+        context: dict[str, Any] | None = None,
+        suggestion: str | None = None,
     ):
         """Add an error to the collector."""
         error = ErrorDetail(
@@ -239,7 +239,7 @@ class ErrorCollector:
             self.warnings.append(error)
             logger.warning(f"[{category.value}] {message}")
 
-    def add_data_alignment_error(self, message: str, context: Dict[str, Any]):
+    def add_data_alignment_error(self, message: str, context: dict[str, Any]):
         """Add a data alignment error with standard context."""
         self.add_error(
             category=ErrorCategory.DATA_ALIGNMENT,
@@ -250,7 +250,7 @@ class ErrorCollector:
             suggestion="Use DataAlignmentEngine to align datasets before calculation",
         )
 
-    def add_validation_warning(self, message: str, context: Dict[str, Any]):
+    def add_validation_warning(self, message: str, context: dict[str, Any]):
         """Add a validation warning."""
         self.add_error(
             category=ErrorCategory.DATA_VALIDATION,
@@ -271,16 +271,18 @@ class ErrorCollector:
 
     def to_envelope(
         self,
-        data: Optional[T] = None,
-        metadata: Optional[Dict[str, Any]] = None,
-        performance: Optional[PerformanceMetrics] = None,
+        data: T | None = None,
+        metadata: dict[str, Any] | None = None,
+        performance: PerformanceMetrics | None = None,
     ) -> ErrorEnvelope[T]:
         """Convert collector state to an error envelope."""
         if self.has_errors():
-            return envelope_fail(
-                errors=self.errors,
+            return ErrorEnvelope(
+                success=False,
                 data=data,
-                metadata=metadata,
+                errors=self.errors,
+                warnings=self.warnings,  # Include warnings even when there are errors
+                metadata=metadata or {},
                 performance=performance,
             )
         elif self.warnings:

@@ -1,0 +1,24 @@
+{
+  "tools": [
+    {
+      "name": "Generate Investor Report",
+      "description": "Run full portfolio analytics and generate PDF/Excel reports",
+      "command": "python3 scripts/build_report.py && open $(ls -t reports/*.pdf | head -1)"
+    },
+    {
+      "name": "Generate Sample Data",
+      "description": "Create sample portfolio data for testing",
+      "command": "python3 scripts/build_report.py --create-sample"
+    },
+    {
+      "name": "Generate Simple Report",
+      "description": "Generate reports using simple rendering (compatibility mode)",
+      "command": "python3 scripts/build_report.py --simple && open $(ls -t reports/*.pdf | head -1)"
+    },
+    {
+      "name": "View Reports Directory",
+      "description": "Open the reports directory to view generated files",
+      "command": "open reports/"
+    }
+  ]
+} 

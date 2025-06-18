@@ -3,12 +3,13 @@
 Test safe workflow for patch application and git operations.
 """
 
-import sys
 import os
-import subprocess
-import tempfile
 import shutil
+import subprocess
+import sys
+import tempfile
 from pathlib import Path
+
 import pytest
 
 # Add backend directory to path

@@ -3,25 +3,26 @@ Comprehensive bug detection and testing for the PME Calculator backend.
 Tests various edge cases and potential issues identified through code scanning.
 """
 
-import pytest
-import pandas as pd
-import numpy as np
-import tempfile
+import json
 import os
 import sys
+import tempfile
 from pathlib import Path
-import json
+
+import numpy as np
+import pandas as pd
+import pytest
 
 # Add backend directory to path
 backend_dir = Path(__file__).parent.parent
 sys.path.insert(0, str(backend_dir))
 
 # Import modules that need testing
-from validation import schemas
-from validation.file_check_simple import validate_file_comprehensive
+from cache import CacheManager
 from math_engine import MathEngine
 from pme_engine import PMEEngine, PMEResult
-from cache import CacheManager
+from validation import schemas
+from validation.file_check_simple import validate_file_comprehensive
 
 
 class TestValidationSchemas:
@@ -153,7 +154,7 @@ class TestPMEEngine:
 
     def create_sample_data(self):
         """Create sample fund and benchmark data for testing."""
-        dates = pd.date_range("2020-01-01", periods=12, freq="M")
+        dates = pd.date_range("2020-01-01", periods=12, freq="ME")
 
         fund_data = pd.DataFrame(
             {
@@ -353,9 +354,10 @@ class TestErrorHandling:
         """Test numpy operations with edge cases."""
         # Division by zero
         try:
-            result = np.array([1, 2, 3]) / np.array([1, 0, 3])
-            # Should get inf for division by zero
-            assert np.isinf(result[1])
+            with np.errstate(divide="ignore"):
+                result = np.array([1, 2, 3]) / np.array([1, 0, 3])
+                # Should get inf for division by zero
+                assert np.isinf(result[1])
         except Exception:
             pass
 
@@ -374,9 +376,12 @@ class TestSystemIntegration:
     def test_module_imports(self):
         """Test that all modules can be imported without errors."""
         try:
-            from validation.schemas import CashflowRow, ValidationResult
-            from math_engine import MathEngine
-            from cache import CacheManager
+            from pme_calculator.backend.cache import CacheManager
+            from pme_calculator.backend.math_engine import MathEngine
+            from pme_calculator.backend.validation.schemas import (
+                CashflowRow,
+                ValidationResult,
+            )
 
             assert True  # If we get here, imports worked
         except ImportError as e:

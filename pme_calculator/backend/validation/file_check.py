@@ -3,20 +3,21 @@ File validation service for PME Calculator.
 Validates fund and index data files for structure and content integrity.
 """
 
-import pandas as pd
-from pathlib import Path
-from typing import List, Dict, Tuple, Union
 import re
+from pathlib import Path
+from typing import Dict, List, Tuple, Union
+
 import chardet
+import pandas as pd
 
 from .schemas import (
-    ValidationResult,
-    UploadMeta,
+    CashflowRow,
     FileTypeEnum,
     FundDataSchema,
     IndexDataSchema,
-    CashflowRow,
     NavRow,
+    UploadMeta,
+    ValidationResult,
 )
 
 
@@ -26,7 +27,7 @@ class FileValidationError(Exception):
     pass
 
 
-def detect_file_encoding(file_path: Union[str, Path]) -> str:
+def detect_file_encoding(file_path: str | Path) -> str:
     """Detect file encoding using chardet."""
     try:
         with open(file_path, "rb") as f:
@@ -37,7 +38,7 @@ def detect_file_encoding(file_path: Union[str, Path]) -> str:
         return "utf-8"
 
 
-def detect_column_mappings(df: pd.DataFrame, file_type: str = "fund") -> Dict[str, str]:
+def detect_column_mappings(df: pd.DataFrame, file_type: str = "fund") -> dict[str, str]:
     """
     Intelligently detect column mappings based on common patterns.
     Returns dict mapping detected column -> standard column name.
@@ -155,8 +156,8 @@ def detect_column_mappings(df: pd.DataFrame, file_type: str = "fund") -> Dict[st
 
 
 def validate_csv_structure(
-    file_path: Union[str, Path],
-) -> Tuple[pd.DataFrame, List[str]]:
+    file_path: str | Path,
+) -> tuple[pd.DataFrame, list[str]]:
     """
     Validate basic CSV structure and return DataFrame with errors.
     """
@@ -230,7 +231,7 @@ def validate_csv_structure(
     return df, errors
 
 
-def validate_fund_file(file_path: Union[str, Path]) -> List[str]:
+def validate_fund_file(file_path: str | Path) -> list[str]:
     """
     Validate fund cashflow file and return list of error strings.
     Empty list means validation passed.
@@ -308,7 +309,7 @@ def validate_fund_file(file_path: Union[str, Path]) -> List[str]:
     return errors
 
 
-def validate_index_file(file_path: Union[str, Path]) -> List[str]:
+def validate_index_file(file_path: str | Path) -> list[str]:
     """
     Validate index price file and return list of error strings.
     Empty list means validation passed.
@@ -378,7 +379,7 @@ def validate_index_file(file_path: Union[str, Path]) -> List[str]:
 
 
 def create_upload_metadata(
-    file_path: Union[str, Path], df: pd.DataFrame = None
+    file_path: str | Path, df: pd.DataFrame = None
 ) -> UploadMeta:
     """Create metadata object for uploaded file."""
     file_path = Path(file_path)
@@ -423,7 +424,7 @@ def create_upload_metadata(
 
 
 def validate_file_comprehensive(
-    file_path: Union[str, Path], file_type: str = "fund"
+    file_path: str | Path, file_type: str = "fund"
 ) -> ValidationResult:
     """
     Comprehensive file validation returning detailed ValidationResult.

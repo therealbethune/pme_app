@@ -1,9 +1,10 @@
 # Phase 1: DataAlignmentEngine for PME calculations
 
-import polars as pl
-import pandas as pd
-from typing import Literal
 import logging
+from typing import Literal
+
+import pandas as pd
+import polars as pl
 
 logger = logging.getLogger(__name__)
 
@@ -85,6 +86,12 @@ class DataAlignmentEngine:
         if self.missing_strategy == "forward_fill":
             fund_aligned = fund_aligned.with_columns(pl.col("value").forward_fill())
             index_aligned = index_aligned.with_columns(pl.col("value").forward_fill())
+        elif self.missing_strategy == "backward_fill":
+            fund_aligned = fund_aligned.with_columns(pl.col("value").backward_fill())
+            index_aligned = index_aligned.with_columns(pl.col("value").backward_fill())
+        elif self.missing_strategy == "interpolate":
+            fund_aligned = fund_aligned.with_columns(pl.col("value").interpolate())
+            index_aligned = index_aligned.with_columns(pl.col("value").interpolate())
         elif self.missing_strategy == "zero_fill":
             fund_aligned = fund_aligned.with_columns(pl.col("value").fill_null(0.0))
             index_aligned = index_aligned.with_columns(pl.col("value").fill_null(0.0))
@@ -101,5 +108,17 @@ class DataAlignmentEngine:
             "date_range": {
                 "start": fund_df.select(pl.col("date").min()).item(),
                 "end": fund_df.select(pl.col("date").max()).item(),
+            },
+            "fund_stats": {
+                "non_null_count": len(fund_df.select("fund_value").drop_nulls()),
+                "null_count": fund_df.select(
+                    pl.col("fund_value").is_null().sum()
+                ).item(),
+            },
+            "index_stats": {
+                "non_null_count": len(index_df.select("index_value").drop_nulls()),
+                "null_count": index_df.select(
+                    pl.col("index_value").is_null().sum()
+                ).item(),
             },
         }
