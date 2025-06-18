@@ -62,6 +62,10 @@ class TestCacheKeyGeneration:
 class TestCacheOperations:
     """Test Redis cache operations."""
 
+    def setup_method(self):
+        """Reset cache state before each test."""
+        reset_cache_for_testing()
+
     async def test_cache_roundtrip_basic(self):
         """Test basic cache set and get operations."""
         key = make_cache_key("/v1/metrics/irr_pme", {"fund_id": "test123"})
@@ -133,6 +137,10 @@ class TestCacheOperations:
 @pytest.mark.asyncio
 class TestCachePatterns:
     """Test cache pattern operations."""
+
+    def setup_method(self):
+        """Reset cache state before each test."""
+        reset_cache_for_testing()
 
     async def test_cache_clear_pattern(self):
         """Test clearing cache keys by pattern."""
@@ -229,6 +237,10 @@ class TestCacheErrorHandling:
 @pytest.mark.asyncio
 class TestCachePerformance:
     """Test cache performance characteristics."""
+
+    def setup_method(self):
+        """Reset cache state before each test."""
+        reset_cache_for_testing()
 
     async def test_cache_performance_basic(self):
         """Test basic cache performance."""
