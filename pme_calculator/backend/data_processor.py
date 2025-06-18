@@ -207,7 +207,9 @@ class IntelligentDataProcessor:
             ],
         }
 
-    def detect_column_type(self, column_name: str, sample_values: list[Any]) -> ColumnMapping:
+    def detect_column_type(
+        self, column_name: str, sample_values: list[Any]
+    ) -> ColumnMapping:
         """
         Detect the type and purpose of a column based on name and sample values
         """
@@ -220,14 +222,18 @@ class IntelligentDataProcessor:
         for data_type, patterns in self.column_patterns.items():
             for pattern in patterns:
                 if re.match(pattern, column_name_lower):
-                    confidence = len(re.findall(pattern, column_name_lower)) / len(patterns)
+                    confidence = len(re.findall(pattern, column_name_lower)) / len(
+                        patterns
+                    )
                     if confidence > best_confidence:
                         best_match = data_type
                         best_confidence = confidence
 
         # Analyze sample values to improve detection
         if best_match == DataType.UNKNOWN or best_confidence < 0.5:
-            value_based_type, value_confidence = self._analyze_sample_values(sample_values)
+            value_based_type, value_confidence = self._analyze_sample_values(
+                sample_values
+            )
             if value_confidence > best_confidence:
                 best_match = value_based_type
                 best_confidence = value_confidence
@@ -242,7 +248,9 @@ class IntelligentDataProcessor:
             confidence=best_confidence,
         )
 
-    def _analyze_sample_values(self, sample_values: list[Any]) -> tuple[DataType, float]:
+    def _analyze_sample_values(
+        self, sample_values: list[Any]
+    ) -> tuple[DataType, float]:
         """Analyze sample values to determine data type"""
         if not sample_values:
             return DataType.UNKNOWN, 0.0
@@ -398,7 +406,9 @@ class IntelligentDataProcessor:
         transformed_df = self._apply_transformations(df, column_mappings)
 
         # Calculate metadata
-        metadata = self._calculate_metadata(dataset_name, transformed_df, column_mappings)
+        metadata = self._calculate_metadata(
+            dataset_name, transformed_df, column_mappings
+        )
 
         return transformed_df, metadata
 
@@ -422,11 +432,15 @@ class IntelligentDataProcessor:
                 DataType.NAV,
                 DataType.CURRENCY,
             ]:
-                result_df[mapping.standardized_name] = self._standardize_currency(df[col])
+                result_df[mapping.standardized_name] = self._standardize_currency(
+                    df[col]
+                )
                 mapping.transformations.append("currency_standardization")
 
             elif mapping.data_type == DataType.RETURN:
-                result_df[mapping.standardized_name] = self._standardize_percentages(df[col])
+                result_df[mapping.standardized_name] = self._standardize_percentages(
+                    df[col]
+                )
                 mapping.transformations.append("percentage_standardization")
 
             else:
@@ -513,7 +527,9 @@ class IntelligentDataProcessor:
         self, name: str, df: pd.DataFrame, mappings: list[ColumnMapping]
     ) -> DatasetMetadata:
         """Calculate metadata for the processed dataset"""
-        date_columns = [m.standardized_name for m in mappings if m.data_type == DataType.DATE]
+        date_columns = [
+            m.standardized_name for m in mappings if m.data_type == DataType.DATE
+        ]
 
         if date_columns:
             date_series = df[date_columns[0]].dropna()
@@ -524,7 +540,9 @@ class IntelligentDataProcessor:
         else:
             date_range = (datetime.now(), datetime.now())
 
-        missing_percentage = (df.isnull().sum().sum() / (len(df) * len(df.columns))) * 100
+        missing_percentage = (
+            df.isnull().sum().sum() / (len(df) * len(df.columns))
+        ) * 100
 
         # Calculate data quality score
         quality_score = self._calculate_quality_score(df, mappings)
@@ -539,7 +557,9 @@ class IntelligentDataProcessor:
             missing_data_percentage=missing_percentage,
         )
 
-    def _calculate_quality_score(self, df: pd.DataFrame, mappings: list[ColumnMapping]) -> float:
+    def _calculate_quality_score(
+        self, df: pd.DataFrame, mappings: list[ColumnMapping]
+    ) -> float:
         """Calculate overall data quality score"""
         if df.empty:
             return 0.0
@@ -548,7 +568,9 @@ class IntelligentDataProcessor:
         missing_penalty = (df.isnull().sum().sum() / (df.shape[0] * df.shape[1])) * 100
 
         confidence_scores = [mapping.confidence for mapping in mappings]
-        avg_confidence = sum(confidence_scores) / len(confidence_scores) if confidence_scores else 0
+        avg_confidence = (
+            sum(confidence_scores) / len(confidence_scores) if confidence_scores else 0
+        )
 
         # Quality score (0-100)
         quality_score = max(0, (avg_confidence * 100) - missing_penalty)
@@ -655,7 +677,9 @@ class IntelligentDataProcessor:
                                 description=f"{missing_pct:.1f}% of values are missing ({missing_count} out of {len(df)})",
                                 severity=severity,
                                 affected_columns=[col_name],
-                                affected_rows=df[df[col_name].isnull()].index.tolist()[:10],
+                                affected_rows=df[df[col_name].isnull()].index.tolist()[
+                                    :10
+                                ],
                                 fix_description="Fill missing values with appropriate defaults or interpolation",
                                 fix_parameters={
                                     "column": col_name,
@@ -690,7 +714,9 @@ class IntelligentDataProcessor:
                         if mapping.data_type == DataType.CONTRIBUTION:
                             # Contributions should typically be negative (outflows from investor perspective)
                             positive_count = (series > 0).sum()
-                            if positive_count > len(series) * 0.8:  # More than 80% positive
+                            if (
+                                positive_count > len(series) * 0.8
+                            ):  # More than 80% positive
                                 issues.append(
                                     DataIssue(
                                         issue_id=f"contribution_sign_{col_name}",
@@ -698,7 +724,9 @@ class IntelligentDataProcessor:
                                         description=f"Contributions are typically negative (investor outflows), but {positive_count} out of {len(series)} are positive",
                                         severity="warning",
                                         affected_columns=[col_name],
-                                        affected_rows=df[df[col_name] > 0].index.tolist()[:10],
+                                        affected_rows=df[
+                                            df[col_name] > 0
+                                        ].index.tolist()[:10],
                                         fix_description="Convert positive contributions to negative values",
                                         fix_parameters={
                                             "column": col_name,
@@ -710,7 +738,9 @@ class IntelligentDataProcessor:
                         elif mapping.data_type == DataType.DISTRIBUTION:
                             # Distributions should typically be positive (inflows to investor)
                             negative_count = (series < 0).sum()
-                            if negative_count > len(series) * 0.8:  # More than 80% negative
+                            if (
+                                negative_count > len(series) * 0.8
+                            ):  # More than 80% negative
                                 issues.append(
                                     DataIssue(
                                         issue_id=f"distribution_sign_{col_name}",
@@ -718,7 +748,9 @@ class IntelligentDataProcessor:
                                         description=f"Distributions are typically positive (investor inflows), but {negative_count} out of {len(series)} are negative",
                                         severity="warning",
                                         affected_columns=[col_name],
-                                        affected_rows=df[df[col_name] < 0].index.tolist()[:10],
+                                        affected_rows=df[
+                                            df[col_name] < 0
+                                        ].index.tolist()[:10],
                                         fix_description="Convert negative distributions to positive values",
                                         fix_parameters={
                                             "column": col_name,
@@ -840,11 +872,15 @@ class IntelligentDataProcessor:
         try:
             if issue.fix_parameters.get("operation") == "negate_positive":
                 col = issue.fix_parameters["column"]
-                df_fixed.loc[df_fixed[col] > 0, col] = -df_fixed.loc[df_fixed[col] > 0, col]
+                df_fixed.loc[df_fixed[col] > 0, col] = -df_fixed.loc[
+                    df_fixed[col] > 0, col
+                ]
 
             elif issue.fix_parameters.get("operation") == "negate_negative":
                 col = issue.fix_parameters["column"]
-                df_fixed.loc[df_fixed[col] < 0, col] = -df_fixed.loc[df_fixed[col] < 0, col]
+                df_fixed.loc[df_fixed[col] < 0, col] = -df_fixed.loc[
+                    df_fixed[col] < 0, col
+                ]
 
             elif issue.fix_parameters.get("operation") == "drop_duplicates":
                 df_fixed = df_fixed.drop_duplicates()
@@ -916,7 +952,9 @@ class IntelligentDataProcessor:
                     if mapping.data_type == DataType.OTHER_CASH_FLOW:
                         # Get sample values from the original data
                         if isinstance(data, pd.DataFrame):
-                            sample_values = data[mapping.original_name].dropna().head(5).tolist()
+                            sample_values = (
+                                data[mapping.original_name].dropna().head(5).tolist()
+                            )
                         else:
                             sample_values = []
 
@@ -999,7 +1037,9 @@ class IntelligentDataProcessor:
         all_data_issues = []
         for dataset_name, df in processed_datasets.items():
             dataset_meta = metadata[dataset_name]
-            data_issues = self.detect_data_issues(df, dataset_meta.column_mappings, dataset_name)
+            data_issues = self.detect_data_issues(
+                df, dataset_meta.column_mappings, dataset_name
+            )
             all_data_issues.extend(data_issues)
 
         # If there are unclassified columns, we're not ready for calculation yet
@@ -1075,14 +1115,18 @@ class IntelligentDataProcessor:
                 ready = False
 
             index_value_cols = [
-                col for col in index_data.columns if col in ["index_value", "price", "level"]
+                col
+                for col in index_data.columns
+                if col in ["index_value", "price", "level"]
             ]
             if not index_value_cols:
                 warnings.append("Index data missing value information")
                 ready = False
 
         if ready:
-            suggestions.append("Data structure is optimized and ready for PME calculations")
+            suggestions.append(
+                "Data structure is optimized and ready for PME calculations"
+            )
 
         return ready
 

@@ -27,34 +27,5 @@ line-length = 88
 
 [tool.ruff]
 line-length = 88
-target-version = "py312"
-
-[tool.ruff.lint]
-select = [
-    "E",  # pycodestyle errors
-    "W",  # pycodestyle warnings
-    "F",  # pyflakes
-    "I",  # isort
-    "N",  # pep8-naming
-    "SIM", # flake8-simplify
-]
-
-ignore = [
-    "E501",  # line too long (88 > 79 characters)
-    "UP035", # `typing.Dict` is deprecated, use `dict` instead
-    "B904",  # raise without from inside except
-    "B008",  # function call in default argument
-    "W291",  # trailing whitespace
-    "W292",  # missing newline at end of file
-    "W293",  # blank line with whitespace
-]
-
-[tool.ruff.lint.per-file-ignores]
-"tests/*" = ["F401", "F841"]  # Allow unused imports/variables in tests
-"*/__init__.py" = ["F401"]    # Allow unused imports in __init__.py files
-
-[tool.ruff.format]
-quote-style = "double"
-indent-style = "space"
-skip-magic-trailing-comma = false
-line-ending = "auto" 
+select = ["E", "F", "W", "I", "N"]
+fixable = ["ALL"]

@@ -9,8 +9,7 @@ setup(
     packages=find_packages(
         include=["pme_app", "pme_app.*", "pme_calculator", "pme_calculator.*"]
     ),
-    python_requires=">=3.9",
-    # Backend designed for 3.9-3.12, but allow 3.13 for local dev
+    python_requires=">=3.9",  # Backend designed for 3.9-3.12, but allow 3.13 for local dev
     install_requires=[
         "fastapi>=0.100.0",
         "uvicorn[standard]>=0.22.0",
