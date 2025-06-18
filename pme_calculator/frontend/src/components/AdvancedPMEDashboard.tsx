@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { 
-  Box, Typography, Card, CardContent, Grid, Tabs, Tab, 
+  Box, Typography, Card, CardContent, Tabs, Tab, 
   Chip, Divider, Paper, LinearProgress, Button, Alert
 } from '@mui/material';
+import Grid from '@mui/material/Grid';
 import { 
-  TrendingUp, BarChart, PieChart, Download, Target, 
+  TrendingUp, BarChart, PieChart, Download, Adjust, 
   AttachMoney, Calculate, EmojiEvents, Timeline
 } from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
@@ -61,7 +62,8 @@ export const AdvancedPMEDashboard: React.FC<AdvancedPMEDashboardProps> = ({
   const { basic_metrics, pme_metrics, has_benchmark } = data;
 
   // PME Performance Assessment
-  const getPMEPerformance = (ks_pme: number) => {
+  const getPMEPerformance = (ks_pme: number | undefined) => {
+    if (ks_pme === undefined) return { label: 'N/A', color: '#9ca3af', bg: '#f3f4f6' };
     if (ks_pme >= 1.3) return { label: 'Exceptional', color: '#22c55e', bg: '#dcfce7' };
     if (ks_pme >= 1.15) return { label: 'Strong', color: '#3b82f6', bg: '#dbeafe' };
     if (ks_pme >= 1.0) return { label: 'Good', color: '#f59e0b', bg: '#fef3c7' };
@@ -69,14 +71,23 @@ export const AdvancedPMEDashboard: React.FC<AdvancedPMEDashboardProps> = ({
     return { label: 'Poor', color: '#ef4444', bg: '#fecaca' };
   };
 
-  const ksPerformance = pme_metrics ? getPMEPerformance(pme_metrics.kaplan_schoar_pme) : null;
+  const ksPerformance = pme_metrics ? getPMEPerformance(pme_metrics.kaplan_schoar_pme) : { label: 'N/A', color: '#9ca3af', bg: '#f3f4f6' };
 
   // Format percentage values
-  const formatPercent = (value: number, decimals = 1) => 
-    `${(value * 100).toFixed(decimals)}%`;
+  const formatPercent = (value: number | undefined, decimals = 1) => {
+    if (value === undefined) return 'N/A';
+    return `${(value * 100).toFixed(decimals)}%`;
+  };
 
-  const formatDecimal = (value: number, decimals = 3) => 
-    value.toFixed(decimals);
+  const formatDecimal = (value: number | undefined, decimals = 3) => {
+    if (value === undefined) return 'N/A';
+    return value.toFixed(decimals);
+  };
+
+  const formatCurrency = (value: number | undefined) => {
+    if (value === undefined) return 'N/A';
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
+  }
 
   return (
     <Box sx={{ width: '100%' }}>
@@ -133,7 +144,7 @@ export const AdvancedPMEDashboard: React.FC<AdvancedPMEDashboardProps> = ({
           onChange={(_, newValue) => setActiveTab(newValue)}
           sx={{ borderBottom: 1, borderColor: 'divider' }}
         >
-          <Tab label="Core Metrics" icon={<Target />} iconPosition="start" />
+          <Tab label="Core Metrics" icon={<Adjust />} iconPosition="start" />
           <Tab label="PME Analysis" icon={<Calculate />} iconPosition="start" />
           <Tab label="Risk Analytics" icon={<Timeline />} iconPosition="start" />
           <Tab label="Benchmarking" icon={<BarChart />} iconPosition="start" />
@@ -144,7 +155,7 @@ export const AdvancedPMEDashboard: React.FC<AdvancedPMEDashboardProps> = ({
       {activeTab === 0 && (
         <Grid container spacing={3}>
           {/* Core Performance Metrics */}
-          <Grid item xs={12} md={6} lg={3}>
+          <Grid xs={12} md={6} lg={3}>
             <MetricCard
               title="Fund IRR"
               value={formatPercent(basic_metrics['Fund IRR'])}
@@ -153,7 +164,7 @@ export const AdvancedPMEDashboard: React.FC<AdvancedPMEDashboardProps> = ({
               subtitle="Internal Rate of Return"
             />
           </Grid>
-          <Grid item xs={12} md={6} lg={3}>
+          <Grid xs={12} md={6} lg={3}>
             <MetricCard
               title="TVPI"
               value={`${basic_metrics['TVPI'].toFixed(2)}x`}
@@ -162,7 +173,7 @@ export const AdvancedPMEDashboard: React.FC<AdvancedPMEDashboardProps> = ({
               subtitle="Total Value to Paid-In"
             />
           </Grid>
-          <Grid item xs={12} md={6} lg={3}>
+          <Grid xs={12} md={6} lg={3}>
             <MetricCard
               title="DPI"
               value={`${basic_metrics['DPI'].toFixed(2)}x`}
@@ -171,7 +182,7 @@ export const AdvancedPMEDashboard: React.FC<AdvancedPMEDashboardProps> = ({
               subtitle="Distributions to Paid-In"
             />
           </Grid>
-          <Grid item xs={12} md={6} lg={3}>
+          <Grid xs={12} md={6} lg={3}>
             <MetricCard
               title="RVPI"
               value={`${basic_metrics['RVPI'].toFixed(2)}x`}
@@ -186,7 +197,7 @@ export const AdvancedPMEDashboard: React.FC<AdvancedPMEDashboardProps> = ({
       {activeTab === 1 && pme_metrics && (
         <Grid container spacing={3}>
           {/* PME Metrics */}
-          <Grid item xs={12} md={6}>
+          <Grid xs={12} md={6}>
             <Card>
               <CardContent>
                 <Typography variant="h6" fontWeight="bold" mb={2}>
@@ -202,7 +213,7 @@ export const AdvancedPMEDashboard: React.FC<AdvancedPMEDashboardProps> = ({
                     {formatDecimal(pme_metrics.kaplan_schoar_pme)}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    {pme_metrics.kaplan_schoar_pme > 1 ? 'Outperformed' : 'Underperformed'} public markets
+                    {pme_metrics.kaplan_schoar_pme && pme_metrics.kaplan_schoar_pme > 1 ? 'Outperformed' : 'Underperformed'} public markets
                   </Typography>
                 </Box>
 
@@ -220,7 +231,7 @@ export const AdvancedPMEDashboard: React.FC<AdvancedPMEDashboardProps> = ({
                     Direct Alpha
                   </Typography>
                   <Typography variant="h5" fontWeight="bold" 
-                    color={pme_metrics.direct_alpha > 0 ? '#22c55e' : '#ef4444'}
+                    color={pme_metrics.direct_alpha && pme_metrics.direct_alpha > 0 ? '#22c55e' : '#ef4444'}
                   >
                     {formatPercent(pme_metrics.direct_alpha, 2)}
                   </Typography>
@@ -238,7 +249,7 @@ export const AdvancedPMEDashboard: React.FC<AdvancedPMEDashboardProps> = ({
             </Card>
           </Grid>
 
-          <Grid item xs={12} md={6}>
+          <Grid xs={12} md={6}>
             <Card>
               <CardContent>
                 <Typography variant="h6" fontWeight="bold" mb={2}>
@@ -248,166 +259,119 @@ export const AdvancedPMEDashboard: React.FC<AdvancedPMEDashboardProps> = ({
 
                 <Box mb={3}>
                   <Typography variant="subtitle2" color="text.secondary" mb={1}>
-                    Fund IRR
+                    Fund vs. Benchmark IRR
                   </Typography>
-                  <Typography variant="h5" fontWeight="bold">
-                    {formatPercent(pme_metrics.fund_irr)}
-                  </Typography>
+                  <Box display="flex" alignItems="baseline" gap={2}>
+                    <Box>
+                      <Typography variant="h5" fontWeight="bold">
+                        {formatPercent(pme_metrics.fund_irr)}
+                      </Typography>
+                      <Typography variant="caption">Fund IRR</Typography>
+                    </Box>
+                    <Typography color="text.secondary">vs.</Typography>
+                    <Box>
+                      <Typography variant="h5" fontWeight="bold">
+                        {formatPercent(pme_metrics.benchmark_irr)}
+                      </Typography>
+                      <Typography variant="caption">Benchmark IRR</Typography>
+                    </Box>
+                  </Box>
                 </Box>
-
+                
                 <Box mb={3}>
                   <Typography variant="subtitle2" color="text.secondary" mb={1}>
-                    Benchmark IRR
+                    Time-Weighted Alpha
                   </Typography>
-                  <Typography variant="h5" fontWeight="bold">
-                    {formatPercent(pme_metrics.benchmark_irr)}
-                  </Typography>
-                </Box>
-
-                <Box mb={3}>
-                  <Typography variant="subtitle2" color="text.secondary" mb={1}>
-                    Alpha (Excess Return)
-                  </Typography>
-                  <Typography variant="h4" fontWeight="bold" 
-                    color={pme_metrics.twr_alpha > 0 ? '#22c55e' : '#ef4444'}
+                  <Typography variant="h5" fontWeight="bold" 
+                    color={pme_metrics.twr_alpha && pme_metrics.twr_alpha > 0 ? '#22c55e' : '#ef4444'}
                   >
                     {formatPercent(pme_metrics.twr_alpha, 2)}
                   </Typography>
-                  <LinearProgress 
-                    variant="determinate" 
-                    value={Math.min(Math.abs(pme_metrics.twr_alpha) * 1000, 100)} 
-                    color={pme_metrics.twr_alpha > 0 ? 'success' : 'error'}
-                    sx={{ mt: 1, height: 8, borderRadius: 4 }}
+                  <LinearProgress
+                    variant="determinate"
+                    value={pme_metrics.twr_alpha ? Math.min(Math.abs(pme_metrics.twr_alpha) * 1000, 100) : 0}
+                    color={pme_metrics.twr_alpha && pme_metrics.twr_alpha > 0 ? 'success' : 'error'}
+                    sx={{ height: 8, borderRadius: 4, mt: 1 }}
                   />
                 </Box>
               </CardContent>
             </Card>
           </Grid>
-
-          {/* Confidence Intervals */}
-          {pme_metrics.calculation_metadata && (
-            <Grid item xs={12}>
-              <Card>
-                <CardContent>
-                  <Typography variant="h6" fontWeight="bold" mb={2}>
-                    Statistical Confidence Intervals (95%)
-                  </Typography>
-                  <Divider sx={{ mb: 2 }} />
-                  
+          
+          <Grid xs={12}>
+            <Card>
+              <CardContent>
+                <Typography variant="h6" fontWeight="bold" mb={2}>PME Calculation Details</Typography>
+                <Divider sx={{ mb: 2 }}/>
+                {pme_metrics && pme_metrics.calculation_metadata && (
                   <Grid container spacing={2}>
-                    <Grid item xs={12} md={6}>
-                      <Paper sx={{ p: 2, backgroundColor: '#f8fafc' }}>
-                        <Typography variant="subtitle2" color="text.secondary">
-                          Fund Start Date
-                        </Typography>
-                        <Typography variant="h6" fontWeight="bold">
-                          {pme_metrics.calculation_metadata.fund_start_date}
-                        </Typography>
+                    <Grid xs={12} md={6}>
+                      <Paper variant="outlined" sx={{ p: 2, height: '100%' }}>
+                        <Typography variant="subtitle2" color="text.secondary">Alignment & Period</Typography>
+                        <Typography>Aligned Periods: {pme_metrics.calculation_metadata.aligned_periods}</Typography>
+                        <Typography>Fund Start: {pme_metrics.calculation_metadata.fund_start_date}</Typography>
+                        <Typography>Fund End: {pme_metrics.calculation_metadata.fund_end_date}</Typography>
                       </Paper>
                     </Grid>
-                    <Grid item xs={12} md={6}>
-                      <Paper sx={{ p: 2, backgroundColor: '#f8fafc' }}>
-                        <Typography variant="subtitle2" color="text.secondary">
-                          Fund End Date
-                        </Typography>
-                        <Typography variant="h6" fontWeight="bold">
-                          {pme_metrics.calculation_metadata.fund_end_date}
-                        </Typography>
+                    <Grid xs={12} md={6}>
+                      <Paper variant="outlined" sx={{ p: 2, height: '100%' }}>
+                        <Typography variant="subtitle2" color="text.secondary">Fund Cash Flows</Typography>
+                        <Typography>Contributions: {formatCurrency(pme_metrics.calculation_metadata.total_contributions)}</Typography>
+                        <Typography>Distributions: {formatCurrency(pme_metrics.calculation_metadata.total_distributions)}</Typography>
+                        <Typography>Final NAV: {formatCurrency(pme_metrics.calculation_metadata.final_nav)}</Typography>
                       </Paper>
                     </Grid>
-                    <Grid item xs={12} md={6}>
-                      <Paper sx={{ p: 2, backgroundColor: '#f8fafc' }}>
-                        <Typography variant="subtitle2" color="text.secondary">
-                          Total Contributions
-                        </Typography>
-                        <Typography variant="h6" fontWeight="bold">
-                          {pme_metrics.calculation_metadata.total_contributions}
-                        </Typography>
+                    <Grid xs={12} md={6}>
+                      <Paper variant="outlined" sx={{ p: 2, height: '100%' }}>
+                        <Typography variant="subtitle2" color="text.secondary">Benchmark Data</Typography>
+                        <Typography>Index Start Value: {formatDecimal(pme_metrics.calculation_metadata.index_start_value, 2)}</Typography>
+                        <Typography>Index End Value: {formatDecimal(pme_metrics.calculation_metadata.index_end_value, 2)}</Typography>
                       </Paper>
                     </Grid>
-                    <Grid item xs={12} md={6}>
-                      <Paper sx={{ p: 2, backgroundColor: '#f8fafc' }}>
-                        <Typography variant="subtitle2" color="text.secondary">
-                          Total Distributions
-                        </Typography>
-                        <Typography variant="h6" fontWeight="bold">
-                          {pme_metrics.calculation_metadata.total_distributions}
-                        </Typography>
-                      </Paper>
-                    </Grid>
-                    <Grid item xs={12} md={6}>
-                      <Paper sx={{ p: 2, backgroundColor: '#f8fafc' }}>
-                        <Typography variant="subtitle2" color="text.secondary">
-                          Final NAV
-                        </Typography>
-                        <Typography variant="h6" fontWeight="bold">
-                          {pme_metrics.calculation_metadata.final_nav}
-                        </Typography>
-                      </Paper>
-                    </Grid>
-                    <Grid item xs={12} md={6}>
-                      <Paper sx={{ p: 2, backgroundColor: '#f8fafc' }}>
-                        <Typography variant="subtitle2" color="text.secondary">
-                          Index Start Value
-                        </Typography>
-                        <Typography variant="h6" fontWeight="bold">
-                          {pme_metrics.calculation_metadata.index_start_value}
-                        </Typography>
-                      </Paper>
-                    </Grid>
-                    <Grid item xs={12} md={6}>
-                      <Paper sx={{ p: 2, backgroundColor: '#f8fafc' }}>
-                        <Typography variant="subtitle2" color="text.secondary">
-                          Index End Value
-                        </Typography>
-                        <Typography variant="h6" fontWeight="bold">
-                          {pme_metrics.calculation_metadata.index_end_value}
+                    <Grid xs={12} md={6}>
+                      <Paper variant="outlined" sx={{ p: 2, height: '100%' }}>
+                        <Typography variant="subtitle2" color="text.secondary">Outperformance</Typography>
+                        <Typography color={pme_metrics.outperformance === true ? "success.main" : pme_metrics.outperformance === false ? "error.main" : "text.secondary"}>
+                          {pme_metrics.outperformance === true ? 'Yes' : pme_metrics.outperformance === false ? 'No' : 'N/A'}
                         </Typography>
                       </Paper>
                     </Grid>
                   </Grid>
-                </CardContent>
-              </Card>
-            </Grid>
-          )}
-        </Grid>
-      )}
-
-      {activeTab === 2 && (
-        <Grid container spacing={3}>
-          <Grid item xs={12}>
-            <Card>
-              <CardContent>
-                <Typography variant="h6" fontWeight="bold" mb={2}>
-                  Risk Analytics
-                </Typography>
-                <Alert severity="info">
-                  Risk analytics module coming soon. Will include volatility analysis, 
-                  downside protection metrics, and stress testing capabilities.
-                </Alert>
+                )}
               </CardContent>
             </Card>
           </Grid>
         </Grid>
       )}
 
-      {activeTab === 3 && (
+      {activeTab === 2 && (
         <Grid container spacing={3}>
-          <Grid item xs={12}>
+          <Grid xs={12}>
             <Card>
               <CardContent>
-                <Typography variant="h6" fontWeight="bold" mb={2}>
-                  Benchmark Comparison
-                </Typography>
-                {has_benchmark ? (
-                  <Alert severity="success">
-                    Benchmark data loaded. PME calculations are complete and accurate.
-                  </Alert>
-                ) : (
-                  <Alert severity="warning">
-                    No benchmark data available. Upload index data to enable complete PME analysis.
-                  </Alert>
-                )}
+                <Typography variant="h5" fontWeight="bold">Risk Analytics</Typography>
+                <Typography color="text.secondary">Monte Carlo simulations, stress tests, and other risk metrics will be displayed here.</Typography>
+                <Box sx={{ my: 4, textAlign: 'center' }}>
+                  <Timeline sx={{ fontSize: '4rem', color: 'primary.main' }} />
+                  <Typography variant="h6" mt={2}>Coming Soon</Typography>
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
+      )}
+      
+      {activeTab === 3 && (
+        <Grid container spacing={3}>
+          <Grid xs={12}>
+            <Card>
+              <CardContent>
+                <Typography variant="h5" fontWeight="bold">Advanced Benchmarking</Typography>
+                <Typography color="text.secondary">Compare against various public and private benchmarks.</Typography>
+                <Box sx={{ my: 4, textAlign: 'center' }}>
+                  <BarChart sx={{ fontSize: '4rem', color: 'primary.main' }} />
+                  <Typography variant="h6" mt={2}>Coming Soon</Typography>
+                </Box>
               </CardContent>
             </Card>
           </Grid>
@@ -417,7 +381,6 @@ export const AdvancedPMEDashboard: React.FC<AdvancedPMEDashboardProps> = ({
   );
 };
 
-// Simple MetricCard component for consistency
 interface MetricCardProps {
   title: string;
   value: string;
@@ -428,38 +391,26 @@ interface MetricCardProps {
 
 const MetricCard: React.FC<MetricCardProps> = ({ title, value, icon, trend, subtitle }) => {
   const theme = useTheme();
-  
+
   const getTrendColor = () => {
-    switch (trend) {
-      case 'up': return '#22c55e';
-      case 'down': return '#ef4444';
-      default: return '#6b7280';
-    }
+    if (trend === 'up') return theme.palette.success.main;
+    if (trend === 'down') return theme.palette.error.main;
+    return theme.palette.text.secondary;
   };
 
   return (
-    <Card sx={{ 
-      height: '100%',
-      background: theme.palette.mode === 'dark' ? '#000000' : '#ffffff',
-      border: theme.palette.mode === 'dark' ? '1px solid rgba(255,255,255,0.1)' : '1px solid #e2e8f0'
-    }}>
+    <Card sx={{ height: '100%' }}>
       <CardContent>
-        <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
-          <Typography variant="subtitle2" color="text.secondary">
-            {title}
-          </Typography>
+        <Box display="flex" justifyContent="space-between" alignItems="start">
+          <Box>
+            <Typography variant="body1" color="text.secondary">{title}</Typography>
+            <Typography variant="h4" fontWeight="bold" mt={1}>{value}</Typography>
+            {subtitle && <Typography variant="caption" color="text.secondary">{subtitle}</Typography>}
+          </Box>
           <Box sx={{ color: getTrendColor() }}>
             {icon}
           </Box>
         </Box>
-        <Typography variant="h4" fontWeight="bold" mb={1}>
-          {value}
-        </Typography>
-        {subtitle && (
-          <Typography variant="body2" color="text.secondary">
-            {subtitle}
-          </Typography>
-        )}
       </CardContent>
     </Card>
   );

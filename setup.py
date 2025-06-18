@@ -33,6 +33,9 @@ setup(
         "ujson>=5.7.0",
         "mplcursors",
         "ttkbootstrap",
+        "structlog>=23.0.0",
+        "polars>=0.20.0",
+        "pyarrow>=10.0.0",
     ],
     extras_require={
         "dev": [
@@ -43,7 +46,6 @@ setup(
             "pytest-cov",
             "ruff",
             "tox>=4.0.0",
-            "polars",
         ]
     },
     entry_points={

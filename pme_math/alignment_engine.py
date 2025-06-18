@@ -79,8 +79,8 @@ class DataAlignmentEngine:
         # Align to common date range
         date_df = pl.DataFrame({"date": business_days})
 
-        fund_aligned = date_df.join(fund_pl, on="date", how="left", coalesce=True)
-        index_aligned = date_df.join(index_pl, on="date", how="left", coalesce=True)
+        fund_aligned = date_df.join(fund_pl, on="date", how="left")
+        index_aligned = date_df.join(index_pl, on="date", how="left")
 
         # Handle missing values
         if self.missing_strategy == "forward_fill":
