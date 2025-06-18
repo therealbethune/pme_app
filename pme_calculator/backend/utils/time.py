@@ -1,5 +1,5 @@
 """Time utilities for backend services."""
 
-from datetime import timezone
+from datetime import UTC, timezone
 
-UTC = timezone.utc
+UTC = UTC
