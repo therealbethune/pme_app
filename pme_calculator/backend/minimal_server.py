@@ -5,7 +5,7 @@ Minimal FastAPI server for PME Calculator that bypasses problematic Pydantic sch
 import io
 import uuid
 from datetime import datetime
-from typing import Any, Dict
+from typing import Any
 
 import pandas as pd
 from fastapi import FastAPI, File, HTTPException, UploadFile

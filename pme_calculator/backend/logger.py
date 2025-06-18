@@ -11,7 +11,6 @@ from datetime import datetime
 
 from .utils.time import UTC
 from pathlib import Path
-from typing import Optional
 
 
 class UTCFormatter(logging.Formatter):
@@ -28,7 +27,9 @@ class UTCFormatter(logging.Formatter):
     def format(self, record):
         """Custom formatting with module names."""
         # Add module name for better debugging
-        record.module = record.name.split(".")[-1] if "." in record.name else record.name
+        record.module = (
+            record.name.split(".")[-1] if "." in record.name else record.name
+        )
         return super().format(record)
 
 
@@ -199,7 +200,9 @@ class PMELogger:
             extra={"file_name": file_path, "data_quality_issue": issue},
         )
 
-    def error_calculation(self, calculation_type: str, error: Exception, context: dict = None):
+    def error_calculation(
+        self, calculation_type: str, error: Exception, context: dict = None
+    ):
         """Log calculation errors with context."""
         self.logger.error(
             f"Calculation error in {calculation_type}: {str(error)}",
@@ -219,7 +222,9 @@ class PMELogger:
             exc_info=True,
         )
 
-    def debug_performance(self, operation: str, duration_ms: float, details: dict = None):
+    def debug_performance(
+        self, operation: str, duration_ms: float, details: dict = None
+    ):
         """Log performance metrics."""
         self.logger.debug(
             f"Performance: {operation} took {duration_ms:.2f}ms",

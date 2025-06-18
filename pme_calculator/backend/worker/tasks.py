@@ -5,7 +5,7 @@ Celery background tasks for PME Calculator.
 import asyncio
 import sys
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any
 
 # Add parent directory to path for imports
 sys.path.append(str(Path(__file__).parent.parent))

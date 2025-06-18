@@ -10,7 +10,7 @@ import warnings
 from datetime import date, datetime, time
 from decimal import Decimal
 from pathlib import Path
-from typing import Any, Dict, List, Union
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -123,7 +123,9 @@ def to_jsonable(obj: Any) -> Any:
     # Fallback: convert to string
     else:
         warnings.warn(
-            f"Converting {type(obj)} to string for JSON serialization", UserWarning, stacklevel=2
+            f"Converting {type(obj)} to string for JSON serialization",
+            UserWarning,
+            stacklevel=2,
         )
         return str(obj)
 

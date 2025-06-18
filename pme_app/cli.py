@@ -8,11 +8,6 @@ This module provides command-line access to PME App functionality.
 import argparse
 import sys
 from pathlib import Path
-from typing import Optional
-
-from pme_app.reporting.pdf import render_pdf
-from pme_app.reporting.xlsx import render_xlsx
-from pme_app.services.portfolio import calc_portfolio_metrics
 
 
 def create_parser() -> argparse.ArgumentParser:

@@ -4,7 +4,7 @@ API Bridge for PME Calculator - Compatibility layer for existing PME logic
 
 import os
 import tempfile
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import numpy as np
 import pandas as pd

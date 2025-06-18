@@ -10,7 +10,7 @@ import time
 from contextlib import asynccontextmanager
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any
 
 import uvicorn
 from analysis_engine import PMEAnalysisEngine, make_json_serializable

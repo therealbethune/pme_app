@@ -3,7 +3,6 @@ Upload file metadata model.
 """
 
 from datetime import datetime
-from typing import Optional
 
 from sqlmodel import Field, SQLModel
 

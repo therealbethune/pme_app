@@ -11,7 +11,7 @@ import tempfile
 import time
 import uuid
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from ..utils.time import UTC
 
@@ -130,7 +130,9 @@ async def run_analysis(
                 index_file_id = file_id
 
         if not fund_file_id:
-            raise HTTPException(404, detail="No fund file found. Please upload a fund file first.")
+            raise HTTPException(
+                404, detail="No fund file found. Please upload a fund file first."
+            )
 
         # Create default request
         request = AnalysisRequest(
@@ -160,12 +162,12 @@ async def run_analysis(
 
     # Check if fund file is valid
     if not fund_file_data["validation"].is_valid:
-        raise HTTPException(400, detail="Fund file validation failed. Cannot run analysis.")
+        raise HTTPException(
+            400, detail="Fund file validation failed. Cannot run analysis."
+        )
 
     # Check cache key
-    cache_key = (
-        f"{request.fund_file_id}:{request.index_file_id}:{request.method}:{request.risk_free_rate}"
-    )
+    cache_key = f"{request.fund_file_id}:{request.index_file_id}:{request.method}:{request.risk_free_rate}"
 
     if cache_key in analysis_cache:
         cached_result = analysis_cache[cache_key]
@@ -189,10 +191,14 @@ async def run_analysis(
 
     try:
         # Run analysis with threadpool for heavy computations
-        metrics = await run_in_threadpool(calculate_pme_metrics_sync, request, fund_file_data)
+        metrics = await run_in_threadpool(
+            calculate_pme_metrics_sync, request, fund_file_data
+        )
 
         # Generate charts data with threadpool
-        charts = await run_in_threadpool(generate_charts_data_sync, request, fund_file_data)
+        charts = await run_in_threadpool(
+            generate_charts_data_sync, request, fund_file_data
+        )
 
         # Create summary
         summary = create_analysis_summary(metrics, request)
@@ -228,18 +234,24 @@ async def run_analysis(
         )
 
     except Exception as e:
-        logger.error("Analysis failed", extra={"request_id": request_id, "error": str(e)})
+        logger.error(
+            "Analysis failed", extra={"request_id": request_id, "error": str(e)}
+        )
 
         raise HTTPException(500, detail=f"Analysis failed: {str(e)}")
 
 
-def calculate_pme_metrics_sync(request: AnalysisRequest, fund_file_data: dict) -> dict[str, Any]:
+def calculate_pme_metrics_sync(
+    request: AnalysisRequest, fund_file_data: dict
+) -> dict[str, Any]:
     """
     Synchronous PME metrics calculation for threadpool execution.
     """
     # Extract file metadata for realistic calculations
     validation_result = fund_file_data["validation"]
-    row_count = validation_result.metadata.row_count if validation_result.metadata else 100
+    row_count = (
+        validation_result.metadata.row_count if validation_result.metadata else 100
+    )
 
     # Generate realistic demo metrics based on file size and method
     base_irr = 0.185  # 18.5%
@@ -268,13 +280,16 @@ def calculate_pme_metrics_sync(request: AnalysisRequest, fund_file_data: dict) -
         "Index IRR": round(0.12 * size_factor, 4),
         "Index TVPI": round(1.85, 3),
         # Risk Metrics
-        "Direct Alpha": round((base_irr * method_multiplier - 0.12) * 100, 2),  # Percentage points
+        "Direct Alpha": round(
+            (base_irr * method_multiplier - 0.12) * 100, 2
+        ),  # Percentage points
         "Alpha": round(0.065 * method_multiplier, 4),
         "Beta": round(0.85 * method_multiplier, 3),
         "Fund Volatility": round(0.28 * method_multiplier, 4),
         "Index Volatility": round(0.16, 4),
         "Fund Sharpe Ratio": round(
-            (base_irr * method_multiplier - request.risk_free_rate) / (0.28 * method_multiplier),
+            (base_irr * method_multiplier - request.risk_free_rate)
+            / (0.28 * method_multiplier),
             3,
         ),
         # Drawdown Analysis
@@ -301,7 +316,9 @@ def calculate_pme_metrics_sync(request: AnalysisRequest, fund_file_data: dict) -
     return metrics
 
 
-def generate_charts_data_sync(request: AnalysisRequest, fund_file_data: dict) -> dict[str, Any]:
+def generate_charts_data_sync(
+    request: AnalysisRequest, fund_file_data: dict
+) -> dict[str, Any]:
     """
     Synchronous charts data generation for threadpool execution.
     """
@@ -317,7 +334,8 @@ def generate_charts_data_sync(request: AnalysisRequest, fund_file_data: dict) ->
         "nav_chart": {
             "dates": [d.strftime("%Y-%m") for d in dates],
             "fund_nav": [
-                1000000 * (1.15 ** (i / 12)) + np.random.normal(0, 50000) for i in range(24)
+                1000000 * (1.15 ** (i / 12)) + np.random.normal(0, 50000)
+                for i in range(24)
             ],
             "index_nav": [1000000 * (1.08 ** (i / 12)) for i in range(24)],
         },
@@ -345,7 +363,9 @@ def generate_charts_data_sync(request: AnalysisRequest, fund_file_data: dict) ->
     return charts
 
 
-def create_analysis_summary(metrics: dict[str, Any], request: AnalysisRequest) -> dict[str, Any]:
+def create_analysis_summary(
+    metrics: dict[str, Any], request: AnalysisRequest
+) -> dict[str, Any]:
     """Create executive summary of analysis results."""
     fund_irr = metrics.get("Fund IRR", 0)
     index_irr = metrics.get("Index IRR", 0)
@@ -444,7 +464,9 @@ async def get_analysis_result(request_id: str):
                 "result": cached_data,
             }
 
-    raise HTTPException(404, detail=f"Analysis result not found for request ID: {request_id}")
+    raise HTTPException(
+        404, detail=f"Analysis result not found for request ID: {request_id}"
+    )
 
 
 @router.post("/process-datasets")
@@ -600,7 +622,9 @@ async def process_datasets(
 
 
 @router.post("/apply-data-fix")
-async def apply_data_fix(files: list[UploadFile] = File(...), issue_data: str = Form(...)):
+async def apply_data_fix(
+    files: list[UploadFile] = File(...), issue_data: str = Form(...)
+):
     """
     Apply a specific data fix to uploaded datasets.
     """
@@ -770,7 +794,9 @@ async def upload_fund_data(
 
     try:
         # Save uploaded file temporarily
-        with tempfile.NamedTemporaryFile(delete=False, suffix=f"_{file.filename}") as tmp_file:
+        with tempfile.NamedTemporaryFile(
+            delete=False, suffix=f"_{file.filename}"
+        ) as tmp_file:
             content = await file.read()
             tmp_file.write(content)
             temp_path = tmp_file.name
@@ -831,7 +857,9 @@ async def upload_benchmark_data(
 
     try:
         # Save uploaded file temporarily
-        with tempfile.NamedTemporaryFile(delete=False, suffix=f"_{file.filename}") as tmp_file:
+        with tempfile.NamedTemporaryFile(
+            delete=False, suffix=f"_{file.filename}"
+        ) as tmp_file:
             content = await file.read()
             tmp_file.write(content)
             temp_path = tmp_file.name
@@ -1031,7 +1059,9 @@ async def get_analysis_status(file_id: str):
 
 
 @router.get("/export-charts/{file_id}")
-async def export_charts(file_id: str, format: str = "json", chart_types: str | None = None):
+async def export_charts(
+    file_id: str, format: str = "json", chart_types: str | None = None
+):
     """Export charts in various formats."""
 
     # This would integrate with the chart engine's export functionality
@@ -1093,7 +1123,9 @@ async def calculate_scenario_analysis(
 
             scenario_metrics = scenario_analysis.calculate_pme_metrics()
             scenario_results[scenario_name] = {
-                "metrics": (scenario_metrics["metrics"] if scenario_metrics["success"] else {}),
+                "metrics": (
+                    scenario_metrics["metrics"] if scenario_metrics["success"] else {}
+                ),
                 "parameters": scenario_params,
                 "success": scenario_metrics["success"],
             }
@@ -1111,7 +1143,9 @@ async def calculate_scenario_analysis(
         raise HTTPException(status_code=400, detail="Invalid scenarios JSON format")
     except Exception as e:
         logger.error(f"Scenario analysis failed: {e}")
-        raise HTTPException(status_code=500, detail=f"Scenario analysis failed: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Scenario analysis failed: {str(e)}"
+        )
 
 
 def _generate_analysis_summary(metrics: dict[str, Any]) -> dict[str, str]:
@@ -1154,7 +1188,9 @@ def _generate_analysis_summary(metrics: dict[str, Any]) -> dict[str, str]:
     return summary
 
 
-def _apply_scenario(fund_data: pd.DataFrame, scenario_params: dict[str, Any]) -> pd.DataFrame:
+def _apply_scenario(
+    fund_data: pd.DataFrame, scenario_params: dict[str, Any]
+) -> pd.DataFrame:
     """Apply scenario parameters to fund data."""
 
     modified_data = fund_data.copy()

@@ -11,7 +11,6 @@ Robust data loading for PME calculator (Excel/CSV).
 """
 
 from pathlib import Path
-from typing import Union
 
 import pandas as pd
 

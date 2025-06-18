@@ -7,7 +7,7 @@ import json
 import os
 import pathlib
 import tempfile
-from typing import Any, Dict, Optional
+from typing import Any
 
 import duckdb
 from logger import get_logger
