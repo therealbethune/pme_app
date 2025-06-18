@@ -202,7 +202,8 @@ class TestCacheManager:
         result = await cache_manager.set("test_key", "test_value")
 
         assert result is True
-        mock_redis.set.assert_called_once_with("test_key", "test_value", ex=3600)
+        # String values are JSON-serialized for consistency
+        mock_redis.set.assert_called_once_with("test_key", '"test_value"', ex=3600)
 
     @pytest.mark.asyncio
     async def test_set_success_json(self):
@@ -410,7 +411,8 @@ class TestConvenienceFunctions:
 
             result = await set_cache("test_key", "test_value", 300)
             assert result is True
-            mock_redis.set.assert_called_once_with("test_key", "test_value", ex=300)
+            # String values are JSON-serialized for consistency
+            mock_redis.set.assert_called_once_with("test_key", '"test_value"', ex=300)
 
     @pytest.mark.asyncio
     async def test_delete_cache(self):

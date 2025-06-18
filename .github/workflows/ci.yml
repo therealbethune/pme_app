@@ -11,21 +11,25 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
-        with: {python-version: "3.13"}
+        with: {python-version: "3.12"}  # 3.12 has wheels for every dev-tool
       - name: Cache pip packages
         uses: actions/cache@v4
         with:
           path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('setup.py', 'tox.ini', 'pyproject.toml') }}
+          key: ${{ runner.os }}-pip-${{ hashFiles('setup.py', 'tox.ini', 'pyproject.toml', 'requirements-dev.txt') }}
           restore-keys: |
             ${{ runner.os }}-pip-
-      - name: Install tox
-        run: python3 -m pip install --upgrade pip tox
+      - name: Install backend + dev deps
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements-dev.txt   # contains mypy, pytest, etc.
+          python -m pip install tox
       - name: DEBUG – show env & mypy
+        continue-on-error: true  # make non-blocking
         run: |
           echo "PATH = $PATH"
           which mypy || echo "mypy not in PATH"
-          python -m pip list | grep -E 'mypy|types-'
+          python -m pip list | grep -E 'mypy|types-' || true
       - name: Run checks with tox
         run: tox
 
