@@ -632,7 +632,7 @@ class DataManager:
     def _generate_project_id(self, name: str) -> str:
         """Generate unique project ID."""
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        name_hash = hashlib.md5(name.encode()).hexdigest()[:8]
+        name_hash = hashlib.sha256(name.encode()).hexdigest()[:8]
         return f"proj_{timestamp}_{name_hash}"
 
     def _calculate_data_hash(
@@ -640,7 +640,7 @@ class DataManager:
     ) -> str:
         """Calculate hash for data integrity checking."""
         combined_str = f"{fund_data.to_string()}{index_data.to_string()}"
-        return hashlib.md5(combined_str.encode()).hexdigest()
+        return hashlib.sha256(combined_str.encode()).hexdigest()
 
     def _serialize_metrics(self, metrics: dict) -> dict:
         """Serialize metrics for JSON storage."""

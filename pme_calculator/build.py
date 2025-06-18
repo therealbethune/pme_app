@@ -19,9 +19,23 @@ def run_command(cmd, cwd=None, shell=False):
     """Run a command and handle errors."""
     print(f"🔧 Running: {' '.join(cmd) if isinstance(cmd, list) else cmd}")
     try:
-        result = subprocess.run(
-            cmd, cwd=cwd, shell=shell, check=True, capture_output=True, text=True
-        )
+        # Always use shell=False for security
+        if isinstance(cmd, str):
+            import shlex
+
+            cmd_list = shlex.split(cmd)
+            result = subprocess.run(
+                cmd_list,
+                cwd=cwd,
+                shell=False,
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+        else:
+            result = subprocess.run(
+                cmd, cwd=cwd, shell=False, check=True, capture_output=True, text=True
+            )
         if result.stdout:
             print(result.stdout)
         return True
