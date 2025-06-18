@@ -5,7 +5,7 @@ Production-ready API with comprehensive PME analysis capabilities.
 
 import io
 import logging
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 import numpy as np
 import pandas as pd
