@@ -155,7 +155,7 @@ export const AdvancedPMEDashboard: React.FC<AdvancedPMEDashboardProps> = ({
       {activeTab === 0 && (
         <Grid container spacing={3}>
           {/* Core Performance Metrics */}
-          <Grid xs={12} md={6} lg={3}>
+          <Grid item xs={12} md={6} lg={3}>
             <MetricCard
               title="Fund IRR"
               value={formatPercent(basic_metrics['Fund IRR'])}
@@ -164,7 +164,7 @@ export const AdvancedPMEDashboard: React.FC<AdvancedPMEDashboardProps> = ({
               subtitle="Internal Rate of Return"
             />
           </Grid>
-          <Grid xs={12} md={6} lg={3}>
+          <Grid item xs={12} md={6} lg={3}>
             <MetricCard
               title="TVPI"
               value={`${basic_metrics['TVPI'].toFixed(2)}x`}
@@ -173,7 +173,7 @@ export const AdvancedPMEDashboard: React.FC<AdvancedPMEDashboardProps> = ({
               subtitle="Total Value to Paid-In"
             />
           </Grid>
-          <Grid xs={12} md={6} lg={3}>
+          <Grid item xs={12} md={6} lg={3}>
             <MetricCard
               title="DPI"
               value={`${basic_metrics['DPI'].toFixed(2)}x`}
@@ -182,7 +182,7 @@ export const AdvancedPMEDashboard: React.FC<AdvancedPMEDashboardProps> = ({
               subtitle="Distributions to Paid-In"
             />
           </Grid>
-          <Grid xs={12} md={6} lg={3}>
+          <Grid item xs={12} md={6} lg={3}>
             <MetricCard
               title="RVPI"
               value={`${basic_metrics['RVPI'].toFixed(2)}x`}
@@ -197,7 +197,7 @@ export const AdvancedPMEDashboard: React.FC<AdvancedPMEDashboardProps> = ({
       {activeTab === 1 && pme_metrics && (
         <Grid container spacing={3}>
           {/* PME Metrics */}
-          <Grid xs={12} md={6}>
+          <Grid item xs={12} md={6}>
             <Card>
               <CardContent>
                 <Typography variant="h6" fontWeight="bold" mb={2}>
@@ -249,7 +249,7 @@ export const AdvancedPMEDashboard: React.FC<AdvancedPMEDashboardProps> = ({
             </Card>
           </Grid>
 
-          <Grid xs={12} md={6}>
+          <Grid item xs={12} md={6}>
             <Card>
               <CardContent>
                 <Typography variant="h6" fontWeight="bold" mb={2}>
@@ -298,14 +298,14 @@ export const AdvancedPMEDashboard: React.FC<AdvancedPMEDashboardProps> = ({
             </Card>
           </Grid>
           
-          <Grid xs={12}>
+          <Grid item xs={12}>
             <Card>
               <CardContent>
                 <Typography variant="h6" fontWeight="bold" mb={2}>PME Calculation Details</Typography>
                 <Divider sx={{ mb: 2 }}/>
                 {pme_metrics && pme_metrics.calculation_metadata && (
                   <Grid container spacing={2}>
-                    <Grid xs={12} md={6}>
+                    <Grid item xs={12} md={6}>
                       <Paper variant="outlined" sx={{ p: 2, height: '100%' }}>
                         <Typography variant="subtitle2" color="text.secondary">Alignment & Period</Typography>
                         <Typography>Aligned Periods: {pme_metrics.calculation_metadata.aligned_periods}</Typography>
@@ -313,7 +313,7 @@ export const AdvancedPMEDashboard: React.FC<AdvancedPMEDashboardProps> = ({
                         <Typography>Fund End: {pme_metrics.calculation_metadata.fund_end_date}</Typography>
                       </Paper>
                     </Grid>
-                    <Grid xs={12} md={6}>
+                    <Grid item xs={12} md={6}>
                       <Paper variant="outlined" sx={{ p: 2, height: '100%' }}>
                         <Typography variant="subtitle2" color="text.secondary">Fund Cash Flows</Typography>
                         <Typography>Contributions: {formatCurrency(pme_metrics.calculation_metadata.total_contributions)}</Typography>
@@ -321,14 +321,14 @@ export const AdvancedPMEDashboard: React.FC<AdvancedPMEDashboardProps> = ({
                         <Typography>Final NAV: {formatCurrency(pme_metrics.calculation_metadata.final_nav)}</Typography>
                       </Paper>
                     </Grid>
-                    <Grid xs={12} md={6}>
+                    <Grid item xs={12} md={6}>
                       <Paper variant="outlined" sx={{ p: 2, height: '100%' }}>
                         <Typography variant="subtitle2" color="text.secondary">Benchmark Data</Typography>
                         <Typography>Index Start Value: {formatDecimal(pme_metrics.calculation_metadata.index_start_value, 2)}</Typography>
                         <Typography>Index End Value: {formatDecimal(pme_metrics.calculation_metadata.index_end_value, 2)}</Typography>
                       </Paper>
                     </Grid>
-                    <Grid xs={12} md={6}>
+                    <Grid item xs={12} md={6}>
                       <Paper variant="outlined" sx={{ p: 2, height: '100%' }}>
                         <Typography variant="subtitle2" color="text.secondary">Outperformance</Typography>
                         <Typography color={pme_metrics.outperformance === true ? "success.main" : pme_metrics.outperformance === false ? "error.main" : "text.secondary"}>
@@ -346,7 +346,7 @@ export const AdvancedPMEDashboard: React.FC<AdvancedPMEDashboardProps> = ({
 
       {activeTab === 2 && (
         <Grid container spacing={3}>
-          <Grid xs={12}>
+          <Grid item xs={12}>
             <Card>
               <CardContent>
                 <Typography variant="h5" fontWeight="bold">Risk Analytics</Typography>
@@ -363,7 +363,7 @@ export const AdvancedPMEDashboard: React.FC<AdvancedPMEDashboardProps> = ({
       
       {activeTab === 3 && (
         <Grid container spacing={3}>
-          <Grid xs={12}>
+          <Grid item xs={12}>
             <Card>
               <CardContent>
                 <Typography variant="h5" fontWeight="bold">Advanced Benchmarking</Typography>
