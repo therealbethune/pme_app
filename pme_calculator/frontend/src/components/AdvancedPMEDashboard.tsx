@@ -283,14 +283,14 @@ export const AdvancedPMEDashboard: React.FC<AdvancedPMEDashboardProps> = ({
                     Time-Weighted Alpha
                   </Typography>
                   <Typography variant="h5" fontWeight="bold" 
-                    color={pme_metrics.twr_alpha && pme_metrics.twr_alpha > 0 ? '#22c55e' : '#ef4444'}
+                    color={pme_metrics.twr_alpha === undefined ? 'text.secondary' : pme_metrics.twr_alpha > 0 ? '#22c55e' : pme_metrics.twr_alpha < 0 ? '#ef4444' : 'text.secondary'}
                   >
                     {formatPercent(pme_metrics.twr_alpha, 2)}
                   </Typography>
                   <LinearProgress
                     variant="determinate"
                     value={pme_metrics.twr_alpha ? Math.min(Math.abs(pme_metrics.twr_alpha) * 1000, 100) : 0}
-                    color={pme_metrics.twr_alpha && pme_metrics.twr_alpha > 0 ? 'success' : 'error'}
+                    color={pme_metrics.twr_alpha === undefined ? 'primary' : pme_metrics.twr_alpha > 0 ? 'success' : pme_metrics.twr_alpha < 0 ? 'error' : 'primary'}
                     sx={{ height: 8, borderRadius: 4, mt: 1 }}
                   />
                 </Box>
