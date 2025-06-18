@@ -1,25 +1,20 @@
 # Multi-stage Dockerfile for PME Calculator
-FROM python:3.12-slim AS builder
+FROM python:3.13-slim AS builder
 
 WORKDIR /app
 
-# Copy requirements files
-COPY requirements/base.txt .
-COPY requirements.txt .
-
-# Install dependencies using --prefix to /install
-RUN pip install --prefix=/install --no-cache-dir -r base.txt
-RUN pip install --prefix=/install --no-cache-dir -r requirements.txt
-
-# Copy application code for building
-COPY pme_app/ ./pme_app/
+# Copy setup files
 COPY setup.py .
+COPY pyproject.toml .
+COPY pme_app/ ./pme_app/
+COPY pme_calculator/ ./pme_calculator/
+COPY pme_math/ ./pme_math/
 
-# Install the package itself (not in editable mode for Docker)
-RUN pip install --prefix=/install --no-deps .
+# Install dependencies and the package itself
+RUN pip install --prefix=/install --no-cache-dir -e .[dev]
 
 # Stage 2: Runtime - Create minimal production image
-FROM python:3.12-slim
+FROM python:3.13-slim
 
 WORKDIR /app
 
@@ -28,7 +23,10 @@ COPY --from=builder /install /usr/local
 
 # Copy application code
 COPY pme_app/ ./pme_app/
+COPY pme_calculator/ ./pme_calculator/
+COPY pme_math/ ./pme_math/
 COPY setup.py .
+COPY pyproject.toml .
 
 # Install curl for health check
 RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
