@@ -3,3 +3,5 @@
 from datetime import UTC, timezone
 
 UTC = UTC
+
+__all__ = ["UTC"]

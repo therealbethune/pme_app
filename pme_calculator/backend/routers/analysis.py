@@ -108,8 +108,8 @@ async def run_analysis_simple():
 
 @router.post("/run", response_model=AnalysisResponse)
 async def run_analysis(
-    request: AnalysisRequest | None = None, background_tasks: BackgroundTasks = None
-):
+    request: AnalysisRequest | None = None, background_tasks: BackgroundTasks | None = None
+) -> AnalysisResponse:
     """
     Run PME analysis on uploaded files.
     Returns KPI metrics with caching support.

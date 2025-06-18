@@ -22,7 +22,7 @@ from schemas import (
 router = APIRouter(prefix="/api/validation", tags=["validation"])
 
 # In-memory storage for validation jobs (in production, use Redis/database)
-validation_jobs: dict[str, dict] = {}
+validation_jobs: dict[str, dict[str, Any]] = {}
 
 
 @router.post("/upload/fund", response_model=dict[str, str])
@@ -73,9 +73,7 @@ async def upload_index_data(
     if not file.filename.lower().endswith((".csv", ".xlsx", ".xls")):
         raise HTTPException(status_code=400, detail="File must be CSV or Excel format")
 
-    job_id = (
-        f"index_validation_{uuid.uuid4().hex[:8]}_{int(datetime.now().timestamp())}"
-    )
+    job_id = f"index_validation_{uuid.uuid4().hex[:8]}_{int(datetime.now().timestamp())}"
 
     with tempfile.NamedTemporaryFile(
         delete=False, suffix=os.path.splitext(file.filename)[1]
@@ -101,7 +99,7 @@ async def upload_index_data(
 
 
 @router.get("/status/{job_id}")
-async def get_validation_status(job_id: str) -> dict:
+async def get_validation_status(job_id: str) -> dict[str, Any]:
     """Get validation job status and results."""
 
     if job_id not in validation_jobs:
@@ -183,9 +181,8 @@ async def analyze_column_mapping(
             columns = [col.strip() for col in lines[0].split(",")] if lines else []
         else:
             # For Excel files, read just the header
-            with tempfile.NamedTemporaryFile(
-                delete=False, suffix=os.path.splitext(file.filename)[1]
-            ) as tmp_file:
+            suffix = os.path.splitext(file.filename or "")[1]
+            with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp_file:
                 content = await file.read()
                 tmp_file.write(content)
                 temp_path = tmp_file.name
@@ -230,7 +227,7 @@ async def cleanup_validation_job(job_id: str) -> dict[str, str]:
 
 
 @router.get("/jobs")
-async def list_validation_jobs() -> dict[str, list[dict]]:
+async def list_validation_jobs() -> dict[str, list[dict[str, Any]]]:
     """List all validation jobs with their status."""
 
     jobs_list = []
@@ -250,7 +247,7 @@ async def list_validation_jobs() -> dict[str, list[dict]]:
 
 
 # Background task functions
-async def validate_fund_file_background(job_id: str, file_path: str):
+async def validate_fund_file_background(job_id: str, file_path: str) -> None:
     """Background task to validate fund data file."""
 
     try:
@@ -277,16 +274,11 @@ async def validate_fund_file_background(job_id: str, file_path: str):
             rows=len(df),
             columns=len(df.columns),
             date_range=(
-                (df["date"].min(), df["date"].max())
-                if "date" in df.columns
-                else (None, None)
+                (df["date"].min(), df["date"].max()) if "date" in df.columns else (None, None)
             ),
             data_quality_score=validation_result.overall_score,
-            missing_data_percentage=df.isnull().sum().sum()
-            / (len(df) * len(df.columns)),
-            column_mappings=DataValidator.intelligent_column_mapping(
-                df.columns.tolist(), "fund"
-            ),
+            missing_data_percentage=df.isnull().sum().sum() / (len(df) * len(df.columns)),
+            column_mappings=DataValidator.intelligent_column_mapping(df.columns.tolist(), "fund"),
         )
 
         validation_jobs[job_id]["progress"] = 100
@@ -303,7 +295,7 @@ async def validate_fund_file_background(job_id: str, file_path: str):
         validation_jobs[job_id]["progress"] = 0
 
 
-async def validate_index_file_background(job_id: str, file_path: str):
+async def validate_index_file_background(job_id: str, file_path: str) -> None:
     """Background task to validate index data file."""
 
     try:
@@ -326,16 +318,11 @@ async def validate_index_file_background(job_id: str, file_path: str):
             rows=len(df),
             columns=len(df.columns),
             date_range=(
-                (df["date"].min(), df["date"].max())
-                if "date" in df.columns
-                else (None, None)
+                (df["date"].min(), df["date"].max()) if "date" in df.columns else (None, None)
             ),
             data_quality_score=validation_result.overall_score,
-            missing_data_percentage=df.isnull().sum().sum()
-            / (len(df) * len(df.columns)),
-            column_mappings=DataValidator.intelligent_column_mapping(
-                df.columns.tolist(), "index"
-            ),
+            missing_data_percentage=df.isnull().sum().sum() / (len(df) * len(df.columns)),
+            column_mappings=DataValidator.intelligent_column_mapping(df.columns.tolist(), "index"),
         )
 
         validation_jobs[job_id]["progress"] = 100
