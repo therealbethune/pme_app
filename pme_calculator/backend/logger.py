@@ -7,7 +7,9 @@ import json
 import logging
 import logging.handlers
 import sys
-from datetime import datetime, timezone
+from datetime import datetime
+
+from .utils.time import UTC
 from pathlib import Path
 from typing import Optional
 
@@ -17,7 +19,7 @@ class UTCFormatter(logging.Formatter):
 
     def formatTime(self, record, datefmt=None):
         """Override to use UTC time."""
-        dt = datetime.fromtimestamp(record.created, tz=timezone.utc)
+        dt = datetime.fromtimestamp(record.created, tz=UTC)
         if datefmt:
             return dt.strftime(datefmt)
         else:
@@ -35,7 +37,7 @@ class JSONFormatter(logging.Formatter):
 
     def formatTime(self, record, datefmt=None):
         """Override to use UTC time."""
-        dt = datetime.fromtimestamp(record.created, tz=timezone.utc)
+        dt = datetime.fromtimestamp(record.created, tz=UTC)
         return dt.isoformat()
 
     def format(self, record: logging.LogRecord) -> str:

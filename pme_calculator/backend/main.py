@@ -100,9 +100,10 @@ async def system_info():
     import platform
     import sys
     from datetime import datetime
+    from utils.time import UTC
 
     return {
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "python_version": sys.version,
         "platform": platform.platform(),
         "frontend_build_available": frontend_dir.exists()
