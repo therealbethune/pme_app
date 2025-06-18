@@ -19,8 +19,10 @@ jobs:
           key: ${{ runner.os }}-pip-${{ hashFiles('setup.py', 'tox.ini', 'pyproject.toml') }}
           restore-keys: |
             ${{ runner.os }}-pip-
-      - name: Debug CI environment
-        run: python3 debug_ci.py
+      - name: Install tox
+        run: python3 -m pip install --upgrade pip tox
+      - name: Run checks with tox
+        run: tox
 
   frontend:
     runs-on: ubuntu-latest
