@@ -28,10 +28,18 @@ jobs:
         continue-on-error: true  # make non-blocking
         run: |
           echo "PATH = $PATH"
+          python --version
           which mypy || echo "mypy not in PATH"
           python -m pip list | grep -E 'mypy|types-' || true
+          echo "Installed packages:"
+          python -m pip list | head -20
+          echo "Testing basic imports:"
+          python -c "import pme_app; print('✅ pme_app import OK')" || echo "❌ pme_app import failed"
+          python -c "import pytest; print('✅ pytest import OK')" || echo "❌ pytest import failed"
       - name: Run checks with tox
-        run: tox
+        run: |
+          echo "Starting tox with Python $(python --version)"
+          tox -v  # verbose output to see what's failing
 
   frontend:
     runs-on: ubuntu-latest
