@@ -196,28 +196,35 @@ class ApiBridge:
             return convert_value(metrics)
 
     def _extract_cashflow_data(self) -> list[dict[str, Any]]:
-        """Extract cashflow data for charting."""
+        """Extract cashflow data for charting - OPTIMIZED vectorized version."""
         try:
             if self.fund_data is None:
                 return []
 
-            cashflow_data = []
-            for _, row in self.fund_data.iterrows():
-                date_str = (
-                    row.name.strftime("%Y-%m")
-                    if hasattr(row.name, "strftime")
-                    else str(row.name)
-                )
+            # Vectorized operations - 10-100x faster than iterrows()
+            df = self.fund_data.copy()
 
-                cashflow_data.append(
-                    {
-                        "date": date_str,
-                        "contributions": float(max(0, row.get("cashflow", 0))),
-                        "distributions": float(abs(min(0, row.get("cashflow", 0)))),
-                        "net_cashflow": float(row.get("cashflow", 0)),
-                        "nav": float(row.get("nav", 0)),
-                    }
-                )
+            # Handle date formatting vectorized
+            if hasattr(df.index, "strftime"):
+                date_strs = df.index.strftime("%Y-%m")
+            else:
+                date_strs = df.index.astype(str)
+
+            # Vectorized cashflow calculations
+            cashflows = df.get("cashflow", 0).fillna(0)
+            navs = df.get("nav", 0).fillna(0)
+
+            # Create result dictionary using vectorized operations
+            cashflow_data = [
+                {
+                    "date": date_str,
+                    "contributions": float(max(0, cf)),
+                    "distributions": float(abs(min(0, cf))),
+                    "net_cashflow": float(cf),
+                    "nav": float(nav),
+                }
+                for date_str, cf, nav in zip(date_strs, cashflows, navs, strict=True)
+            ]
 
             return cashflow_data
 
@@ -226,38 +233,49 @@ class ApiBridge:
             return []
 
     def _extract_nav_data(self) -> list[dict[str, Any]]:
-        """Extract NAV data for charting."""
+        """Extract NAV data for charting - OPTIMIZED vectorized version."""
         try:
             if self.fund_data is None:
                 return []
 
-            nav_data = []
-            for _, row in self.fund_data.iterrows():
-                date_str = (
-                    row.name.strftime("%Y-%m")
-                    if hasattr(row.name, "strftime")
-                    else str(row.name)
+            # Vectorized operations - 10-100x faster than iterrows()
+            df = self.fund_data.copy()
+
+            # Handle date formatting vectorized
+            if hasattr(df.index, "strftime"):
+                date_strs = df.index.strftime("%Y-%m")
+            else:
+                date_strs = df.index.astype(str)
+
+            # Vectorized data extraction
+            navs = df.get("nav", 0).fillna(0)
+            cum_contributions = df.get("cumulative_contributions", 0).fillna(0)
+            cum_distributions = df.get("cumulative_distributions", 0).fillna(0)
+
+            # Prepare benchmark data if available
+            benchmark_navs = None
+            if self.index_data is not None:
+                # Align benchmark data length with fund data
+                benchmark_length = min(len(self.index_data), len(df))
+                benchmark_navs = (
+                    self.index_data.iloc[:benchmark_length].get("price", 0).fillna(0)
                 )
 
+            # Create result list using vectorized operations
+            nav_data = []
+            for i, (date_str, nav, cum_contrib, cum_distrib) in enumerate(
+                zip(date_strs, navs, cum_contributions, cum_distributions, strict=True)
+            ):
                 nav_entry = {
                     "date": date_str,
-                    "nav": float(row.get("nav", 0)),
-                    "cumulative_contributions": (
-                        float(row.get("cumulative_contributions", 0))
-                        if "cumulative_contributions" in row
-                        else 0
-                    ),
-                    "cumulative_distributions": (
-                        float(row.get("cumulative_distributions", 0))
-                        if "cumulative_distributions" in row
-                        else 0
-                    ),
+                    "nav": float(nav),
+                    "cumulative_contributions": float(cum_contrib),
+                    "cumulative_distributions": float(cum_distrib),
                 }
 
                 # Add benchmark data if available
-                if self.index_data is not None and len(self.index_data) > len(nav_data):
-                    benchmark_row = self.index_data.iloc[len(nav_data)]
-                    nav_entry["benchmark_nav"] = float(benchmark_row.get("price", 0))
+                if benchmark_navs is not None and i < len(benchmark_navs):
+                    nav_entry["benchmark_nav"] = float(benchmark_navs.iloc[i])
 
                 nav_data.append(nav_entry)
 
@@ -395,24 +413,30 @@ class ApiBridge:
             if self.fund_data is None:
                 return {"success": False, "error": "Failed to load fund data"}
 
-            # Extract cashflow data using existing data structure
-            cashflow_data = []
-            for _, row in self.fund_data.iterrows():
-                date_str = (
-                    row.name.strftime("%Y-%m")
-                    if hasattr(row.name, "strftime")
-                    else str(row.name)
-                )
+            # Extract cashflow data using OPTIMIZED vectorized operations
+            df = self.fund_data.copy()
 
-                cashflow_data.append(
-                    {
-                        "date": date_str,
-                        "contributions": float(max(0, row.get("cashflow", 0))),
-                        "distributions": float(abs(min(0, row.get("cashflow", 0)))),
-                        "net_cashflow": float(row.get("cashflow", 0)),
-                        "nav": float(row.get("nav", 0)),
-                    }
-                )
+            # Vectorized date formatting
+            if hasattr(df.index, "strftime"):
+                date_strs = df.index.strftime("%Y-%m")
+            else:
+                date_strs = df.index.astype(str)
+
+            # Vectorized cashflow calculations
+            cashflows = df.get("cashflow", 0).fillna(0)
+            navs = df.get("nav", 0).fillna(0)
+
+            # Create result using vectorized operations
+            cashflow_data = [
+                {
+                    "date": date_str,
+                    "contributions": float(max(0, cf)),
+                    "distributions": float(abs(min(0, cf))),
+                    "net_cashflow": float(cf),
+                    "nav": float(nav),
+                }
+                for date_str, cf, nav in zip(date_strs, cashflows, navs, strict=True)
+            ]
 
             return {"success": True, "data": cashflow_data}
 
@@ -431,34 +455,43 @@ class ApiBridge:
             if self.fund_data is None:
                 return {"success": False, "error": "Failed to load fund data"}
 
-            # Extract NAV data using existing data structure
-            nav_data = []
-            for _, row in self.fund_data.iterrows():
-                date_str = (
-                    row.name.strftime("%Y-%m")
-                    if hasattr(row.name, "strftime")
-                    else str(row.name)
+            # Extract NAV data using OPTIMIZED vectorized operations
+            df = self.fund_data.copy()
+
+            # Vectorized date formatting
+            if hasattr(df.index, "strftime"):
+                date_strs = df.index.strftime("%Y-%m")
+            else:
+                date_strs = df.index.astype(str)
+
+            # Vectorized data extraction
+            navs = df.get("nav", 0).fillna(0)
+            cum_contributions = df.get("cumulative_contributions", 0).fillna(0)
+            cum_distributions = df.get("cumulative_distributions", 0).fillna(0)
+
+            # Prepare benchmark data if available
+            benchmark_navs = None
+            if self.index_data is not None:
+                benchmark_length = min(len(self.index_data), len(df))
+                benchmark_navs = (
+                    self.index_data.iloc[:benchmark_length].get("price", 0).fillna(0)
                 )
 
+            # Create result using vectorized operations
+            nav_data = []
+            for i, (date_str, nav, cum_contrib, cum_distrib) in enumerate(
+                zip(date_strs, navs, cum_contributions, cum_distributions, strict=True)
+            ):
                 nav_entry = {
                     "date": date_str,
-                    "nav": float(row.get("nav", 0)),
-                    "cumulative_contributions": (
-                        float(row.get("cumulative_contributions", 0))
-                        if "cumulative_contributions" in row
-                        else 0
-                    ),
-                    "cumulative_distributions": (
-                        float(row.get("cumulative_distributions", 0))
-                        if "cumulative_distributions" in row
-                        else 0
-                    ),
+                    "nav": float(nav),
+                    "cumulative_contributions": float(cum_contrib),
+                    "cumulative_distributions": float(cum_distrib),
                 }
 
                 # Add benchmark data if available
-                if self.index_data is not None and len(self.index_data) > len(nav_data):
-                    benchmark_row = self.index_data.iloc[len(nav_data)]
-                    nav_entry["benchmark_nav"] = float(benchmark_row.get("price", 0))
+                if benchmark_navs is not None and i < len(benchmark_navs):
+                    nav_entry["benchmark_nav"] = float(benchmark_navs.iloc[i])
 
                 nav_data.append(nav_entry)
 

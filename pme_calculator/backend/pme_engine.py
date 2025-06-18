@@ -40,13 +40,27 @@ class PMEEngine:
         benchmark_data: pd.DataFrame,
         benchmark_type: BenchmarkType = BenchmarkType.PRICE_ONLY,
     ):
-        """Initialize PME Engine with fund and benchmark data."""
+        """Initialize PME Engine with fund and benchmark data - OPTIMIZED no temp files."""
         self.fund_data = fund_data.copy()
         self.benchmark_data = benchmark_data.copy()
         self.benchmark_type = benchmark_type
         self.analysis_engine = PMEAnalysisEngine()
 
-        # Save data to temporary files to work with analysis engine
+        # OPTIMIZED: Direct DataFrame loading - eliminates disk I/O bottleneck
+        try:
+            # Load data directly into analysis engine without temp files
+            self.analysis_engine.load_fund_data_direct(self.fund_data)
+            self.analysis_engine.load_index_data_direct(self.benchmark_data)
+
+        except AttributeError:
+            # Fallback to temp files if direct methods don't exist
+            # This maintains backward compatibility
+            self._fallback_temp_file_init()
+        except Exception as e:
+            raise ValueError(f"Failed to initialize PME Engine: {str(e)}")
+
+    def _fallback_temp_file_init(self):
+        """Fallback initialization using temporary files for backward compatibility."""
         try:
             # Save fund data
             with tempfile.NamedTemporaryFile(
@@ -67,7 +81,9 @@ class PMEEngine:
             self.analysis_engine.load_index_data(self.benchmark_temp_path)
 
         except Exception as e:
-            raise ValueError(f"Failed to initialize PME Engine: {str(e)}")
+            raise ValueError(
+                f"Failed to initialize PME Engine with temp files: {str(e)}"
+            )
 
     def calculate_kaplan_schoar_pme(self) -> PMEResult:
         """Calculate Kaplan-Schoar PME ratio."""
@@ -123,8 +139,9 @@ class PMEEngine:
             return PMEResult(value=0.0)  # Default value on error
 
     def __del__(self):
-        """Cleanup temporary files."""
+        """Cleanup temporary files - OPTIMIZED cleanup only if temp files exist."""
         try:
+            # Only cleanup if temp files were actually created (fallback mode)
             if hasattr(self, "fund_temp_path") and os.path.exists(self.fund_temp_path):
                 os.unlink(self.fund_temp_path)
             if hasattr(self, "benchmark_temp_path") and os.path.exists(

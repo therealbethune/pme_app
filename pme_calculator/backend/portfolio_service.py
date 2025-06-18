@@ -311,7 +311,7 @@ class PortfolioService:
     def _calc_diversification_score(
         self, correlation_matrix: np.ndarray | None, weights: list[float]
     ) -> float:
-        """Calculate diversification score (0-1, higher is better)."""
+        """Calculate diversification score (0-1, higher is better) - OPTIMIZED vectorized."""
         if correlation_matrix is None or len(weights) < 2:
             return 0.0
 
@@ -323,18 +323,25 @@ class PortfolioService:
             )
             weights_array = np.array(normalized_weights)
 
-            # Portfolio correlation is weighted average of pairwise correlations
-            portfolio_correlation = 0.0
-            total_pairs = 0
+            # OPTIMIZED: Vectorized calculation - eliminates O(n²) nested loops
+            # Portfolio correlation using matrix operations
+            weights_outer = np.outer(weights_array, weights_array)
 
-            for i in range(len(weights)):
-                for j in range(i + 1, len(weights)):
-                    weight_product = weights_array[i] * weights_array[j]
-                    portfolio_correlation += correlation_matrix[i, j] * weight_product
-                    total_pairs += weight_product
+            # Get upper triangular part (excluding diagonal) for pairwise correlations
+            upper_tri_mask = np.triu(np.ones_like(correlation_matrix, dtype=bool), k=1)
 
-            if total_pairs > 0:
-                portfolio_correlation /= total_pairs
+            # Calculate weighted portfolio correlation using vectorized operations
+            correlation_products = (
+                correlation_matrix[upper_tri_mask] * weights_outer[upper_tri_mask]
+            )
+            weight_products = weights_outer[upper_tri_mask]
+
+            if np.sum(weight_products) > 0:
+                portfolio_correlation = np.sum(correlation_products) / np.sum(
+                    weight_products
+                )
+            else:
+                portfolio_correlation = 0.0
 
             # Diversification score: 1 - average correlation
             diversification_score = max(0.0, 1.0 - abs(portfolio_correlation))
