@@ -27,7 +27,7 @@ def create_sample_data():
     sample_dir.mkdir(exist_ok=True)
 
     # Create sample fund data
-    dates = pd.date_range("2020-01-01", periods=100, freq="M")
+    dates = pd.date_range("2020-01-01", periods=100, freq="ME")
 
     # Fund A - Growth fund
     fund_a_nav = (

@@ -326,7 +326,7 @@ def generate_charts_data_sync(
     time.sleep(0.05)  # Simulate computation
 
     # Generate sample chart data
-    dates = pd.date_range("2020-01-01", periods=24, freq="M")
+    dates = pd.date_range("2020-01-01", periods=24, freq="ME")
 
     charts = {
         "nav_chart": {

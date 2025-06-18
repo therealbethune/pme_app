@@ -210,9 +210,17 @@ class ApiBridge:
             else:
                 date_strs = df.index.astype(str)
 
-            # Vectorized cashflow calculations
-            cashflows = df.get("cashflow", 0).fillna(0)
-            navs = df.get("nav", 0).fillna(0)
+            # Vectorized cashflow calculations - handle missing columns properly
+            cashflows = (
+                df["cashflow"].fillna(0)
+                if "cashflow" in df.columns
+                else pd.Series(0, index=df.index)
+            )
+            navs = (
+                df["nav"].fillna(0)
+                if "nav" in df.columns
+                else pd.Series(0, index=df.index)
+            )
 
             # Create result dictionary using vectorized operations
             cashflow_data = [
@@ -247,18 +255,33 @@ class ApiBridge:
             else:
                 date_strs = df.index.astype(str)
 
-            # Vectorized data extraction
-            navs = df.get("nav", 0).fillna(0)
-            cum_contributions = df.get("cumulative_contributions", 0).fillna(0)
-            cum_distributions = df.get("cumulative_distributions", 0).fillna(0)
+            # Vectorized data extraction - handle missing columns properly
+            navs = (
+                df["nav"].fillna(0)
+                if "nav" in df.columns
+                else pd.Series(0, index=df.index)
+            )
+            cum_contributions = (
+                df["cumulative_contributions"].fillna(0)
+                if "cumulative_contributions" in df.columns
+                else pd.Series(0, index=df.index)
+            )
+            cum_distributions = (
+                df["cumulative_distributions"].fillna(0)
+                if "cumulative_distributions" in df.columns
+                else pd.Series(0, index=df.index)
+            )
 
             # Prepare benchmark data if available
             benchmark_navs = None
             if self.index_data is not None:
                 # Align benchmark data length with fund data
                 benchmark_length = min(len(self.index_data), len(df))
+                benchmark_subset = self.index_data.iloc[:benchmark_length]
                 benchmark_navs = (
-                    self.index_data.iloc[:benchmark_length].get("price", 0).fillna(0)
+                    benchmark_subset["price"].fillna(0)
+                    if "price" in benchmark_subset.columns
+                    else pd.Series(0, index=benchmark_subset.index)
                 )
 
             # Create result list using vectorized operations
@@ -422,9 +445,17 @@ class ApiBridge:
             else:
                 date_strs = df.index.astype(str)
 
-            # Vectorized cashflow calculations
-            cashflows = df.get("cashflow", 0).fillna(0)
-            navs = df.get("nav", 0).fillna(0)
+            # Vectorized cashflow calculations - handle missing columns properly
+            cashflows = (
+                df["cashflow"].fillna(0)
+                if "cashflow" in df.columns
+                else pd.Series(0, index=df.index)
+            )
+            navs = (
+                df["nav"].fillna(0)
+                if "nav" in df.columns
+                else pd.Series(0, index=df.index)
+            )
 
             # Create result using vectorized operations
             cashflow_data = [
@@ -464,17 +495,32 @@ class ApiBridge:
             else:
                 date_strs = df.index.astype(str)
 
-            # Vectorized data extraction
-            navs = df.get("nav", 0).fillna(0)
-            cum_contributions = df.get("cumulative_contributions", 0).fillna(0)
-            cum_distributions = df.get("cumulative_distributions", 0).fillna(0)
+            # Vectorized data extraction - handle missing columns properly
+            navs = (
+                df["nav"].fillna(0)
+                if "nav" in df.columns
+                else pd.Series(0, index=df.index)
+            )
+            cum_contributions = (
+                df["cumulative_contributions"].fillna(0)
+                if "cumulative_contributions" in df.columns
+                else pd.Series(0, index=df.index)
+            )
+            cum_distributions = (
+                df["cumulative_distributions"].fillna(0)
+                if "cumulative_distributions" in df.columns
+                else pd.Series(0, index=df.index)
+            )
 
             # Prepare benchmark data if available
             benchmark_navs = None
             if self.index_data is not None:
                 benchmark_length = min(len(self.index_data), len(df))
+                benchmark_subset = self.index_data.iloc[:benchmark_length]
                 benchmark_navs = (
-                    self.index_data.iloc[:benchmark_length].get("price", 0).fillna(0)
+                    benchmark_subset["price"].fillna(0)
+                    if "price" in benchmark_subset.columns
+                    else pd.Series(0, index=benchmark_subset.index)
                 )
 
             # Create result using vectorized operations

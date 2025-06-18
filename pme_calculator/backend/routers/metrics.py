@@ -34,7 +34,7 @@ def query_twr(filters: dict | None = None) -> pd.DataFrame:
     Returns a DataFrame with fund and index TWR data.
     """
     # Generate sample TWR data for demonstration
-    dates = pd.date_range("2020-01-01", "2023-12-31", freq="M")
+    dates = pd.date_range("2020-01-01", "2023-12-31", freq="ME")
 
     # Simulate fund TWR (more volatile, potentially higher returns)
     np.random.seed(42)

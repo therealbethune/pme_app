@@ -248,7 +248,7 @@ async def calculate_annualized_return_endpoint(request: AnnualizedReturnRequest)
 async def upload_csv_data(file: UploadFile = File(...)):
     """Upload CSV file and return parsed data."""
     try:
-        if not file.filename.endswith(".csv"):
+        if not file.filename or not file.filename.endswith(".csv"):
             raise HTTPException(status_code=400, detail="File must be a CSV")
 
         contents = await file.read()
@@ -269,7 +269,9 @@ async def upload_csv_data(file: UploadFile = File(...)):
 async def upload_fund_data(file: UploadFile = File(...)):
     """Upload fund data file (CSV/Excel)."""
     try:
-        if not (file.filename.endswith(".csv") or file.filename.endswith(".xlsx")):
+        if not file.filename or not (
+            file.filename.endswith(".csv") or file.filename.endswith(".xlsx")
+        ):
             raise HTTPException(
                 status_code=400, detail="File must be CSV or Excel format"
             )
@@ -311,7 +313,9 @@ async def upload_fund_data(file: UploadFile = File(...)):
 async def upload_index_data(file: UploadFile = File(...)):
     """Upload market index data file (CSV/Excel)."""
     try:
-        if not (file.filename.endswith(".csv") or file.filename.endswith(".xlsx")):
+        if not file.filename or not (
+            file.filename.endswith(".csv") or file.filename.endswith(".xlsx")
+        ):
             raise HTTPException(
                 status_code=400, detail="File must be CSV or Excel format"
             )

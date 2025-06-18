@@ -154,7 +154,7 @@ class TestPMEEngine:
 
     def create_sample_data(self):
         """Create sample fund and benchmark data for testing."""
-        dates = pd.date_range("2020-01-01", periods=12, freq="M")
+        dates = pd.date_range("2020-01-01", periods=12, freq="ME")
 
         fund_data = pd.DataFrame(
             {
@@ -354,9 +354,10 @@ class TestErrorHandling:
         """Test numpy operations with edge cases."""
         # Division by zero
         try:
-            result = np.array([1, 2, 3]) / np.array([1, 0, 3])
-            # Should get inf for division by zero
-            assert np.isinf(result[1])
+            with np.errstate(divide="ignore"):
+                result = np.array([1, 2, 3]) / np.array([1, 0, 3])
+                # Should get inf for division by zero
+                assert np.isinf(result[1])
         except Exception:
             pass
 

@@ -9,12 +9,14 @@ Key Features:
 - Smart cache key generation with payload hashing
 - Configurable TTL for different data types
 - JSON serialization for complex data structures
+- TTL-aware in-memory fallback when Redis is offline
 """
 
 import hashlib
 import json
 import logging
 import os
+import time
 from typing import Any, Optional
 
 import redis.asyncio as redis
@@ -46,11 +48,15 @@ REDIS_AVAILABLE = True
 # Global connection pool
 _redis_pool: redis.Redis | None = None
 
+# In-memory cache fallback
+_MEM_STORE: dict[str, tuple[float | None, Any]] = {}
+_use_memory = False
+
 
 async def get_redis_pool() -> redis.Redis:
     """Get or create Redis connection pool."""
-    global _redis_pool
-    if not _redis_pool:
+    global _redis_pool, _use_memory
+    if not _redis_pool and not _use_memory:
         try:
             _redis_pool = redis.from_url(
                 REDIS_URL,
@@ -63,7 +69,9 @@ async def get_redis_pool() -> redis.Redis:
             await _redis_pool.ping()
             logger.info(f"✅ Redis connected: {REDIS_URL}")
         except Exception as e:
-            logger.error(f"❌ Redis connection failed: {e}")
+            logger.error(f"❌ Redis connection failed: {e} – using in-memory cache")
+            _redis_pool = None
+            _use_memory = True
             raise
     return _redis_pool
 
@@ -91,7 +99,7 @@ def make_cache_key(endpoint: str, payload: dict[str, Any]) -> str:
 
 async def cache_get(key: str) -> dict[str, Any] | None:
     """
-    Get cached value by key.
+    Get cached value by key with in-memory fallback.
 
     Args:
         key: Cache key
@@ -99,23 +107,40 @@ async def cache_get(key: str) -> dict[str, Any] | None:
     Returns:
         Cached data as dictionary or None if not found
     """
-    try:
-        redis = await get_redis_pool()
-        cached_value = await redis.get(key)
+    if not _use_memory:
+        try:
+            redis_conn = await get_redis_pool()
+            cached_value = await redis_conn.get(key)
 
-        if cached_value:
-            logger.debug(f"🎯 Cache HIT: {key}")
-            return json.loads(cached_value)
-        else:
-            logger.debug(f"❌ Cache MISS: {key}")
-            return None
+            if cached_value:
+                logger.debug(f"🎯 Cache HIT (Redis): {key}")
+                return json.loads(cached_value)
+            else:
+                logger.debug(f"❌ Cache MISS (Redis): {key}")
+                return None
 
-    except Exception as e:
-        logger.error(f"Cache get error for key {key}: {e}")
+        except Exception as e:
+            logger.error(f"Cache get error for key {key}: {e} – falling back to memory")
+
+    # In-memory fallback path
+    entry = _MEM_STORE.get(key)
+    if not entry:
+        logger.debug(f"❌ Cache MISS (Memory): {key}")
         return None
 
+    expiry, value = entry
+    if expiry and expiry < time.perf_counter():
+        _MEM_STORE.pop(key, None)
+        logger.debug(f"⏰ Cache EXPIRED (Memory): {key}")
+        return None
 
-async def cache_get_with_l3_fallback(key: str, fund_id: str | None = None) -> dict[str, Any] | None:
+    logger.debug(f"🎯 Cache HIT (Memory): {key}")
+    return value
+
+
+async def cache_get_with_l3_fallback(
+    key: str, fund_id: str | None = None
+) -> dict[str, Any] | None:
     """
     Multi-tier cache retrieval: L1/L2 Redis -> L3 DuckDB fallback.
 
@@ -143,7 +168,7 @@ async def cache_get_with_l3_fallback(key: str, fund_id: str | None = None) -> di
 
 async def cache_set(key: str, value: dict[str, Any], ttl: int = DEFAULT_TTL) -> bool:
     """
-    Set cached value with TTL.
+    Set cached value with TTL and in-memory fallback.
 
     Args:
         key: Cache key
@@ -153,35 +178,53 @@ async def cache_set(key: str, value: dict[str, Any], ttl: int = DEFAULT_TTL) -> 
     Returns:
         True if successful, False otherwise
     """
-    try:
-        redis = await get_redis_pool()
-        # Always JSON serialize for consistency with cache_get
-        serialized_value = json.dumps(value, default=str)
+    if not _use_memory:
+        try:
+            redis_conn = await get_redis_pool()
+            # Always JSON serialize for consistency with cache_get
+            serialized_value = json.dumps(value, default=str)
 
-        await redis.set(key, serialized_value, ex=ttl)
-        logger.debug(f"💾 Cache SET: {key} (TTL: {ttl}s)")
-        return True
+            await redis_conn.set(key, serialized_value, ex=ttl)
+            logger.debug(f"💾 Cache SET (Redis): {key} (TTL: {ttl}s)")
+            return True
 
-    except Exception as e:
-        logger.error(f"Cache set error for key {key}: {e}")
-        return False
+        except Exception as e:
+            logger.error(f"Cache set error for key {key}: {e} – falling back to memory")
+
+    # In-memory fallback path
+    expiry = time.perf_counter() + ttl if ttl else None
+    _MEM_STORE[key] = (expiry, value)
+    logger.debug(f"💾 Cache SET (Memory): {key} (TTL: {ttl}s)")
+    return True
 
 
 async def cache_delete(key: str) -> bool:
-    """Delete cached value by key."""
-    try:
-        redis = await get_redis_pool()
-        result = await redis.delete(key)
-        logger.debug(f"🗑️ Cache DELETE: {key}")
-        return result > 0
-    except Exception as e:
-        logger.error(f"Cache delete error for key {key}: {e}")
-        return False
+    """Delete cached value by key with in-memory fallback."""
+    success = False
+
+    if not _use_memory:
+        try:
+            redis_conn = await get_redis_pool()
+            result = await redis_conn.delete(key)
+            success = result > 0
+            logger.debug(f"🗑️ Cache DELETE (Redis): {key}")
+        except Exception as e:
+            logger.error(
+                f"Cache delete error for key {key}: {e} – falling back to memory"
+            )
+
+    # In-memory fallback path (always try this if Redis failed or we're in memory mode)
+    if _use_memory or not success:
+        deleted = _MEM_STORE.pop(key, None) is not None
+        logger.debug(f"🗑️ Cache DELETE (Memory): {key}")
+        success = success or deleted
+
+    return success
 
 
 async def cache_clear_pattern(pattern: str) -> int:
     """
-    Clear all cache keys matching pattern.
+    Clear all cache keys matching pattern with in-memory fallback.
 
     Args:
         pattern: Redis pattern (e.g., "pme:irr_pme:*")
@@ -189,51 +232,109 @@ async def cache_clear_pattern(pattern: str) -> int:
     Returns:
         Number of keys deleted
     """
-    try:
-        redis = await get_redis_pool()
-        keys = await redis.keys(pattern)
-        if keys:
-            deleted = await redis.delete(*keys)
-            logger.info(f"🧹 Cache cleared: {deleted} keys matching {pattern}")
-            return deleted
-        return 0
-    except Exception as e:
-        logger.error(f"Cache clear error for pattern {pattern}: {e}")
-        return 0
+    deleted_count = 0
+
+    if not _use_memory:
+        try:
+            redis_conn = await get_redis_pool()
+            keys = await redis_conn.keys(pattern)
+            if keys:
+                deleted_count = await redis_conn.delete(*keys)
+                logger.info(
+                    f"🧹 Cache cleared (Redis): {deleted_count} keys matching {pattern}"
+                )
+        except Exception as e:
+            logger.error(
+                f"Cache clear pattern error for {pattern}: {e} – falling back to memory"
+            )
+
+    # In-memory fallback path
+    if _use_memory or deleted_count == 0:
+        import fnmatch
+
+        matching_keys = [k for k in _MEM_STORE.keys() if fnmatch.fnmatch(k, pattern)]
+        for key in matching_keys:
+            _MEM_STORE.pop(key, None)
+        mem_deleted = len(matching_keys)
+        logger.info(f"🧹 Cache cleared (Memory): {mem_deleted} keys matching {pattern}")
+        deleted_count += mem_deleted
+
+    return deleted_count
+
+
+async def cache_exists(key: str) -> bool:
+    """Check if cache key exists with in-memory fallback."""
+    if not _use_memory:
+        try:
+            redis_conn = await get_redis_pool()
+            exists = await redis_conn.exists(key)
+            if exists:
+                return True
+        except Exception as e:
+            logger.error(
+                f"Cache exists error for key {key}: {e} – falling back to memory"
+            )
+
+    # In-memory fallback path
+    if key in _MEM_STORE:
+        expiry, _ = _MEM_STORE[key]
+        if expiry is None or expiry > time.perf_counter():
+            return True
+        else:
+            # Clean up expired entry
+            _MEM_STORE.pop(key, None)
+
+    return False
+
+
+def get_stats() -> dict[str, Any]:
+    """Get cache statistics."""
+    return {
+        "backend": "memory" if _use_memory else "redis",
+        "memory_size": len(_MEM_STORE),
+        "redis_available": not _use_memory,
+    }
 
 
 async def cache_stats() -> dict[str, Any]:
-    """Get cache statistics."""
+    """Get detailed cache statistics."""
+    if _use_memory:
+        return {
+            "backend": "memory",
+            "memory_size": len(_MEM_STORE),
+            "connected": True,
+            "redis_available": False,
+        }
+
     try:
-        # Check if event loop is running and functional
-        import asyncio
-
-        try:
-            loop = asyncio.get_running_loop()
-            if loop.is_closed():
-                return {"connected": False, "error": "Event loop is closed"}
-        except RuntimeError:
-            return {"connected": False, "error": "No event loop available"}
-
-        redis = await get_redis_pool()
-        info = await redis.info("memory")
-        keyspace = await redis.info("keyspace")
+        redis_conn = await get_redis_pool()
+        info = await redis_conn.info("memory")
+        keyspace = await redis_conn.info("keyspace")
 
         # Count PME-specific keys
-        pme_keys = await redis.keys(f"{CACHE_PREFIX}:*")
+        pme_keys = await redis_conn.keys(f"{CACHE_PREFIX}:*")
 
         return {
+            "backend": "redis",
             "redis_memory_used": info.get("used_memory_human", "unknown"),
             "redis_memory_peak": info.get("used_memory_peak_human", "unknown"),
             "total_keys": sum(
                 db.get("keys", 0) for db in keyspace.values() if isinstance(db, dict)
             ),
             "pme_cache_keys": len(pme_keys),
+            "memory_fallback_size": len(_MEM_STORE),
             "connected": True,
+            "redis_available": True,
         }
     except Exception as e:
         logger.error(f"Cache stats error: {e}")
-        return {"connected": False, "error": str(e)}
+        return {
+            "backend": "memory (fallback)",
+            "memory_size": len(_MEM_STORE),
+            "connected": False,
+            "redis_available": False,
+            "error": str(e),
+        }
 
 
 # Cache decorators for common patterns
@@ -250,7 +351,9 @@ def cached_endpoint(ttl: int = DEFAULT_TTL):
     def decorator(func):
         async def wrapper(*args, **kwargs):
             # Generate cache key from function name and arguments
-            cache_key = make_cache_key(func.__name__, {"args": str(args), "kwargs": kwargs})
+            cache_key = make_cache_key(
+                func.__name__, {"args": str(args), "kwargs": kwargs}
+            )
 
             # Try cache first
             cached_result = await cache_get(cache_key)
@@ -283,24 +386,15 @@ set_cache = cache_set
 delete_cache = cache_delete
 
 
-async def cache_exists(key: str) -> bool:
-    """Check if a cache key exists."""
-    try:
-        redis = await get_redis_pool()
-        exists = await redis.exists(key)
-        return bool(exists)
-    except Exception as e:
-        logger.error(f"Cache exists error for key {key}: {e}")
-        return False
-
-
 async def init_cache() -> bool:
-    """Initialize cache connection."""
+    """Initialize cache connection with in-memory fallback."""
     try:
         await get_redis_pool()
+        logger.info("✅ Cache initialized successfully")
         return True
-    except Exception:
-        return False
+    except Exception as e:
+        logger.error(f"❌ Cache initialization failed: {e} – using in-memory fallback")
+        return True  # Always return True since we have in-memory fallback
 
 
 def cached(ttl: int = DEFAULT_TTL, key_prefix: str = ""):
@@ -391,65 +485,47 @@ class CacheManager:
             self.redis = None
 
     async def get(self, key: str):
-        """Get cached value."""
-        if not self.is_connected or not self.redis:
-            return None
-        try:
-            cached_value = await self.redis.get(key)
-            if cached_value:
-                try:
-                    return json.loads(cached_value)
-                except (json.JSONDecodeError, TypeError):
-                    return cached_value  # Return as string if not JSON
-            return None
-        except Exception:
-            return None
+        """Get cached value with in-memory fallback."""
+        # Use the global cache_get function which handles fallback
+        return await cache_get(key)
 
     async def set(self, key: str, value, ttl: int = None) -> bool:
-        """Set cached value."""
-        if not self.is_connected or not self.redis:
-            return False
-        try:
-            # Use instance default TTL if none provided
-            if ttl is None:
-                ttl = self._default_ttl
-
-            # Always JSON serialize for consistency with get method
-            serialized_value = json.dumps(value, default=str)
-            await self.redis.set(key, serialized_value, ex=ttl)
-            return True
-        except Exception:
-            return False
+        """Set cached value with in-memory fallback."""
+        # Use instance default TTL if none provided
+        if ttl is None:
+            ttl = self._default_ttl
+        # Use the global cache_set function which handles fallback
+        return await cache_set(key, value, ttl)
 
     async def delete(self, key: str) -> bool:
-        """Delete cached value."""
-        if not self.is_connected or not self.redis:
-            return False
-        try:
-            result = await self.redis.delete(key)
-            return result > 0
-        except Exception:
-            return False
+        """Delete cached value with in-memory fallback."""
+        # Use the global cache_delete function which handles fallback
+        return await cache_delete(key)
 
     async def exists(self, key: str) -> bool:
-        """Check if key exists."""
-        if not self.is_connected or not self.redis:
-            return False
-        try:
-            result = await self.redis.exists(key)
-            return bool(result)
-        except Exception:
-            return False
+        """Check if key exists with in-memory fallback."""
+        # Use the global cache_exists function which handles fallback
+        return await cache_exists(key)
 
     async def expire(self, key: str, ttl: int) -> bool:
-        """Set TTL for existing key."""
-        if not self.is_connected or not self.redis:
-            return False
-        try:
-            result = await self.redis.expire(key, ttl)
-            return bool(result)
-        except Exception:
-            return False
+        """Set TTL for existing key with in-memory fallback."""
+        if not _use_memory:
+            try:
+                redis_conn = await get_redis_pool()
+                result = await redis_conn.expire(key, ttl)
+                return bool(result)
+            except Exception as e:
+                logger.error(
+                    f"Cache expire error for key {key}: {e} – falling back to memory"
+                )
+
+        # In-memory fallback: update the expiry time
+        if key in _MEM_STORE:
+            _, value = _MEM_STORE[key]
+            expiry = time.perf_counter() + ttl
+            _MEM_STORE[key] = (expiry, value)
+            return True
+        return False
 
     def generate_key(self, func_name: str, *args, **kwargs) -> str:
         """Generate cache key from arguments in the format expected by tests."""
