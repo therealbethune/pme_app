@@ -4,8 +4,6 @@ Production-ready API with comprehensive PME analysis capabilities.
 """
 
 import io
-import logging
-from typing import Any, Dict, Optional
 
 import numpy as np
 import pandas as pd
@@ -28,7 +26,6 @@ from pme_app.utils import (
     DefaultJSONResponse,
     create_error_response,
     create_success_response,
-    to_jsonable,
 )
 
 # Create FastAPI app

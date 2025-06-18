@@ -9,7 +9,6 @@ import os
 import tempfile
 import uuid
 from datetime import datetime
-from typing import Dict, List
 
 import pandas as pd
 from fastapi import APIRouter, BackgroundTasks, File, HTTPException, UploadFile

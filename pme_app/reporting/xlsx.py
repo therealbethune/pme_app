@@ -3,7 +3,6 @@ from pathlib import Path
 
 import pandas as pd
 import xlsxwriter
-from xlsxwriter.utility import xl_rowcol_to_cell
 
 
 def render_xlsx(df: pd.DataFrame, path: Path) -> None:

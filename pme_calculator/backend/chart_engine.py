@@ -5,7 +5,7 @@ Generates interactive charts and visualizations for PME analysis.
 
 import logging
 from datetime import datetime
-from typing import Any, Dict
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -153,7 +153,9 @@ class ChartEngine:
                     y=bench_df["cumulative_price"],
                     name="Benchmark",
                     line={
-                        "color": self.color_palette["benchmark"], "width": 2, "dash": "dash"
+                        "color": self.color_palette["benchmark"],
+                        "width": 2,
+                        "dash": "dash",
                     },
                     hovertemplate="<b>Benchmark</b><br>Date: %{x}<br>Value: %{y:.2f}<extra></extra>",
                 ),
@@ -432,7 +434,9 @@ class ChartEngine:
                 mode="markers",
                 name="Fund",
                 marker={
-                    "size": 20, "color": self.color_palette["fund"], "symbol": "diamond"
+                    "size": 20,
+                    "color": self.color_palette["fund"],
+                    "symbol": "diamond",
                 },
                 hovertemplate="<b>Fund</b><br>Volatility: %{x:.1f}%<br>Return: %{y:.1f}%<extra></extra>",
             )
@@ -447,7 +451,9 @@ class ChartEngine:
                     mode="markers",
                     name="Benchmark",
                     marker={
-                        "size": 15, "color": self.color_palette["benchmark"], "symbol": "circle"
+                        "size": 15,
+                        "color": self.color_palette["benchmark"],
+                        "symbol": "circle",
                     },
                     hovertemplate="<b>Benchmark</b><br>Volatility: %{x:.1f}%<br>Return: %{y:.1f}%<extra></extra>",
                 )
@@ -619,7 +625,11 @@ class ChartEngine:
             title="Cash Flow Timeline",
             xaxis_title="Date",
             yaxis_title="Cash Flow ($)",
-            yaxis2={"title": "Cumulative Cash Flow ($)", "overlaying": "y", "side": "right"},
+            yaxis2={
+                "title": "Cumulative Cash Flow ($)",
+                "overlaying": "y",
+                "side": "right",
+            },
             plot_bgcolor="white",
             height=500,
             showlegend=True,

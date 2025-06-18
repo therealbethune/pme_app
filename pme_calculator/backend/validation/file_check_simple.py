@@ -4,7 +4,6 @@ Simplified file validation service for PME Calculator.
 
 import logging
 from pathlib import Path
-from typing import Dict, List, Tuple, Union
 
 import pandas as pd
 

@@ -14,7 +14,7 @@ import re
 from dataclasses import dataclass, field
 from datetime import date, datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any
 
 import pandas as pd
 
@@ -1023,9 +1023,8 @@ class IntelligentDataProcessor:
                 ):
                     fund_data = df
                     primary_dataset = name
-            elif index_indicators.intersection(column_types):
-                if index_data is None:
-                    index_data = df
+            elif index_indicators.intersection(column_types) and index_data is None:
+                index_data = df
 
         # If no clear fund data, use the primary dataset or first one
         if fund_data is None:

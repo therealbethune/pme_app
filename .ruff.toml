@@ -18,18 +18,21 @@ select = [
 
 # Ignore specific rules that are problematic in legacy code
 ignore = [
+    "E501",  # line too long (many legacy files have long lines)
     "E722",  # bare except (legacy code has many)
     "F401",  # unused imports (test files often import for availability checks)
     "F403",  # star imports (legacy compatibility)
     "F811",  # redefined function (legacy code)
     "F821",  # undefined name (legacy code)
     "E402",  # module level import not at top (legacy structure)
+    "UP035", # deprecated typing imports (large codebase migration)
+    "B904",  # raise without from inside except (legacy error handling)
+    "B008",  # function call in default argument (FastAPI patterns)
 ]
 
 # Exclude legacy and test directories from strict linting
 exclude = [
     "assets/",
-    "pme_calculator/",  # Legacy calculator directory - exclude entirely
     "pme_app/pme_calcs.py",  # legacy calculations
     "pme_app/performance_metrics_chart.py",  # legacy charts
     "pme_app/duration.py",  # legacy duration

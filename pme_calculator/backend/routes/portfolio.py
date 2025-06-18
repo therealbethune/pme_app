@@ -1,7 +1,6 @@
 import io
 import logging
 from datetime import datetime
-from typing import Dict, List, Optional
 
 from database import get_db  # Assume this exists
 from fastapi import APIRouter, Depends, HTTPException, status

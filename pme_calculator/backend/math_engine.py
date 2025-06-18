@@ -3,8 +3,6 @@ Math Engine - Mathematical utilities for PME calculations
 Provides core mathematical functions used throughout the PME system.
 """
 
-from typing import List, Tuple
-
 import numpy as np
 import numpy_financial as npf
 from scipy.optimize import brentq

@@ -4,7 +4,6 @@ Provides built-in market indices and industry-specific benchmarks
 """
 
 from datetime import datetime
-from typing import Optional
 
 import numpy as np
 import pandas as pd

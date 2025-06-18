@@ -28,4 +28,4 @@ line-length = 88
 [tool.ruff]
 line-length = 88
 select = ["E", "F", "W", "I", "N"]
-fixable = ["ALL"] 
+fixable = ["ALL"]

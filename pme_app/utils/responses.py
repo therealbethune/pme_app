@@ -6,13 +6,13 @@ pandas, numpy, and datetime serialization for FastAPI applications.
 """
 
 import json
-from typing import Any, Dict, Optional
+from typing import Any
 
 from fastapi import Response
 from fastapi.responses import JSONResponse
 from starlette.background import BackgroundTask
 
-from .serialization import safe_json_dumps, to_jsonable
+from .serialization import to_jsonable
 
 
 class SerializingJSONResponse(JSONResponse):

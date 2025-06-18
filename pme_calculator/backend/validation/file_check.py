@@ -5,7 +5,6 @@ Validates fund and index data files for structure and content integrity.
 
 import re
 from pathlib import Path
-from typing import Dict, List, Tuple, Union
 
 import chardet
 import pandas as pd

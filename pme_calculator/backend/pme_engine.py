@@ -7,7 +7,6 @@ This file provides compatibility layer for any code that still imports PMEEngine
 import os
 import tempfile
 from enum import Enum
-from typing import Optional
 
 import pandas as pd
 from analysis_engine import PMEAnalysisEngine

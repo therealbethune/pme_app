@@ -233,7 +233,8 @@ def create_distribution():
             f"""PME Calculator - Installation Instructions
 
 QUICK START:
-{'1. Double-click "PME Calculator.app" to launch the application' if system == 'Darwin' and app_bundle.exists() else f'1. Double-click "{executable_name}" to launch the application'}
+{'1. Double-click "PME Calculator.app" to launch the application' if system == 'Darwin' and
+        app_bundle.exists() else f'1. Double-click "{executable_name}" to launch the application'}
 
 SYSTEM REQUIREMENTS:
 - {system} operating system

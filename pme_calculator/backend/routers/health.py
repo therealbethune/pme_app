@@ -3,7 +3,7 @@ Health check router for PME Calculator backend.
 Provides simple health status and version information.
 """
 
-from typing import Any, Dict
+from typing import Any
 
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse

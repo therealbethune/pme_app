@@ -2,7 +2,7 @@
 FastAPI router for metrics endpoints.
 """
 
-from typing import Annotated, Optional
+from typing import Annotated
 
 import numpy as np
 import pandas as pd

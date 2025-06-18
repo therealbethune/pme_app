@@ -10,9 +10,7 @@ import shutil
 import sqlite3
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any
 
-import numpy as np
 import pandas as pd
 
 

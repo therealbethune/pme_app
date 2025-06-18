@@ -7,9 +7,10 @@ import json
 import logging
 import logging.handlers
 import sys
-from datetime import UTC, datetime, timezone
+from datetime import datetime
 from pathlib import Path
-from typing import Optional
+
+from .utils.time import UTC
 
 
 class UTCFormatter(logging.Formatter):
@@ -20,10 +21,13 @@ class UTCFormatter(logging.Formatter):
         dt = datetime.fromtimestamp(record.created, tz=UTC)
         if datefmt:
             return dt.strftime(datefmt)
-        return dt.isoformat()
+        else:
+            return dt.isoformat()
 
     def format(self, record):
-        """Format log record with module name."""
+        """Custom formatting with module names."""
+        # Add module name for better debugging
+        record.module = record.name.split(".")[-1] if "." in record.name else record.name
         return super().format(record)
 
 
@@ -194,9 +198,7 @@ class PMELogger:
             extra={"file_name": file_path, "data_quality_issue": issue},
         )
 
-    def error_calculation(
-        self, calculation_type: str, error: Exception, context: dict = None
-    ):
+    def error_calculation(self, calculation_type: str, error: Exception, context: dict = None):
         """Log calculation errors with context."""
         self.logger.error(
             f"Calculation error in {calculation_type}: {str(error)}",
@@ -216,9 +218,7 @@ class PMELogger:
             exc_info=True,
         )
 
-    def debug_performance(
-        self, operation: str, duration_ms: float, details: dict = None
-    ):
+    def debug_performance(self, operation: str, duration_ms: float, details: dict = None):
         """Log performance metrics."""
         self.logger.debug(
             f"Performance: {operation} took {duration_ms:.2f}ms",

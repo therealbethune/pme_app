@@ -4,7 +4,7 @@ Database configuration and models for PME Calculator.
 
 import os
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from logger import get_logger
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
