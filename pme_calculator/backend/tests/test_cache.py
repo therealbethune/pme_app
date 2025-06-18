@@ -22,6 +22,7 @@ from cache import (
     delete_cache,
     get_cache,
     init_cache,
+    reset_cache_for_testing,
     set_cache,
 )
 
@@ -40,6 +41,10 @@ async def cache_manager():
 
 class TestCacheManager:
     """Test cases for CacheManager singleton."""
+
+    def setup_method(self):
+        """Reset cache state before each test."""
+        reset_cache_for_testing()
 
     def test_singleton_pattern(self):
         """Test that CacheManager is a proper singleton."""
@@ -387,6 +392,10 @@ class TestCachedDecorator:
 class TestConvenienceFunctions:
     """Test convenience function aliases."""
 
+    def setup_method(self):
+        """Reset cache state before each test."""
+        reset_cache_for_testing()
+
     @pytest.mark.asyncio
     async def test_get_cache(self):
         """Test get_cache convenience function."""
@@ -456,6 +465,10 @@ class TestInitialization:
 
 class TestEdgeCases:
     """Test edge cases and error conditions."""
+
+    def setup_method(self):
+        """Reset cache state before each test."""
+        reset_cache_for_testing()
 
     def test_generate_key_empty_args(self):
         """Test key generation with empty arguments."""

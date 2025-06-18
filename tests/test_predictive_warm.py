@@ -11,7 +11,12 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
 # Use proper package imports instead of sys.path manipulation
-from pme_calculator.backend.cache import cache_get, cache_set, make_cache_key
+from pme_calculator.backend.cache import (
+    cache_get,
+    cache_set,
+    make_cache_key,
+    reset_cache_for_testing,
+)
 
 # Mock the worker.tasks import since we don't have that module
 POPULAR_FUNDS = ["FUND_A", "FUND_B", "FUND_C", "FUND_D", "FUND_E"]
@@ -159,6 +164,7 @@ def test_popular_funds_configuration():
 @pytest.mark.asyncio
 async def test_cache_error_handling():
     """Test cache error handling."""
+    reset_cache_for_testing()  # Reset cache state for this test
     key = make_cache_key("test", {"fund": "ERROR_FUND"})
 
     with patch("pme_calculator.backend.cache.get_redis_pool") as mock_redis:

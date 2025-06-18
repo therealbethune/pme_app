@@ -19,6 +19,7 @@ from pme_calculator.backend.cache import (
     cache_set,
     cache_stats,
     make_cache_key,
+    reset_cache_for_testing,
 )
 
 
@@ -50,6 +51,10 @@ class TestCacheKeyGeneration:
 @pytest.mark.asyncio
 class TestCacheOperationsMocked:
     """Test cache operations with mocked Redis."""
+
+    def setup_method(self):
+        """Reset cache state before each test."""
+        reset_cache_for_testing()
 
     @patch("pme_calculator.backend.cache.get_redis_pool")
     async def test_cache_set_success(self, mock_get_pool):
@@ -163,6 +168,10 @@ class TestCacheOperationsMocked:
 @pytest.mark.asyncio
 class TestCacheErrorHandling:
     """Test cache error handling with mocked failures."""
+
+    def setup_method(self):
+        """Reset cache state before each test."""
+        reset_cache_for_testing()
 
     @patch("pme_calculator.backend.cache.get_redis_pool")
     async def test_cache_get_error_handling(self, mock_get_pool):
