@@ -115,9 +115,7 @@ async def cache_get(key: str) -> dict[str, Any] | None:
         return None
 
 
-async def cache_get_with_l3_fallback(
-    key: str, fund_id: str | None = None
-) -> dict[str, Any] | None:
+async def cache_get_with_l3_fallback(key: str, fund_id: str | None = None) -> dict[str, Any] | None:
     """
     Multi-tier cache retrieval: L1/L2 Redis -> L3 DuckDB fallback.
 
@@ -157,10 +155,8 @@ async def cache_set(key: str, value: dict[str, Any], ttl: int = DEFAULT_TTL) -> 
     """
     try:
         redis = await get_redis_pool()
-        if isinstance(value, dict | list):
-            serialized_value = json.dumps(value, default=str)
-        else:
-            serialized_value = str(value)
+        # Always JSON serialize for consistency with cache_get
+        serialized_value = json.dumps(value, default=str)
 
         await redis.set(key, serialized_value, ex=ttl)
         logger.debug(f"💾 Cache SET: {key} (TTL: {ttl}s)")
@@ -254,9 +250,7 @@ def cached_endpoint(ttl: int = DEFAULT_TTL):
     def decorator(func):
         async def wrapper(*args, **kwargs):
             # Generate cache key from function name and arguments
-            cache_key = make_cache_key(
-                func.__name__, {"args": str(args), "kwargs": kwargs}
-            )
+            cache_key = make_cache_key(func.__name__, {"args": str(args), "kwargs": kwargs})
 
             # Try cache first
             cached_result = await cache_get(cache_key)
@@ -420,10 +414,8 @@ class CacheManager:
             if ttl is None:
                 ttl = self._default_ttl
 
-            if isinstance(value, dict | list):
-                serialized_value = json.dumps(value, default=str)
-            else:
-                serialized_value = str(value)
+            # Always JSON serialize for consistency with get method
+            serialized_value = json.dumps(value, default=str)
             await self.redis.set(key, serialized_value, ex=ttl)
             return True
         except Exception:
