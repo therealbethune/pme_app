@@ -21,6 +21,11 @@ jobs:
             ${{ runner.os }}-pip-
       - name: Install tox
         run: python3 -m pip install --upgrade pip tox
+      - name: DEBUG – show env & mypy
+        run: |
+          echo "PATH = $PATH"
+          which mypy || echo "mypy not in PATH"
+          python -m pip list | grep -E 'mypy|types-'
       - name: Run checks with tox
         run: tox
 
