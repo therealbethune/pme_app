@@ -12,8 +12,8 @@ import pandas as pd
 # Import existing PME modules with fallback
 try:
     from pme_app.data_loader import load_fund_file, load_index_file
-    from pme_app.pme_calcs import compute_pme_metrics
     from pme_app.main import PMEApp  # type: ignore
+    from pme_app.pme_calcs import compute_pme_metrics
 except ImportError as e:
     from logger import get_logger
 

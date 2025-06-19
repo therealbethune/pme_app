@@ -74,7 +74,9 @@ async def upload_index_data(
     if not file.filename.lower().endswith((".csv", ".xlsx", ".xls")):
         raise HTTPException(status_code=400, detail="File must be CSV or Excel format")
 
-    job_id = f"index_validation_{uuid.uuid4().hex[:8]}_{int(datetime.now().timestamp())}"
+    job_id = (
+        f"index_validation_{uuid.uuid4().hex[:8]}_{int(datetime.now().timestamp())}"
+    )
 
     with tempfile.NamedTemporaryFile(
         delete=False, suffix=os.path.splitext(file.filename)[1]
@@ -275,11 +277,16 @@ async def validate_fund_file_background(job_id: str, file_path: str) -> None:
             rows=len(df),
             columns=len(df.columns),
             date_range=(
-                (df["date"].min(), df["date"].max()) if "date" in df.columns else (None, None)
+                (df["date"].min(), df["date"].max())
+                if "date" in df.columns
+                else (None, None)
             ),
             data_quality_score=validation_result.overall_score,
-            missing_data_percentage=df.isnull().sum().sum() / (len(df) * len(df.columns)),
-            column_mappings=DataValidator.intelligent_column_mapping(df.columns.tolist(), "fund"),
+            missing_data_percentage=df.isnull().sum().sum()
+            / (len(df) * len(df.columns)),
+            column_mappings=DataValidator.intelligent_column_mapping(
+                df.columns.tolist(), "fund"
+            ),
         )
 
         validation_jobs[job_id]["progress"] = 100
@@ -319,11 +326,16 @@ async def validate_index_file_background(job_id: str, file_path: str) -> None:
             rows=len(df),
             columns=len(df.columns),
             date_range=(
-                (df["date"].min(), df["date"].max()) if "date" in df.columns else (None, None)
+                (df["date"].min(), df["date"].max())
+                if "date" in df.columns
+                else (None, None)
             ),
             data_quality_score=validation_result.overall_score,
-            missing_data_percentage=df.isnull().sum().sum() / (len(df) * len(df.columns)),
-            column_mappings=DataValidator.intelligent_column_mapping(df.columns.tolist(), "index"),
+            missing_data_percentage=df.isnull().sum().sum()
+            / (len(df) * len(df.columns)),
+            column_mappings=DataValidator.intelligent_column_mapping(
+                df.columns.tolist(), "index"
+            ),
         )
 
         validation_jobs[job_id]["progress"] = 100

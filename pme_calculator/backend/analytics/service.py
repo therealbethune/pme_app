@@ -3,12 +3,23 @@ High-performance analytics service with vectorized calculations.
 Replaces DataFrame.apply loops with optimized numpy operations for 4× performance.
 """
 
+from typing import (
+    Dict as _Dict,
+)  # noqa: F401
+from typing import (
+    List as _List,
+)
+from typing import (
+    Tuple as _Tuple,
+)
+from typing import (
+    Union as _Union,
+)
 
 import numpy as np
 import numpy_financial as npf
 import pandas as pd
 import structlog
-from typing import Dict as _Dict, List as _List, Tuple as _Tuple, Union as _Union  # noqa: F401
 from scipy.optimize import brentq as _brentq  # noqa: F401
 
 logger = structlog.get_logger()

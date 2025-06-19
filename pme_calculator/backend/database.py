@@ -5,7 +5,6 @@ Database configuration and models for PME Calculator.
 # from datetime import datetime  # removed unused
 from typing import Any
 
-
 # Import our central timezone utility
 from pme_calculator.utils.time import utc_now
 

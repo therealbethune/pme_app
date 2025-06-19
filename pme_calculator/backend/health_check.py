@@ -65,7 +65,9 @@ def test_imports():
         logger.error(f"   ❌ fastapi import failed: {e}")
 
     try:
-        from analysis_engine import PMEAnalysisEngine as _PMEAnalysisEngine  # noqa: F401
+        from analysis_engine import (
+            PMEAnalysisEngine as _PMEAnalysisEngine,
+        )  # noqa: F401
 
         logger.info("   ✅ analysis_engine")
     except ImportError as e:
@@ -73,7 +75,12 @@ def test_imports():
         logger.error(f"   ❌ analysis_engine import failed: {e}")
 
     try:
-        from pme_engine import BenchmarkType as _BenchmarkType, PMEEngine as _PMEEngine  # noqa: F401
+        from pme_engine import (
+            BenchmarkType as _BenchmarkType,
+        )  # noqa: F401
+        from pme_engine import (
+            PMEEngine as _PMEEngine,
+        )
 
         logger.info("   ✅ pme_engine")
     except ImportError as e:
@@ -99,7 +106,9 @@ def test_imports():
         logger.error(f"   ❌ file validation import failed: {e}")
 
     try:
-        from validation.schemas_simple import ValidationResult as _ValidationResult  # noqa: F401
+        from validation.schemas_simple import (
+            ValidationResult as _ValidationResult,
+        )  # noqa: F401
 
         logger.info("   ✅ validation schemas")
     except ImportError as e:
