@@ -5,7 +5,10 @@ Database configuration and models for PME Calculator.
 from datetime import datetime
 from typing import Any
 
-from config import settings
+try:
+    from config import settings
+except ImportError:
+    from .config import settings
 from logger import get_logger
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker

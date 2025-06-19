@@ -19,7 +19,11 @@ import time
 from typing import Any
 
 import redis.asyncio as redis
-from config import settings
+
+try:
+    from config import settings
+except ImportError:
+    from .config import settings
 
 # Import db_views with error handling for different import contexts
 try:
