@@ -1,6 +1,6 @@
 """Analysis service for PME calculations - pure business logic without dependencies."""
 
-from typing import Any, Optional, Tuple, Union
+from typing import Any
 
 import numpy as np
 import pandas as pd

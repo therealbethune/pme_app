@@ -1,6 +1,6 @@
 """Portfolio service for PME calculations with precise type annotations."""
 
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
 
 import numpy as np
 import pandas as pd

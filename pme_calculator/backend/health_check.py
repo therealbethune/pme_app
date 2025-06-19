@@ -49,7 +49,7 @@ def test_imports():
         logger.error(f"   ❌ scipy import failed: {e}")
 
     try:
-        import numpy_financial as npf
+        import numpy_financial as _npf  # noqa: F401
 
         logger.info("   ✅ numpy_financial")
     except ImportError as e:
@@ -57,7 +57,7 @@ def test_imports():
         logger.error(f"   ❌ numpy_financial import failed: {e}")
 
     try:
-        from fastapi import FastAPI
+        from fastapi import FastAPI as _FastAPI  # noqa: F401
 
         logger.info("   ✅ fastapi")
     except ImportError as e:
@@ -65,7 +65,7 @@ def test_imports():
         logger.error(f"   ❌ fastapi import failed: {e}")
 
     try:
-        from analysis_engine import PMEAnalysisEngine
+        from analysis_engine import PMEAnalysisEngine as _PMEAnalysisEngine  # noqa: F401
 
         logger.info("   ✅ analysis_engine")
     except ImportError as e:
@@ -73,7 +73,7 @@ def test_imports():
         logger.error(f"   ❌ analysis_engine import failed: {e}")
 
     try:
-        from pme_engine import BenchmarkType, PMEEngine
+        from pme_engine import BenchmarkType as _BenchmarkType, PMEEngine as _PMEEngine  # noqa: F401
 
         logger.info("   ✅ pme_engine")
     except ImportError as e:
@@ -81,7 +81,7 @@ def test_imports():
         logger.error(f"   ❌ pme_engine import failed: {e}")
 
     try:
-        from math_engine import MathEngine
+        from math_engine import MathEngine as _MathEngine  # noqa: F401
 
         logger.info("   ✅ math_engine")
     except ImportError as e:
@@ -89,7 +89,9 @@ def test_imports():
         logger.error(f"   ❌ math_engine import failed: {e}")
 
     try:
-        from validation.file_check_simple import validate_file_comprehensive
+        from validation.file_check_simple import (  # noqa: F401
+            validate_file_comprehensive as _validate_file_comprehensive,
+        )
 
         logger.info("   ✅ file validation")
     except ImportError as e:
@@ -97,7 +99,7 @@ def test_imports():
         logger.error(f"   ❌ file validation import failed: {e}")
 
     try:
-        from validation.schemas_simple import ValidationResult
+        from validation.schemas_simple import ValidationResult as _ValidationResult  # noqa: F401
 
         logger.info("   ✅ validation schemas")
     except ImportError as e:

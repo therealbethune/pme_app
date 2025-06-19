@@ -3,7 +3,6 @@ Simple analysis endpoint that bypasses complex Pydantic validation.
 """
 
 import uuid
-from datetime import datetime
 
 from fastapi import APIRouter
 from routers.upload import uploaded_files
