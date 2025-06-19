@@ -1,0 +1,81 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}  # Match the backend target version and avoid 3.13 compatibility issues
+      - name: Cache pip packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('setup.py', 'tox.ini', 'pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      - name: Install backend + dev deps
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[dev]"  # Install package with dev dependencies
+          python -m pip install tox
+      - name: DEBUG – show env & mypy
+        continue-on-error: true  # make non-blocking
+        run: |
+          echo "PATH = $PATH"
+          python --version
+          which mypy || echo "mypy not in PATH"
+          python -m pip list | grep -E 'mypy|types-' || true
+          echo "Installed packages:"
+          python -m pip list | head -20
+          echo "Testing basic imports:"
+          python -c "import pme_app; print('✅ pme_app import OK')" || echo "❌ pme_app import failed"
+          python -c "import pytest; print('✅ pytest import OK')" || echo "❌ pytest import failed"
+      - name: Run checks with tox
+        run: |
+          echo "Starting tox with Python $(python --version)"
+          tox -v  # verbose output to see what's failing
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults: {run: {working-directory: pme_calculator/frontend}}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: "20"}
+      - run: npm ci
+      - run: npm run test
+
+  docker:
+    needs: [backend, frontend]
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Log in to ghcr.io
+        run: |
+          echo "${{ secrets.GHCR_PAT }}" | \
+          docker login ghcr.io -u ${{ github.actor }} --password-stdin
+      - name: Build and push Docker image
+        run: |
+          docker buildx build \
+            --platform linux/amd64 \
+            --tag ghcr.io/${{ github.repository_owner }}/pme_app:latest \
+            --push .
+      - name: Clean up Docker artifacts
+        if: always()
+        run: |
+          # Remove builder cache & images to free disk space
+          docker buildx prune -af --filter unused-for=1h
+          # Log out for good measure
+          docker logout ghcr.io 
