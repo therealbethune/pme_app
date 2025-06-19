@@ -325,17 +325,17 @@ async def upload_index_file(
 @router.get("")
 async def get_uploads(
     skip: int = Query(0, ge=0), limit: int = Query(100, ge=1, le=1000)
-) -> dict[str, Any]:
+) -> list[dict[str, Any]]:
     """
     Get paginated list of uploaded files.
     """
     try:
         # Return empty list when database is not available
         if not DATABASE_AVAILABLE or UploadFileMeta is None:
-            return {"uploads": [], "total": 0}
+            return []
 
         # For now, return empty list - database operations disabled
-        return {"uploads": [], "total": 0}
+        return []
 
     except Exception as e:
         logger.error(f"Failed to get uploads: {e}", exc_info=True)
@@ -411,7 +411,7 @@ async def get_file_info(file_id: str) -> dict[str, Any]:
 
 
 @router.delete("/files/{file_id}")
-async def delete_uploaded_file(file_id: str, background_tasks: BackgroundTasks) -> dict[str, str]:
+async def delete_uploaded_file(file_id: str, background_tasks: BackgroundTasks) -> dict[str, Any]:
     """
     Delete an uploaded file from memory and clean up temporary files.
     """
@@ -431,7 +431,7 @@ async def delete_uploaded_file(file_id: str, background_tasks: BackgroundTasks) 
         logger.info(f"File {file_id} deleted successfully")
 
         return {
-            "success": "true",
+            "success": True,
             "message": f'File {file_data["filename"]} deleted successfully',
         }
 
