@@ -16,7 +16,7 @@ index_data = None
 
 
 @router.post("/process-datasets")
-async def process_datasets(request: Request):
+async def process_datasets(request: Request) -> dict[str, Any]:
     """
     Intelligent processing of multiple datasets to create optimal data structure for PME calculations
 
@@ -34,7 +34,7 @@ async def process_datasets(request: Request):
 
         # Process uploaded files
         for _key, file in form.items():
-            if hasattr(file, "filename") and file.filename:
+            if hasattr(file, "filename") and hasattr(file, "read") and file.filename:
                 try:
                     # Read file content
                     content = await file.read()
@@ -57,8 +57,7 @@ async def process_datasets(request: Request):
 
                     # If this contains fund-like data, make it primary
                     if any(
-                        col.lower()
-                        in ["cashflow", "contribution", "distribution", "nav"]
+                        col.lower() in ["cashflow", "contribution", "distribution", "nav"]
                         for col in df.columns
                     ):
                         primary_dataset = dataset_name
@@ -74,9 +73,7 @@ async def process_datasets(request: Request):
         processor = IntelligentDataProcessor()
 
         # Create optimal data structure
-        optimal_structure = processor.create_optimal_structure(
-            datasets, primary_dataset
-        )
+        optimal_structure = processor.create_optimal_structure(datasets, primary_dataset)
 
         # Store processed data in global state for analysis
         if optimal_structure.calculation_ready:
@@ -150,7 +147,7 @@ async def process_datasets(request: Request):
 
 
 @router.post("/analyze-columns")
-async def analyze_columns(request: Request):
+async def analyze_columns(request: Request) -> dict[str, Any]:
     """
     Analyze column types and suggest optimal mappings for a dataset
     """
@@ -206,7 +203,7 @@ async def analyze_columns(request: Request):
 
 
 @router.post("/suggest-structure")
-async def suggest_optimal_structure(request: Request):
+async def suggest_optimal_structure(request: Request) -> dict[str, Any]:
     """
     Suggest optimal data structure for PME calculations based on detected columns
     """
@@ -215,9 +212,7 @@ async def suggest_optimal_structure(request: Request):
 
         detected_types = data.get("detected_types", [])
         if not detected_types:
-            raise HTTPException(
-                status_code=400, detail="No detected column types provided"
-            )
+            raise HTTPException(status_code=400, detail="No detected column types provided")
 
         suggestions = {
             "fund_data_requirements": {
@@ -254,14 +249,10 @@ async def suggest_optimal_structure(request: Request):
         # Determine data structure type
         if fund_data_score > index_data_score:
             suggestions["detected_structure"]["type"] = "fund_data"
-            suggestions["detected_structure"]["confidence"] = fund_data_score / len(
-                detected_types
-            )
+            suggestions["detected_structure"]["confidence"] = fund_data_score / len(detected_types)
         else:
             suggestions["detected_structure"]["type"] = "index_data"
-            suggestions["detected_structure"]["confidence"] = index_data_score / len(
-                detected_types
-            )
+            suggestions["detected_structure"]["confidence"] = index_data_score / len(detected_types)
 
         # Check for missing requirements
         detected_type_names = {col["data_type"] for col in detected_types}
@@ -279,8 +270,7 @@ async def suggest_optimal_structure(request: Request):
 
             has_cashflow = "cashflow" in detected_type_names
             has_contrib_distrib = (
-                "contribution" in detected_type_names
-                and "distribution" in detected_type_names
+                "contribution" in detected_type_names and "distribution" in detected_type_names
             )
 
             if not (has_cashflow or has_contrib_distrib):
@@ -299,9 +289,7 @@ async def suggest_optimal_structure(request: Request):
             )
 
         # Column-specific recommendations
-        low_confidence_cols = [
-            col for col in detected_types if col.get("confidence", 0) < 0.7
-        ]
+        low_confidence_cols = [col for col in detected_types if col.get("confidence", 0) < 0.7]
         if low_confidence_cols:
             suggestions["recommendations"].append(
                 f"📝 Review {len(low_confidence_cols)} columns with low detection confidence"

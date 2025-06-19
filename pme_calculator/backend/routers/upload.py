@@ -4,9 +4,8 @@ FastAPI upload router with comprehensive file validation.
 
 import tempfile
 import uuid
-from datetime import datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, AsyncGenerator
 
 import aiofiles
 from fastapi import (
@@ -19,6 +18,7 @@ from fastapi import (
 )
 from fastapi.responses import JSONResponse
 from logger import get_logger
+from utils.time import UTC, now_utc
 from validation.file_check_simple import validate_file_comprehensive
 from validation.schemas_simple import (
     UploadResponse,
@@ -37,7 +37,7 @@ except ImportError as e:
     UploadFileMeta = None
 
     # Create dummy get_session function
-    async def get_session():
+    async def get_session() -> AsyncGenerator[None, None]:
         yield None
 
 
@@ -62,7 +62,7 @@ uploaded_files: dict[str, dict[str, Any]] = {}
 async def upload_fund_file(
     background_tasks: BackgroundTasks,
     file: UploadFile = File(..., description="Fund cashflow file (CSV/Excel)"),
-):
+) -> UploadResponse:
     """
     Upload and validate fund cashflow file.
     Returns validation results and file ID for subsequent analysis.
@@ -85,12 +85,10 @@ async def upload_fund_file(
 
     # Content type validation
     if file.content_type not in ALLOWED:
-        raise HTTPException(
-            415, detail=f"Unsupported media type. Allowed: {', '.join(ALLOWED)}"
-        )
+        raise HTTPException(415, detail=f"Unsupported media type. Allowed: {', '.join(ALLOWED)}")
 
     # File size validation
-    if hasattr(file, "size") and file.size > MAX_MB * 1024**2:
+    if hasattr(file, "size") and file.size is not None and file.size > MAX_MB * 1024**2:
         raise HTTPException(413, detail=f"File too large. Maximum size: {MAX_MB}MB")
 
     allowed_extensions = {".csv", ".xlsx", ".xls"}
@@ -135,7 +133,7 @@ async def upload_fund_file(
                 "temp_path": str(tmp_path),
                 "file_type": "fund",
                 "validation": validation_result,
-                "upload_timestamp": datetime.utcnow().isoformat(),
+                "upload_timestamp": now_utc().isoformat(),
             }
 
             # Insert UploadFileMeta row if database is available
@@ -148,11 +146,9 @@ async def upload_fund_file(
                 "Fund file validated successfully",
                 extra={
                     "file_id": file_id,
-                    "upload_id": upload_meta.id if upload_meta else None,
+                    "upload_id": getattr(upload_meta, "id", None),
                     "row_count": (
-                        validation_result.metadata.row_count
-                        if validation_result.metadata
-                        else None
+                        validation_result.metadata.row_count if validation_result.metadata else None
                     ),
                     "detected_columns": validation_result.detected_mappings,
                 },
@@ -173,9 +169,7 @@ async def upload_fund_file(
                 },
             )
 
-            message = (
-                f"File validation failed with {len(validation_result.errors)} errors."
-            )
+            message = f"File validation failed with {len(validation_result.errors)} errors."
 
         return UploadResponse(
             success=validation_result.is_valid,
@@ -186,9 +180,7 @@ async def upload_fund_file(
         )
 
     except Exception as e:
-        logger.error(
-            "Upload processing failed", extra={"file_id": file_id, "error": str(e)}
-        )
+        logger.error("Upload processing failed", extra={"file_id": file_id, "error": str(e)})
 
         # Clean up temp file on error
         if "tmp_path" in locals():
@@ -201,7 +193,7 @@ async def upload_fund_file(
 async def upload_index_file(
     background_tasks: BackgroundTasks,
     file: UploadFile = File(..., description="Index price file (CSV/Excel)"),
-):
+) -> UploadResponse:
     """
     Upload and validate index price file.
     Returns validation results and file ID for subsequent analysis.
@@ -223,12 +215,10 @@ async def upload_index_file(
 
     # Content type validation
     if file.content_type not in ALLOWED:
-        raise HTTPException(
-            415, detail=f"Unsupported media type. Allowed: {', '.join(ALLOWED)}"
-        )
+        raise HTTPException(415, detail=f"Unsupported media type. Allowed: {', '.join(ALLOWED)}")
 
     # File size validation
-    if hasattr(file, "size") and file.size > MAX_MB * 1024**2:
+    if hasattr(file, "size") and file.size is not None and file.size > MAX_MB * 1024**2:
         raise HTTPException(413, detail=f"File too large. Maximum size: {MAX_MB}MB")
 
     allowed_extensions = {".csv", ".xlsx", ".xls"}
@@ -273,7 +263,7 @@ async def upload_index_file(
                 "temp_path": str(tmp_path),
                 "file_type": "index",
                 "validation": validation_result,
-                "upload_timestamp": datetime.utcnow().isoformat(),
+                "upload_timestamp": now_utc().isoformat(),
             }
 
             # Insert UploadFileMeta row if database is available
@@ -286,11 +276,9 @@ async def upload_index_file(
                 "Index file validated successfully",
                 extra={
                     "file_id": file_id,
-                    "upload_id": upload_meta.id if upload_meta else None,
+                    "upload_id": getattr(upload_meta, "id", None),
                     "row_count": (
-                        validation_result.metadata.row_count
-                        if validation_result.metadata
-                        else None
+                        validation_result.metadata.row_count if validation_result.metadata else None
                     ),
                     "detected_columns": validation_result.detected_mappings,
                 },
@@ -311,9 +299,7 @@ async def upload_index_file(
                 },
             )
 
-            message = (
-                f"File validation failed with {len(validation_result.errors)} errors."
-            )
+            message = f"File validation failed with {len(validation_result.errors)} errors."
 
         return UploadResponse(
             success=validation_result.is_valid,
@@ -339,7 +325,7 @@ async def upload_index_file(
 @router.get("")
 async def get_uploads(
     skip: int = Query(0, ge=0), limit: int = Query(100, ge=1, le=1000)
-):
+) -> list[dict[str, Any]]:
     """
     Get paginated list of uploaded files.
     """
@@ -357,7 +343,7 @@ async def get_uploads(
 
 
 @router.get("/{upload_id}")
-async def get_upload(upload_id: int):
+async def get_upload(upload_id: int) -> dict[str, Any]:
     """
     Get upload file metadata by ID.
     """
@@ -377,7 +363,7 @@ async def get_upload(upload_id: int):
 
 
 @router.get("/files")
-async def list_uploaded_files():
+async def list_uploaded_files() -> dict[str, Any]:
     """
     List all uploaded files currently in memory.
     This endpoint provides information about files available for analysis.
@@ -400,9 +386,7 @@ async def list_uploaded_files():
                 }
             )
 
-        return JSONResponse(
-            {"success": True, "files": files_info, "total_files": len(files_info)}
-        )
+        return {"success": True, "files": files_info, "total_files": len(files_info)}
 
     except Exception as e:
         logger.error(f"Failed to list files: {e}")
@@ -410,7 +394,7 @@ async def list_uploaded_files():
 
 
 @router.get("/files/{file_id}")
-async def get_file_info(file_id: str):
+async def get_file_info(file_id: str) -> dict[str, Any]:
     """
     Get detailed information about a specific uploaded file.
     """
@@ -419,7 +403,7 @@ async def get_file_info(file_id: str):
 
     try:
         file_data = uploaded_files[file_id]
-        return JSONResponse({"success": True, "file_info": file_data})
+        return {"success": True, "file_info": file_data}
 
     except Exception as e:
         logger.error(f"Failed to get file info for {file_id}: {e}")
@@ -427,7 +411,7 @@ async def get_file_info(file_id: str):
 
 
 @router.delete("/files/{file_id}")
-async def delete_uploaded_file(file_id: str, background_tasks: BackgroundTasks):
+async def delete_uploaded_file(file_id: str, background_tasks: BackgroundTasks) -> dict[str, Any]:
     """
     Delete an uploaded file from memory and clean up temporary files.
     """
@@ -446,19 +430,17 @@ async def delete_uploaded_file(file_id: str, background_tasks: BackgroundTasks):
 
         logger.info(f"File {file_id} deleted successfully")
 
-        return JSONResponse(
-            {
-                "success": True,
-                "message": f'File {file_data["filename"]} deleted successfully',
-            }
-        )
+        return {
+            "success": True,
+            "message": f'File {file_data["filename"]} deleted successfully',
+        }
 
     except Exception as e:
         logger.error(f"Failed to delete file {file_id}: {e}")
         raise HTTPException(500, detail="Failed to delete file")
 
 
-async def cleanup_temp_file(file_path: Path):
+async def cleanup_temp_file(file_path: Path) -> None:
     """
     Background task to clean up temporary files.
     """

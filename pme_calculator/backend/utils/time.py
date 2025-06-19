@@ -1,5 +1,11 @@
-"""Time utilities for backend services."""
+"""Tiny time helpers shared across the backend."""
 
-from datetime import UTC, timezone
+from datetime import datetime, timezone
+from typing import Final
 
-UTC = UTC
+UTC: Final = timezone.utc
+
+
+def now_utc() -> datetime:
+    """Return an aware datetime in UTC (tzinfo = UTC)."""
+    return datetime.now(UTC)

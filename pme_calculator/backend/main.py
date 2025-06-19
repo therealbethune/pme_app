@@ -7,9 +7,9 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
-from logger import get_logger
-from routers.upload import router as upload_router
-from simple_analysis import router as simple_analysis_router
+from .logger import get_logger
+from .routers.upload import router as upload_router
+from .simple_analysis import router as simple_analysis_router
 
 # Initialize logger
 logger = get_logger(__name__)
