@@ -27,9 +27,7 @@ class UTCFormatter(logging.Formatter):
     def format(self, record):
         """Custom formatting with module names."""
         # Add module name for better debugging
-        record.module = (
-            record.name.split(".")[-1] if "." in record.name else record.name
-        )
+        record.module = record.name.split(".")[-1] if "." in record.name else record.name
         return super().format(record)
 
 
