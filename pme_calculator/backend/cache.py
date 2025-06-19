@@ -163,9 +163,7 @@ async def cache_get(key: str) -> dict[str, Any] | None:
     return value
 
 
-async def cache_get_with_l3_fallback(
-    key: str, fund_id: str | None = None
-) -> dict[str, Any] | None:
+async def cache_get_with_l3_fallback(key: str, fund_id: str | None = None) -> dict[str, Any] | None:
     """
     Multi-tier cache retrieval: L1/L2 Redis -> L3 DuckDB fallback.
 
@@ -279,9 +277,7 @@ async def cache_clear_pattern(pattern: str) -> int:
             keys = await redis_conn.keys(pattern)
             if keys:
                 deleted_count = await redis_conn.delete(*keys)
-                logger.info(
-                    f"🧹 Cache cleared (Redis): {deleted_count} keys matching {pattern}"
-                )
+                logger.info(f"🧹 Cache cleared (Redis): {deleted_count} keys matching {pattern}")
                 return deleted_count
             return 0
         except Exception as e:
@@ -388,9 +384,7 @@ def cached_endpoint(ttl: int = DEFAULT_TTL):
     def decorator(func):
         async def wrapper(*args, **kwargs):
             # Generate cache key from function name and arguments
-            cache_key = make_cache_key(
-                func.__name__, {"args": str(args), "kwargs": kwargs}
-            )
+            cache_key = make_cache_key(func.__name__, {"args": str(args), "kwargs": kwargs})
 
             # Try cache first
             cached_result = await cache_get(cache_key)
