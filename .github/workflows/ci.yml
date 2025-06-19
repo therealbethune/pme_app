@@ -36,10 +36,23 @@ jobs:
           echo "Testing basic imports:"
           python -c "import pme_app; print('✅ pme_app import OK')" || echo "❌ pme_app import failed"
           python -c "import pytest; print('✅ pytest import OK')" || echo "❌ pytest import failed"
+      - name: Clean up legacy coverage files
+        run: |
+          rm -f coverage.xml
+          rm -f .coverage*
       - name: Run checks with tox
         run: |
           echo "Starting tox with Python $(python --version)"
           tox -v  # verbose output to see what's failing
+      - name: Generate unified coverage report
+        run: |
+          if [ -f .coverage ]; then
+            coverage xml -i
+          else
+            echo "No coverage data found, checking for separate files..."
+            coverage combine . || echo "No separate coverage files to combine"
+            coverage xml -i || echo "Could not generate XML report"
+          fi
 
   frontend:
     runs-on: ubuntu-latest
