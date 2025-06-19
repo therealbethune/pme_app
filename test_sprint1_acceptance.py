@@ -21,6 +21,9 @@ import time
 from typing import Dict
 
 import requests
+import structlog
+
+logger = structlog.get_logger()
 
 # Test configuration
 BASE_URL = "http://localhost:8000"
@@ -31,7 +34,7 @@ REQUESTS_PER_USER = 5
 
 def test_single_request_performance():
     """Test single request performance."""
-    print("1️⃣ Testing single request performance...")
+    logger.debug("1️⃣ Testing single request performance...")
 
     url = f"{BASE_URL}{ENDPOINT}"
 
@@ -45,7 +48,7 @@ def test_single_request_performance():
     assert "data" in data1, "Response should contain 'data' field"
     assert len(data1["data"]) > 0, "Response should contain chart data"
 
-    print(f"   📊 First request: {first_response_time*1000:.1f}ms")
+    logger.debug(f"   📊 First request: {first_response_time*1000:.1f}ms")
 
     # Second request (potential cache hit)
     start_time = time.time()
@@ -55,7 +58,7 @@ def test_single_request_performance():
     assert response2.status_code == 200, f"Expected 200, got {response2.status_code}"
     data2 = response2.json()
 
-    print(f"   ⚡ Second request: {second_response_time*1000:.1f}ms")
+    logger.debug(f"   ⚡ Second request: {second_response_time*1000:.1f}ms")
 
     # Verify responses are identical (cache working)
     assert data1 == data2, "Cached response should be identical to original"
@@ -68,15 +71,17 @@ def test_single_request_performance():
         second_response_time < 1.0
     ), f"Second request too slow: {second_response_time:.3f}s"
 
-    print("   ✅ Both requests under 1 second")
-    print(f"   📈 Performance ratio: {first_response_time/second_response_time:.1f}x")
+    logger.debug("   ✅ Both requests under 1 second")
+    logger.debug(
+        f"   📈 Performance ratio: {first_response_time/second_response_time:.1f}x"
+    )
 
     return first_response_time, second_response_time
 
 
 def test_concurrent_requests():
     """Test concurrent request handling."""
-    print("2️⃣ Testing concurrent request handling...")
+    logger.debug("2️⃣ Testing concurrent request handling...")
 
     url = f"{BASE_URL}{ENDPOINT}"
 
@@ -128,11 +133,11 @@ def test_concurrent_requests():
 
     response_times = [r["response_time"] for r in successful_requests]
 
-    print(f"   📊 Total requests: {len(results)}")
-    print(f"   ✅ Successful: {len(successful_requests)}")
-    print(f"   ❌ Failed: {len(failed_requests)}")
-    print(f"   ⏱️ Total time: {total_time:.2f}s")
-    print(f"   🚀 Requests/second: {len(results)/total_time:.1f}")
+    logger.debug(f"   📊 Total requests: {len(results)}")
+    logger.debug(f"   ✅ Successful: {len(successful_requests)}")
+    logger.debug(f"   ❌ Failed: {len(failed_requests)}")
+    logger.debug(f"   ⏱️ Total time: {total_time:.2f}s")
+    logger.debug(f"   🚀 Requests/second: {len(results)/total_time:.1f}")
 
     if response_times:
         avg_response_time = statistics.mean(response_times)
@@ -140,11 +145,11 @@ def test_concurrent_requests():
         max_response_time = max(response_times)
         min_response_time = min(response_times)
 
-        print("   📈 Response times:")
-        print(f"      • Average: {avg_response_time*1000:.1f}ms")
-        print(f"      • Median: {median_response_time*1000:.1f}ms")
-        print(f"      • Min: {min_response_time*1000:.1f}ms")
-        print(f"      • Max: {max_response_time*1000:.1f}ms")
+        logger.debug("   📈 Response times:")
+        logger.debug(f"      • Average: {avg_response_time*1000:.1f}ms")
+        logger.debug(f"      • Median: {median_response_time*1000:.1f}ms")
+        logger.debug(f"      • Min: {min_response_time*1000:.1f}ms")
+        logger.debug(f"      • Max: {max_response_time*1000:.1f}ms")
 
         # Performance assertions
         assert (
@@ -157,14 +162,14 @@ def test_concurrent_requests():
             max_response_time < 2.0
         ), f"Max response time too slow: {max_response_time:.3f}s"
 
-        print("   ✅ Performance targets met")
+        logger.debug("   ✅ Performance targets met")
 
     return results
 
 
 def test_cache_behavior():
     """Test cache behavior specifically."""
-    print("3️⃣ Testing cache behavior...")
+    logger.debug("3️⃣ Testing cache behavior...")
 
     url = f"{BASE_URL}{ENDPOINT}"
 
@@ -180,20 +185,20 @@ def test_cache_behavior():
         responses.append(response.json())
         response_times.append(response_time)
 
-        print(f"   Request {i+1}: {response_time*1000:.1f}ms")
+        logger.debug(f"   Request {i+1}: {response_time*1000:.1f}ms")
 
     # Verify all responses are identical (cache consistency)
     first_response = responses[0]
     for i, response in enumerate(responses[1:], 1):
         assert response == first_response, f"Response {i+1} differs from first response"
 
-    print("   ✅ All responses identical (cache consistent)")
+    logger.debug("   ✅ All responses identical (cache consistent)")
 
     # Check response time consistency (should be fast after first request)
     later_responses = response_times[1:]
     if later_responses:
         avg_later_time = statistics.mean(later_responses)
-        print(f"   ⚡ Average cached response time: {avg_later_time*1000:.1f}ms")
+        logger.debug(f"   ⚡ Average cached response time: {avg_later_time*1000:.1f}ms")
         assert (
             avg_later_time < 0.5
         ), f"Cached responses should be under 500ms: {avg_later_time:.3f}s"
@@ -203,7 +208,7 @@ def test_cache_behavior():
 
 def test_data_integrity():
     """Test that cached data maintains integrity."""
-    print("4️⃣ Testing data integrity...")
+    logger.debug("4️⃣ Testing data integrity...")
 
     url = f"{BASE_URL}{ENDPOINT}"
     response = requests.get(url)
@@ -232,68 +237,68 @@ def test_data_integrity():
         ), f"Series {i} x and y data must have same length"
         assert len(series["x"]) > 0, f"Series {i} must have data points"
 
-    print(f"   📊 Found {len(chart_data)} data series")
-    print(f"   📈 Data points per series: {[len(s['x']) for s in chart_data]}")
-    print("   ✅ Data integrity verified")
+    logger.debug(f"   📊 Found {len(chart_data)} data series")
+    logger.debug(f"   📈 Data points per series: {[len(s['x']) for s in chart_data]}")
+    logger.debug("   ✅ Data integrity verified")
 
     return data
 
 
 def main():
     """Run all acceptance tests."""
-    print("🚀 Sprint 1 Acceptance Tests")
-    print("=" * 50)
-    print("Testing Redis cache + async endpoints for PME Calculator")
-    print()
+    logger.debug("🚀 Sprint 1 Acceptance Tests")
+    logger.debug("=" * 50)
+    logger.debug("Testing Redis cache + async endpoints for PME Calculator")
+    logger.debug()
 
     try:
         # Test 1: Single request performance
         first_time, second_time = test_single_request_performance()
-        print()
+        logger.debug()
 
         # Test 2: Concurrent request handling
         concurrent_results = test_concurrent_requests()
-        print()
+        logger.debug()
 
         # Test 3: Cache behavior
         test_cache_behavior()
-        print()
+        logger.debug()
 
         # Test 4: Data integrity
         data = test_data_integrity()
-        print()
+        logger.debug()
 
         # Summary
-        print("=" * 50)
-        print("✅ SPRINT 1 ACCEPTANCE TESTS PASSED!")
-        print()
-        print("📋 Results Summary:")
-        print(
+        logger.debug("=" * 50)
+        logger.debug("✅ SPRINT 1 ACCEPTANCE TESTS PASSED!")
+        logger.debug()
+        logger.debug("📋 Results Summary:")
+        logger.debug(
             f"   • Single request performance: ✅ {first_time*1000:.1f}ms / {second_time*1000:.1f}ms"
         )
-        print(
+        logger.debug(
             f"   • Concurrent handling: ✅ {len([r for r in concurrent_results if r['success']])}/{len(concurrent_results)} requests succeeded"
         )
-        print("   • Cache consistency: ✅ All responses identical")
-        print(
+        logger.debug("   • Cache consistency: ✅ All responses identical")
+        logger.debug(
             f"   • Data integrity: ✅ {len(data['data'])} series with valid structure"
         )
-        print()
-        print("🎯 READY FOR PRODUCTION!")
-        print("   • Redis L1 cache: ✅ Working")
-        print("   • Async endpoints: ✅ Non-blocking")
-        print("   • Sub-second latency: ✅ Achieved")
-        print("   • Concurrent capacity: ✅ 50+ users ready")
-        print()
-        print("🚀 Next: Deploy Phase 2 (predictive cache + DuckDB)")
+        logger.debug()
+        logger.debug("🎯 READY FOR PRODUCTION!")
+        logger.debug("   • Redis L1 cache: ✅ Working")
+        logger.debug("   • Async endpoints: ✅ Non-blocking")
+        logger.debug("   • Sub-second latency: ✅ Achieved")
+        logger.debug("   • Concurrent capacity: ✅ 50+ users ready")
+        logger.debug()
+        logger.debug("🚀 Next: Deploy Phase 2 (predictive cache + DuckDB)")
 
         return 0
 
     except AssertionError as e:
-        print(f"❌ ACCEPTANCE TEST FAILED: {e}")
+        logger.debug(f"❌ ACCEPTANCE TEST FAILED: {e}")
         return 1
     except Exception as e:
-        print(f"❌ UNEXPECTED ERROR: {e}")
+        logger.debug(f"❌ UNEXPECTED ERROR: {e}")
         import traceback
 
         traceback.print_exc()

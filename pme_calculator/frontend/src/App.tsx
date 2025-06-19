@@ -12,6 +12,7 @@ import { NotificationProvider } from "./components/NotificationSystem";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { TestingPanel } from "./components/TestingPanel";
 import { GradientBackground } from "./components/ui/GradientBackground";
+import DashboardShell from "./components/DashboardShell";
 
 function App() {
   const [apiConnected, setApiConnected] = useState<boolean | null>(null);
@@ -78,10 +79,11 @@ function App() {
               }} />}
               <Navbar />
               <Routes>
-                <Route path="/" element={<DataUpload />} />
+                <Route path="/" element={<DashboardShell />} />
                 <Route path="/analysis" element={<Analysis />} />
                 <Route path="/upload" element={<DataUpload />} />
                 <Route path="/charts-test" element={<ChartsTest />} />
+                <Route path="/legacy" element={<DataUpload />} />
               </Routes>
             </GradientBackground>
           </Router>

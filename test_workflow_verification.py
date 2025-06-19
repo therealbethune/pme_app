@@ -7,32 +7,36 @@ import os
 import subprocess
 from pathlib import Path
 
+import structlog
+
+logger = structlog.get_logger()
+
 
 def test_safe_workflow():
     """Test the safe workflow script."""
-    print("🧪 Testing safe workflow implementation...")
+    logger.debug("🧪 Testing safe workflow implementation...")
 
     # Check if safe_workflow.sh exists and is executable
     workflow_script = Path("safe_workflow.sh")
 
     if not workflow_script.exists():
-        print("❌ safe_workflow.sh not found")
+        logger.debug("❌ safe_workflow.sh not found")
         return False
 
     # Make it executable
     os.chmod(workflow_script, 0o755)
-    print("✅ Workflow script found and made executable")
+    logger.debug("✅ Workflow script found and made executable")
 
     # Check .gitignore rules
     gitignore_path = Path(".gitignore")
     if gitignore_path.exists():
         content = gitignore_path.read_text()
         if "*.patch" in content and "*.diff" in content:
-            print("✅ .gitignore contains patch file rules")
+            logger.debug("✅ .gitignore contains patch file rules")
         else:
-            print("⚠️  .gitignore missing patch file rules")
+            logger.debug("⚠️  .gitignore missing patch file rules")
     else:
-        print("⚠️  .gitignore file not found")
+        logger.debug("⚠️  .gitignore file not found")
 
     # Test script syntax (dry run)
     try:
@@ -40,15 +44,15 @@ def test_safe_workflow():
             ["bash", "-n", str(workflow_script)], capture_output=True, text=True
         )
         if result.returncode == 0:
-            print("✅ Workflow script syntax is valid")
+            logger.debug("✅ Workflow script syntax is valid")
         else:
-            print(f"❌ Script syntax error: {result.stderr}")
+            logger.debug(f"❌ Script syntax error: {result.stderr}")
             return False
     except Exception as e:
-        print(f"❌ Error testing script: {e}")
+        logger.debug(f"❌ Error testing script: {e}")
         return False
 
-    print("🎉 Safe workflow verification completed!")
+    logger.debug("🎉 Safe workflow verification completed!")
     return True
 
 

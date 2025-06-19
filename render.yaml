@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: pme-calculator
+    env: docker
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PYTHONPATH
+        value: /app
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: pme-cache
+          property: connectionString
+    scaling:
+      minInstances: 1
+      maxInstances: 3
+      targetCPUPercent: 70
+      targetMemoryPercent: 80
+
+  - type: redis
+    name: pme-cache
+    ipAllowList: []
+    plan: starter 

@@ -104,4 +104,11 @@ celerybeat.pid
 .ropeproject
 
 # ▶ mkdocs documentation
-/site 
+/site
+
+# ▶ Test coverage reports
+coverage.xml
+
+# test artefacts
+.coverage*
+**/__pycache__/

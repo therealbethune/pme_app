@@ -16,7 +16,7 @@ from .utils.time import UTC
 class UTCFormatter(logging.Formatter):
     """Custom formatter with UTC timestamps and module names."""
 
-    def formatTime(self, record, datefmt=None):
+    def formatTime(self, record, datefmt=None):  # noqa: N802
         """Override to use UTC time."""
         dt = datetime.fromtimestamp(record.created, tz=UTC)
         if datefmt:
@@ -27,14 +27,16 @@ class UTCFormatter(logging.Formatter):
     def format(self, record):
         """Custom formatting with module names."""
         # Add module name for better debugging
-        record.module = record.name.split(".")[-1] if "." in record.name else record.name
+        record.module = (
+            record.name.split(".")[-1] if "." in record.name else record.name
+        )
         return super().format(record)
 
 
 class JSONFormatter(logging.Formatter):
     """Custom JSON formatter for structured logging."""
 
-    def formatTime(self, record, datefmt=None):
+    def formatTime(self, record, datefmt=None):  # noqa: N802
         """Override to use UTC time."""
         dt = datetime.fromtimestamp(record.created, tz=UTC)
         return dt.isoformat()

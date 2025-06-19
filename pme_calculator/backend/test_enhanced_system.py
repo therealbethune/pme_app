@@ -3,24 +3,28 @@
 Comprehensive test for the enhanced PME system with charting capabilities.
 """
 
+import structlog
+
+logger = structlog.get_logger()
+
 
 def test_enhanced_system():
     """Test the complete enhanced system."""
-    print("🚀 Testing Enhanced PME System")
-    print("=" * 50)
+    logger.debug("🚀 Testing Enhanced PME System")
+    logger.debug("=" * 50)
 
     try:
         # Test chart engine
         from chart_engine import ChartEngine
 
         engine = ChartEngine()
-        print("✅ Chart engine loaded")
+        logger.debug("✅ Chart engine loaded")
 
         # Test analysis engine integration
         from analysis_engine import PMEAnalysisEngine
 
         PMEAnalysisEngine()
-        print("✅ Analysis engine loaded")
+        logger.debug("✅ Analysis engine loaded")
 
         # Test pandas and numpy
         import pandas as pd
@@ -52,55 +56,55 @@ def test_enhanced_system():
         }
 
         dashboard = engine.create_pme_dashboard(fund_data, benchmark_data, metrics)
-        print(
+        logger.debug(
             f'✅ Dashboard created with {dashboard["metadata"]["chart_count"]} charts'
         )
 
         # List available charts
         for chart_name in dashboard["charts"].keys():
-            print(f"   📊 {chart_name}")
+            logger.debug(f"   📊 {chart_name}")
 
         # Test enhanced router availability
         try:
 
-            print("✅ Enhanced analysis router available")
+            logger.debug("✅ Enhanced analysis router available")
         except Exception as e:
-            print(f"⚠️ Enhanced router not available: {e}")
+            logger.debug(f"⚠️ Enhanced router not available: {e}")
 
-        print("\n🎯 Enhanced system fully operational!")
-        print("   ✅ Chart engine working")
-        print("   ✅ Analysis router ready")
-        print("   ✅ Interactive dashboards available")
-        print("   ✅ Ready for frontend integration")
+        logger.debug("\n🎯 Enhanced system fully operational!")
+        logger.debug("   ✅ Chart engine working")
+        logger.debug("   ✅ Analysis router ready")
+        logger.debug("   ✅ Interactive dashboards available")
+        logger.debug("   ✅ Ready for frontend integration")
 
         # Test individual chart types
-        print("\n📊 Testing Individual Chart Types:")
+        logger.debug("\n📊 Testing Individual Chart Types:")
 
         # Performance comparison
         try:
             engine.create_performance_comparison_chart(fund_data, benchmark_data)
-            print("   ✅ Performance comparison chart")
+            logger.debug("   ✅ Performance comparison chart")
         except Exception as e:
-            print(f"   ❌ Performance comparison failed: {e}")
+            logger.debug(f"   ❌ Performance comparison failed: {e}")
 
         # Cash flow waterfall
         try:
             engine.create_cash_flow_waterfall_chart(fund_data)
-            print("   ✅ Cash flow waterfall chart")
+            logger.debug("   ✅ Cash flow waterfall chart")
         except Exception as e:
-            print(f"   ❌ Cash flow waterfall failed: {e}")
+            logger.debug(f"   ❌ Cash flow waterfall failed: {e}")
 
         # Metrics summary
         try:
             engine.create_metrics_summary_chart(metrics)
-            print("   ✅ Metrics summary chart")
+            logger.debug("   ✅ Metrics summary chart")
         except Exception as e:
-            print(f"   ❌ Metrics summary failed: {e}")
+            logger.debug(f"   ❌ Metrics summary failed: {e}")
 
         return True
 
     except Exception as e:
-        print(f"❌ Enhanced system test failed: {e}")
+        logger.debug(f"❌ Enhanced system test failed: {e}")
         import traceback
 
         traceback.print_exc()
@@ -110,6 +114,6 @@ def test_enhanced_system():
 if __name__ == "__main__":
     success = test_enhanced_system()
     if success:
-        print("\n🎉 All enhanced system tests passed!")
+        logger.debug("\n🎉 All enhanced system tests passed!")
     else:
-        print("\n💥 Some enhanced system tests failed!")
+        logger.debug("\n💥 Some enhanced system tests failed!")
