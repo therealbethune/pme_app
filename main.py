@@ -11,16 +11,16 @@ import structlog
 logger = structlog.get_logger()
 
 
-def main():
+def main() -> int:
     """Finds and executes the start_app.sh script."""
-    logger.debug("Launching Fund Analysis Tool Web Application...")
+    logger.info("Launching Fund Analysis Tool Web Application...")
 
     # The script should be in the same directory as this main.py
     script_path = Path(__file__).parent / "start_app.sh"
 
     if not script_path.is_file():
-        logger.debug(f"Error: start_app.sh not found at {script_path}")
-        logger.debug("Please ensure start_app.sh is in the project root directory.")
+        logger.error(f"Error: start_app.sh not found at {script_path}")
+        logger.error("Please ensure start_app.sh is in the project root directory.")
         return 1
 
     try:
@@ -38,30 +38,30 @@ def main():
         # Print output line-by-line
         if process.stdout:
             for line in iter(process.stdout.readline, ""):
-                logger.debug(line.strip())
+                print(line.strip())
 
         # Wait for the process to complete
         return_code = process.wait()
 
         if return_code != 0:
-            logger.debug(f"Script exited with code {return_code}.")
+            logger.error(f"Script exited with code {return_code}.")
 
         return return_code
 
     except FileNotFoundError:
-        logger.debug(
+        logger.error(
             "Error: 'bash' command not found. Please ensure bash is installed and in your PATH."
         )
         return 1
     except Exception as e:
-        logger.debug(f"An unexpected error occurred: {e}")
+        logger.error(f"An unexpected error occurred: {e}")
         return 1
 
 
 if __name__ == "__main__":
     exit_code = main()
     if exit_code == 0:
-        logger.debug("Application shut down gracefully.")
+        logger.info("Application shut down gracefully.")
     else:
-        logger.debug("Application shut down with errors.")
+        logger.error("Application shut down with errors.")
     exit(exit_code)
