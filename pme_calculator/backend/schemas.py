@@ -87,7 +87,7 @@ class IndexRecord(BaseModel):
         if isinstance(v, str):
             try:
                 return pd.to_datetime(v).date()
-            except:
+            except (ValueError, TypeError, pd.errors.ParserError):
                 raise ValueError(f"Invalid date format: {v}")
         elif isinstance(v, datetime):
             return v.date()

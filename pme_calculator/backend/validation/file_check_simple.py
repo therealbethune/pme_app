@@ -100,7 +100,7 @@ def validate_csv_structure(
                     if len(df.columns) > 1:  # Found the right separator
                         df = pd.read_csv(file_path, sep=sep)
                         break
-                except:
+                except (pd.errors.ParserError, UnicodeDecodeError, PermissionError):
                     continue
             else:
                 errors.append("Could not parse CSV file")
@@ -241,7 +241,7 @@ def create_upload_metadata(file_path: Path, df: pd.DataFrame = None) -> UploadMe
                         "start": valid_dates.min().strftime("%Y-%m-%d"),
                         "end": valid_dates.max().strftime("%Y-%m-%d"),
                     }
-            except:
+            except (ValueError, TypeError, AttributeError):
                 pass
 
         metadata.detected_columns = mappings

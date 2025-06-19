@@ -32,10 +32,10 @@ def create_glasfunds_logo():
     # Try to use a nice font, fallback to default
     try:
         font = ImageFont.truetype("Arial", 12)
-    except:
+    except (OSError, IOError):
         try:
             font = ImageFont.truetype("/System/Library/Fonts/Arial.ttf", 12)
-        except:
+        except (OSError, IOError):
             font = ImageFont.load_default()
 
     # Draw text

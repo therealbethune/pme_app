@@ -1,9 +1,9 @@
 """Tiny time helpers shared across the backend."""
 
-from datetime import UTC, datetime, timezone
+from datetime import datetime, timezone
 from typing import Final
 
-UTC: Final = UTC
+UTC: Final = timezone.utc
 
 
 def now_utc() -> datetime:
