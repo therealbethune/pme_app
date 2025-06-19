@@ -1,0 +1,23 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Grid background utility */
+.grid-bg {
+  background-image: url('/assets/grid.svg');
+  background-size: 60px 60px;
+  background-repeat: repeat;
+  opacity: 0.4;
+}
+
+@layer base {
+  body {
+    @apply font-sans text-base text-base bg-surface;
+  }
+}
+
+@layer components {
+  .card-hover {
+    @apply transition-all duration-200 ease-in-out;
+  }
+} 
