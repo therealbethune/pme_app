@@ -411,9 +411,7 @@ async def get_file_info(file_id: str) -> dict[str, Any]:
 
 
 @router.delete("/files/{file_id}")
-async def delete_uploaded_file(
-    file_id: str, background_tasks: BackgroundTasks
-) -> dict[str, Any]:
+async def delete_uploaded_file(file_id: str, background_tasks: BackgroundTasks) -> dict[str, Any]:
     """
     Delete an uploaded file from memory and clean up temporary files.
     """
