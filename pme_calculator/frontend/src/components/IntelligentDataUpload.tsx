@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import {
-  Box, Typography, Button, Card, CardContent, Alert, ListItem, ListItemIcon, ListItemText, Divider, CircularProgress, Grid
+import { 
+  Box, Typography, Button, Card, CardContent, Alert, ListItem, ListItemIcon, ListItemText, Divider, CircularProgress
 } from '@mui/material';
 import { CloudUpload, Analytics, CheckCircle, Warning, DeleteOutline, Folder, BarChart } from '@mui/icons-material';
 import { analysisService } from '../services/analysisService';
@@ -98,26 +98,22 @@ export const IntelligentDataUpload: React.FC = () => {
 
   return (
     <Box sx={{ p: 3 }}>
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={6}>
-          <Card><CardContent>
-            <Typography variant="h6" gutterBottom display="flex" alignItems="center">
-                <Folder sx={{ mr: 1 }}/> 1. Upload Fund File
-            </Typography>
-            <Button variant="contained" component="label">Select File<input type="file" hidden onChange={e => handleFileChange(e, 'fund')} /></Button>
-            {fundUpload && <ListItem><ListItemIcon>{renderStatusIcon(fundUpload.status)}</ListItemIcon><ListItemText primary={fundUpload.file.name} secondary={fundUpload.error || fundUpload.status} /></ListItem>}
-          </CardContent></Card>
-        </Grid>
-        <Grid item xs={12} md={6}>
-          <Card><CardContent>
-            <Typography variant="h6" gutterBottom display="flex" alignItems="center">
-                <BarChart sx={{ mr: 1 }}/> 2. Upload Index File (Optional)
-            </Typography>
-            <Button variant="contained" component="label">Select File<input type="file" hidden onChange={e => handleFileChange(e, 'index')} /></Button>
-            {indexUpload && <ListItem><ListItemIcon>{renderStatusIcon(indexUpload.status)}</ListItemIcon><ListItemText primary={indexUpload.file.name} secondary={indexUpload.error || indexUpload.status} /></ListItem>}
-          </CardContent></Card>
-        </Grid>
-      </Grid>
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}>
+        <Card><CardContent>
+          <Typography variant="h6" gutterBottom display="flex" alignItems="center">
+              <Folder sx={{ mr: 1 }}/> 1. Upload Fund File
+          </Typography>
+          <Button variant="contained" component="label">Select File<input type="file" hidden onChange={e => handleFileChange(e, 'fund')} /></Button>
+          {fundUpload && <ListItem><ListItemIcon>{renderStatusIcon(fundUpload.status)}</ListItemIcon><ListItemText primary={fundUpload.file.name} secondary={fundUpload.error || fundUpload.status} /></ListItem>}
+        </CardContent></Card>
+        <Card><CardContent>
+          <Typography variant="h6" gutterBottom display="flex" alignItems="center">
+              <BarChart sx={{ mr: 1 }}/> 2. Upload Index File (Optional)
+          </Typography>
+          <Button variant="contained" component="label">Select File<input type="file" hidden onChange={e => handleFileChange(e, 'index')} /></Button>
+          {indexUpload && <ListItem><ListItemIcon>{renderStatusIcon(indexUpload.status)}</ListItemIcon><ListItemText primary={indexUpload.file.name} secondary={indexUpload.error || indexUpload.status} /></ListItem>}
+        </CardContent></Card>
+      </Box>
       <Divider sx={{ my: 3 }} />
       <Box display="flex" justifyContent="space-between" alignItems="center">
         <Button startIcon={<DeleteOutline />} onClick={clearUploads} color="warning">Clear</Button>
