@@ -12,11 +12,8 @@
   opacity: 0.4;
 }
 
+/* Scale.com inspired global styles */
 @layer base {
-  * {
-    @apply border-border;
-  }
-  
   body {
     @apply bg-white text-gray-900 font-sans antialiased;
     font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
