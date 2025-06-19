@@ -107,4 +107,9 @@ celerybeat.pid
 /site
 
 # ▶ Test coverage reports
-coverage.xml 
+coverage.xml
+
+# test artefacts
+coverage.xml
+.coverage*
+**/__pycache__/ 

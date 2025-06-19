@@ -6,7 +6,10 @@ Replace this with the actual Glasfunds logo PNG when available.
 
 import os
 
+import structlog
 from PIL import Image, ImageDraw, ImageFont
+
+logger = structlog.get_logger()
 
 
 def create_glasfunds_logo():
@@ -49,7 +52,7 @@ def create_glasfunds_logo():
     # Save logo
     logo_path = os.path.join(os.path.dirname(__file__), "logo.png")
     img.save(logo_path)
-    print(f"Created logo placeholder at: {logo_path}")
+    logger.debug(f"Created logo placeholder at: {logo_path}")
 
     return logo_path
 
