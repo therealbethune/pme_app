@@ -6,6 +6,7 @@ pandas, numpy, datetime, and other non-JSON-serializable objects.
 """
 
 import json
+import random
 import pytest
 from datetime import datetime, date, time
 from decimal import Decimal
@@ -13,6 +14,10 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+
+# Set seeds for deterministic test results
+random.seed(12345)
+np.random.seed(12345)
 
 from pme_app.utils.serialization import (
     to_jsonable,

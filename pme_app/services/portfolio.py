@@ -1,3 +1,7 @@
+"""Portfolio service for PME calculations with precise type annotations."""
+
+from typing import Any
+
 import numpy as np
 import pandas as pd
 
@@ -11,12 +15,12 @@ def calc_portfolio_metrics(fund_dfs: dict[str, pd.DataFrame]) -> pd.DataFrame:
         return pd.DataFrame()
 
     # Handle different date column names
-    navs_list = []
+    navs_list: list[pd.Series] = []
     for name, df in fund_dfs.items():
         df_copy = df.copy()
 
         # Standardize date column name
-        date_col = None
+        date_col: str | None = None
         for col in df_copy.columns:
             if col.lower() in ["date", "dates", "timestamp"]:
                 date_col = col
@@ -30,7 +34,7 @@ def calc_portfolio_metrics(fund_dfs: dict[str, pd.DataFrame]) -> pd.DataFrame:
             date_col = "Date"
 
         # Standardize NAV column name
-        nav_col = None
+        nav_col: str | None = None
         for col in df_copy.columns:
             if col.lower() in ["nav", "value", "price", "close"]:
                 nav_col = col
@@ -65,18 +69,20 @@ def calc_portfolio_metrics(fund_dfs: dict[str, pd.DataFrame]) -> pd.DataFrame:
             returns = pd.Series([0.0])
 
         # Calculate metrics with error handling
-        total_nav = navs.iloc[-1].sum() if len(navs) > 0 else 0.0
+        total_nav: float = navs.iloc[-1].sum() if len(navs) > 0 else 0.0
 
         if len(returns) > 1:
-            annualized_return = (1 + returns).prod() ** (252 / len(returns)) - 1
-            volatility = returns.std() * np.sqrt(252)
-            sharpe_ratio = annualized_return / volatility if volatility > 0 else 0.0
+            annualized_return: float = (1 + returns).prod() ** (252 / len(returns)) - 1
+            volatility: float = returns.std() * np.sqrt(252)
+            sharpe_ratio: float = (
+                annualized_return / volatility if volatility > 0 else 0.0
+            )
         else:
             annualized_return = 0.0
             volatility = 0.0
             sharpe_ratio = 0.0
 
-        metrics = {
+        metrics: dict[str, float | int] = {
             "Total NAV": total_nav,
             "Annualized Return": annualized_return,
             "Volatility": volatility,
@@ -94,20 +100,17 @@ def calc_portfolio_metrics(fund_dfs: dict[str, pd.DataFrame]) -> pd.DataFrame:
 
     except Exception as e:
         # Return basic metrics if calculation fails
-        return pd.DataFrame(
-            [
-                {
-                    "Total NAV": 0.0,
-                    "Annualized Return": 0.0,
-                    "Volatility": 0.0,
-                    "Sharpe (rf=0)": 0.0,
-                    "Funds": len(fund_dfs),
-                    "Max Drawdown": 0.0,
-                    "Calmar Ratio": 0.0,
-                    "Error": str(e),
-                }
-            ]
-        )
+        error_metrics: dict[str, float | int | str] = {
+            "Total NAV": 0.0,
+            "Annualized Return": 0.0,
+            "Volatility": 0.0,
+            "Sharpe (rf=0)": 0.0,
+            "Funds": len(fund_dfs),
+            "Max Drawdown": 0.0,
+            "Calmar Ratio": 0.0,
+            "Error": str(e),
+        }
+        return pd.DataFrame([error_metrics])
 
 
 def calculate_max_drawdown(returns: pd.Series) -> float:
@@ -118,5 +121,5 @@ def calculate_max_drawdown(returns: pd.Series) -> float:
     cumulative = (1 + returns).cumprod()
     running_max = cumulative.expanding().max()
     drawdown = (cumulative - running_max) / running_max
-    min_drawdown = drawdown.min()
+    min_drawdown: float | Any = drawdown.min()
     return float(min_drawdown) if pd.notna(min_drawdown) else 0.0

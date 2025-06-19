@@ -26,7 +26,7 @@ except ImportError:
             try:
                 # Simple IRR approximation
                 return float(npf.irr(amounts))
-            except:
+            except (ValueError, FloatingPointError):
                 return 0.0
 
 
@@ -53,7 +53,7 @@ class MathEngine:
             total_value = distributions + nav
             return float(total_value / contributions)
 
-        except Exception:
+        except (ZeroDivisionError, ValueError, TypeError, OverflowError):
             return 0.0
 
     @staticmethod
@@ -74,7 +74,7 @@ class MathEngine:
 
             return float(distributions / contributions)
 
-        except Exception:
+        except (ZeroDivisionError, ValueError, TypeError, OverflowError):
             return 0.0
 
     @staticmethod
@@ -95,7 +95,7 @@ class MathEngine:
 
             return float(nav / contributions)
 
-        except Exception:
+        except (ZeroDivisionError, ValueError, TypeError, OverflowError):
             return 0.0
 
     @staticmethod
@@ -138,7 +138,7 @@ class MathEngine:
 
             return float(cumulative_return)
 
-        except Exception:
+        except (ZeroDivisionError, ValueError, TypeError, OverflowError):
             return 0.0
 
     @staticmethod
@@ -168,7 +168,7 @@ class MathEngine:
 
             return float(mean_excess / std_excess)
 
-        except Exception:
+        except (ZeroDivisionError, ValueError, TypeError, OverflowError):
             return 0.0
 
     @staticmethod
@@ -195,7 +195,7 @@ class MathEngine:
 
             return float(volatility)
 
-        except Exception:
+        except (ValueError, TypeError, OverflowError):
             return 0.0
 
     @staticmethod
@@ -221,7 +221,7 @@ class MathEngine:
 
             return float(correlation)
 
-        except Exception:
+        except (ValueError, TypeError, IndexError):
             return 0.0
 
     @staticmethod

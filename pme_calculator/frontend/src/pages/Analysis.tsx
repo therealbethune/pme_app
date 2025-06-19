@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Box, Typography, Container, Button, Alert, Card, CardContent,
-  Tabs, Tab, Grid, Chip, LinearProgress, Divider
+  Tabs, Tab, Chip, LinearProgress, Divider
 } from '@mui/material';
 import { 
   TrendingUp, AttachMoney, PieChart, BarChart, 
@@ -9,9 +9,7 @@ import {
 } from '@mui/icons-material';
 import { useColorMode } from '../contexts/ColorModeContext';
 import { AnalysisDashboard } from '../components/AnalysisDashboard';
-import { PMECharts } from '../components/PMECharts';
 import { InteractiveFilters } from '../components/InteractiveFilters';
-import { ChartsDashboard } from '../components/ChartsDashboard';
 
 interface PMEMetrics {
   kaplan_schoar_pme?: number;
@@ -238,117 +236,113 @@ const Analysis: React.FC = () => {
             </Card>
 
             {/* Tab Content */}
-            {activeTab === 0 && (
+                        {activeTab === 0 && (
               <AnalysisDashboard 
-                data={analysisData} 
+                data={{ ...analysisData, summary: analysisData.summary || {} }}
                 onExport={exportAnalysis}
               />
             )}
 
             {activeTab === 1 && (
-              <Grid container spacing={3}>
+              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}>
                 {analysisData.has_benchmark ? (
                   <>
                     {/* PME Metrics Display */}
-                    <Grid item xs={12} md={6}>
-                      <Card>
-                        <CardContent>
-                          <Typography variant="h6" fontWeight="bold" mb={2}>
-                            Public Market Equivalent (PME) Metrics
+                    <Card>
+                      <CardContent>
+                        <Typography variant="h6" fontWeight="bold" mb={2}>
+                          Public Market Equivalent (PME) Metrics
+                        </Typography>
+                        <Divider sx={{ mb: 2 }} />
+                        
+                        <Box mb={3}>
+                          <Typography variant="subtitle2" color="text.secondary" mb={1}>
+                            Kaplan-Schoar PME
                           </Typography>
-                          <Divider sx={{ mb: 2 }} />
-                          
+                          <Typography variant="h4" fontWeight="bold" color={ksPerformance?.color}>
+                            {formatDecimal(pmeMetrics?.kaplan_schoar_pme || 0)}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            {(pmeMetrics?.kaplan_schoar_pme || 0) > 1 ? 'Outperformed' : 'Underperformed'} public markets
+                          </Typography>
+                        </Box>
+
+                        {pmeMetrics?.pme_plus_lambda && (
                           <Box mb={3}>
                             <Typography variant="subtitle2" color="text.secondary" mb={1}>
-                              Kaplan-Schoar PME
-                            </Typography>
-                            <Typography variant="h4" fontWeight="bold" color={ksPerformance?.color}>
-                              {formatDecimal(pmeMetrics?.kaplan_schoar_pme || 0)}
-                            </Typography>
-                            <Typography variant="body2" color="text.secondary">
-                              {(pmeMetrics?.kaplan_schoar_pme || 0) > 1 ? 'Outperformed' : 'Underperformed'} public markets
-                            </Typography>
-                          </Box>
-
-                          {pmeMetrics?.pme_plus_lambda && (
-                            <Box mb={3}>
-                              <Typography variant="subtitle2" color="text.secondary" mb={1}>
-                                PME+ Lambda (Burgiss Method)
-                              </Typography>
-                              <Typography variant="h5" fontWeight="bold">
-                                {formatDecimal(pmeMetrics.pme_plus_lambda)}
-                              </Typography>
-                            </Box>
-                          )}
-
-                          {pmeMetrics?.direct_alpha !== undefined && (
-                            <Box mb={3}>
-                              <Typography variant="subtitle2" color="text.secondary" mb={1}>
-                                Direct Alpha
-                              </Typography>
-                              <Typography variant="h5" fontWeight="bold" 
-                                color={pmeMetrics.direct_alpha > 0 ? '#22c55e' : '#ef4444'}
-                              >
-                                {formatPercent(pmeMetrics.direct_alpha, 2)}
-                              </Typography>
-                            </Box>
-                          )}
-                        </CardContent>
-                      </Card>
-                    </Grid>
-
-                    <Grid item xs={12} md={6}>
-                      <Card>
-                        <CardContent>
-                          <Typography variant="h6" fontWeight="bold" mb={2}>
-                            Performance vs. Benchmark
-                          </Typography>
-                          <Divider sx={{ mb: 2 }} />
-
-                          <Box mb={3}>
-                            <Typography variant="subtitle2" color="text.secondary" mb={1}>
-                              Fund IRR
+                              PME+ Lambda (Burgiss Method)
                             </Typography>
                             <Typography variant="h5" fontWeight="bold">
-                              {formatPercent(pmeMetrics?.fund_irr || analysisData.metrics['Fund IRR'])}
+                              {formatDecimal(pmeMetrics.pme_plus_lambda)}
                             </Typography>
                           </Box>
+                        )}
 
-                          {pmeMetrics?.benchmark_irr && (
-                            <Box mb={3}>
-                              <Typography variant="subtitle2" color="text.secondary" mb={1}>
-                                Benchmark IRR
-                              </Typography>
-                              <Typography variant="h5" fontWeight="bold">
-                                {formatPercent(pmeMetrics.benchmark_irr)}
-                              </Typography>
-                            </Box>
-                          )}
+                        {pmeMetrics?.direct_alpha !== undefined && (
+                          <Box mb={3}>
+                            <Typography variant="subtitle2" color="text.secondary" mb={1}>
+                              Direct Alpha
+                            </Typography>
+                            <Typography variant="h5" fontWeight="bold" 
+                              color={pmeMetrics.direct_alpha > 0 ? '#22c55e' : '#ef4444'}
+                            >
+                              {formatPercent(pmeMetrics.direct_alpha, 2)}
+                            </Typography>
+                          </Box>
+                        )}
+                      </CardContent>
+                    </Card>
 
-                          {pmeMetrics?.alpha !== undefined && (
-                            <Box mb={3}>
-                              <Typography variant="subtitle2" color="text.secondary" mb={1}>
-                                Alpha (Excess Return)
-                              </Typography>
-                              <Typography variant="h4" fontWeight="bold" 
-                                color={pmeMetrics.alpha > 0 ? '#22c55e' : '#ef4444'}
-                              >
-                                {formatPercent(pmeMetrics.alpha, 2)}
-                              </Typography>
-                              <LinearProgress 
-                                variant="determinate" 
-                                value={Math.min(Math.abs(pmeMetrics.alpha) * 1000, 100)} 
-                                color={pmeMetrics.alpha > 0 ? 'success' : 'error'}
-                                sx={{ mt: 1, height: 8, borderRadius: 4 }}
-                              />
-                            </Box>
-                          )}
-                        </CardContent>
-                      </Card>
-                    </Grid>
+                    <Card>
+                      <CardContent>
+                        <Typography variant="h6" fontWeight="bold" mb={2}>
+                          Performance vs. Benchmark
+                        </Typography>
+                        <Divider sx={{ mb: 2 }} />
+
+                        <Box mb={3}>
+                          <Typography variant="subtitle2" color="text.secondary" mb={1}>
+                            Fund IRR
+                          </Typography>
+                          <Typography variant="h5" fontWeight="bold">
+                            {formatPercent(pmeMetrics?.fund_irr || analysisData.metrics['Fund IRR'])}
+                          </Typography>
+                        </Box>
+
+                        {pmeMetrics?.benchmark_irr && (
+                          <Box mb={3}>
+                            <Typography variant="subtitle2" color="text.secondary" mb={1}>
+                              Benchmark IRR
+                            </Typography>
+                            <Typography variant="h5" fontWeight="bold">
+                              {formatPercent(pmeMetrics.benchmark_irr)}
+                            </Typography>
+                          </Box>
+                        )}
+
+                        {pmeMetrics?.alpha !== undefined && (
+                          <Box mb={3}>
+                            <Typography variant="subtitle2" color="text.secondary" mb={1}>
+                              Alpha (Excess Return)
+                            </Typography>
+                            <Typography variant="h4" fontWeight="bold" 
+                              color={pmeMetrics.alpha > 0 ? '#22c55e' : '#ef4444'}
+                            >
+                              {formatPercent(pmeMetrics.alpha, 2)}
+                            </Typography>
+                            <LinearProgress 
+                              variant="determinate" 
+                              value={Math.min(Math.abs(pmeMetrics.alpha) * 1000, 100)} 
+                              color={pmeMetrics.alpha > 0 ? 'success' : 'error'}
+                              sx={{ mt: 1, height: 8, borderRadius: 4 }}
+                            />
+                          </Box>
+                        )}
+                      </CardContent>
+                    </Card>
                   </>
                 ) : (
-                  <Grid item xs={12}>
+                  <Box sx={{ gridColumn: '1 / -1' }}>
                     <Alert severity="warning" sx={{ mb: 3 }}>
                       <Typography variant="h6">PME calculations require benchmark data</Typography>
                       <Typography>
@@ -356,78 +350,70 @@ const Analysis: React.FC = () => {
                         PME+ Lambda, and Direct Alpha calculations.
                       </Typography>
                     </Alert>
-                  </Grid>
+                  </Box>
                 )}
-              </Grid>
+              </Box>
             )}
 
             {activeTab === 2 && (
-              <Grid container spacing={3}>
-                <Grid item xs={12} md={3}>
-                  <Card>
-                    <CardContent>
-                      <Box display="flex" justifyContent="between" alignItems="center" mb={1}>
-                        <Typography variant="subtitle2" color="text.secondary">
-                          Fund IRR
-                        </Typography>
-                        <TrendingUp sx={{ color: '#22c55e' }} />
-                      </Box>
-                      <Typography variant="h4" fontWeight="bold">
-                        {formatPercent(analysisData.metrics['Fund IRR'])}
+              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' }, gap: 3 }}>
+                <Card>
+                  <CardContent>
+                    <Box display="flex" justifyContent="between" alignItems="center" mb={1}>
+                      <Typography variant="subtitle2" color="text.secondary">
+                        Fund IRR
                       </Typography>
-                    </CardContent>
-                  </Card>
-                </Grid>
-                <Grid item xs={12} md={3}>
-                  <Card>
-                    <CardContent>
-                      <Box display="flex" justifyContent="between" alignItems="center" mb={1}>
-                        <Typography variant="subtitle2" color="text.secondary">
-                          TVPI
-                        </Typography>
-                        <AttachMoney sx={{ color: '#3b82f6' }} />
-                      </Box>
-                      <Typography variant="h4" fontWeight="bold">
-                        {analysisData.metrics['TVPI'].toFixed(2)}x
+                      <TrendingUp sx={{ color: '#22c55e' }} />
+                    </Box>
+                    <Typography variant="h4" fontWeight="bold">
+                      {formatPercent(analysisData.metrics['Fund IRR'])}
+                    </Typography>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent>
+                    <Box display="flex" justifyContent="between" alignItems="center" mb={1}>
+                      <Typography variant="subtitle2" color="text.secondary">
+                        TVPI
                       </Typography>
-                    </CardContent>
-                  </Card>
-                </Grid>
-                <Grid item xs={12} md={3}>
-                  <Card>
-                    <CardContent>
-                      <Box display="flex" justifyContent="between" alignItems="center" mb={1}>
-                        <Typography variant="subtitle2" color="text.secondary">
-                          DPI
-                        </Typography>
-                        <PieChart sx={{ color: '#f59e0b' }} />
-                      </Box>
-                      <Typography variant="h4" fontWeight="bold">
-                        {analysisData.metrics['DPI'].toFixed(2)}x
+                      <AttachMoney sx={{ color: '#3b82f6' }} />
+                    </Box>
+                    <Typography variant="h4" fontWeight="bold">
+                      {analysisData.metrics['TVPI'].toFixed(2)}x
+                    </Typography>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent>
+                    <Box display="flex" justifyContent="between" alignItems="center" mb={1}>
+                      <Typography variant="subtitle2" color="text.secondary">
+                        DPI
                       </Typography>
-                    </CardContent>
-                  </Card>
-                </Grid>
-                <Grid item xs={12} md={3}>
-                  <Card>
-                    <CardContent>
-                      <Box display="flex" justifyContent="between" alignItems="center" mb={1}>
-                        <Typography variant="subtitle2" color="text.secondary">
-                          RVPI
-                        </Typography>
-                        <BarChart sx={{ color: '#6b7280' }} />
-                      </Box>
-                      <Typography variant="h4" fontWeight="bold">
-                        {analysisData.metrics['RVPI'].toFixed(2)}x
+                      <PieChart sx={{ color: '#f59e0b' }} />
+                    </Box>
+                    <Typography variant="h4" fontWeight="bold">
+                      {analysisData.metrics['DPI'].toFixed(2)}x
+                    </Typography>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent>
+                    <Box display="flex" justifyContent="between" alignItems="center" mb={1}>
+                      <Typography variant="subtitle2" color="text.secondary">
+                        RVPI
                       </Typography>
-                    </CardContent>
-                  </Card>
-                </Grid>
-              </Grid>
+                      <BarChart sx={{ color: '#6b7280' }} />
+                    </Box>
+                    <Typography variant="h4" fontWeight="bold">
+                      {analysisData.metrics['RVPI'].toFixed(2)}x
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Box>
             )}
 
             {activeTab === 3 && (
-              <>
+              <Box sx={{ display: 'grid', gap: 3 }}>
                 {/* Filters */}
                 <InteractiveFilters
                   onFilterChange={setFilterCriteria}
@@ -441,21 +427,15 @@ const Analysis: React.FC = () => {
                 />
 
                 {/* Charts */}
-                <PMECharts
-                  data={{
-                    performance_timeline: [],
-                    j_curve_data: [],
-                    cash_flow_timeline: [],
-                    twr_data: [],
-                    metrics: analysisData.metrics,
-                    has_benchmark: analysisData.has_benchmark
-                  }}
-                />
-              </>
-            )}
-
-            {activeTab === 4 && (
-              <ChartsDashboard analysisComplete={true} />
+                <Card>
+                  <CardContent>
+                    <Typography variant="h6" mb={2}>Interactive Charts</Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Advanced charting and visualization features coming soon.
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Box>
             )}
 
             {!analysisData.has_benchmark && (

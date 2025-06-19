@@ -1,8 +1,13 @@
 """Tests for analysis service."""
 
+import random
 import numpy as np
 import pandas as pd
 import pytest
+
+# Set seeds for deterministic test results
+random.seed(12345)
+np.random.seed(12345)
 
 from pme_app.services.analysis import (
     calculate_annualized_return,

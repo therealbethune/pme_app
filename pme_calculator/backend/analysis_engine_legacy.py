@@ -61,7 +61,7 @@ except ImportError:
             try:
                 amounts = list(cashflows_dict.values())
                 return float(npf.irr(amounts)) if len(amounts) >= 2 else 0.0
-            except:
+            except (ValueError, FloatingPointError):
                 return 0.0
 
         def _ks_pme(fund_cf, idx_values):
@@ -232,7 +232,11 @@ class PMEAnalysisEngine:
                         )
                         if len(self.fund_data.columns) >= 2:
                             break
-                    except:
+                    except (
+                        pd.errors.ParserError,
+                        UnicodeDecodeError,
+                        FileNotFoundError,
+                    ):
                         continue
                 if self.fund_data is not None and len(self.fund_data.columns) >= 2:
                     break
@@ -267,7 +271,11 @@ class PMEAnalysisEngine:
                         )
                         if len(self.index_data.columns) >= 2:
                             break
-                    except:
+                    except (
+                        pd.errors.ParserError,
+                        UnicodeDecodeError,
+                        FileNotFoundError,
+                    ):
                         continue
                 if self.index_data is not None and len(self.index_data.columns) >= 2:
                     break

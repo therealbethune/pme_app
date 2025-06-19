@@ -5,4 +5,5 @@ pandas
 polars
 uvicorn
 redis
-hiredis 
+hiredis
+pydantic-settings>=2.0.0 

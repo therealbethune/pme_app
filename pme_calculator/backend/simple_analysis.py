@@ -3,10 +3,12 @@ Simple analysis endpoint that bypasses complex Pydantic validation.
 """
 
 import uuid
-from datetime import datetime
 
 from fastapi import APIRouter
 from routers.upload import uploaded_files
+
+# Import our central timezone utility
+from pme_calculator.utils.time import utc_now
 
 router = APIRouter(prefix="/simple-analysis", tags=["simple-analysis"])
 
@@ -48,7 +50,7 @@ async def run_simple_analysis():
                 "risk_profile": "Moderate risk with good diversification",
             },
             "has_benchmark": True,
-            "analysis_date": datetime.utcnow().isoformat(),
+            "analysis_date": utc_now().isoformat(),
         }
     except Exception as e:
         return {"success": False, "error": str(e)}

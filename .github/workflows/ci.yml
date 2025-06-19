@@ -36,10 +36,23 @@ jobs:
           echo "Testing basic imports:"
           python -c "import pme_app; print('✅ pme_app import OK')" || echo "❌ pme_app import failed"
           python -c "import pytest; print('✅ pytest import OK')" || echo "❌ pytest import failed"
+      - name: Clean up legacy coverage files
+        run: |
+          rm -f coverage.xml
+          rm -f .coverage*
       - name: Run checks with tox
         run: |
           echo "Starting tox with Python $(python --version)"
           tox -v  # verbose output to see what's failing
+      - name: Generate unified coverage report
+        run: |
+          if [ -f .coverage ]; then
+            coverage xml -i
+          else
+            echo "No coverage data found, checking for separate files..."
+            coverage combine . || echo "No separate coverage files to combine"
+            coverage xml -i || echo "Could not generate XML report"
+          fi
 
   frontend:
     runs-on: ubuntu-latest
@@ -62,20 +75,35 @@ jobs:
       - uses: actions/checkout@v4
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-      - name: Log in to ghcr.io
+      - name: Log in to GitHub Container Registry
         run: |
-          echo "${{ secrets.GITHUB_TOKEN }}" | \
-          docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          # Use GHCR_PAT for reliable authentication with proper permissions
+          # GITHUB_TOKEN may lack sufficient permissions for GHCR push operations
+          if [ -z "${{ secrets.GHCR_PAT }}" ]; then
+            echo "❌ GHCR_PAT secret not found. Using GITHUB_TOKEN as fallback."
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          else
+            echo "✅ Using GHCR_PAT for authentication"
+            echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          fi
       - name: Build and push Docker image
         run: |
+          # Use consistent image naming: ghcr.io/owner/pme_app:latest
+          # This prevents breaking changes when repository name changes
+          IMAGE_TAG="ghcr.io/${{ github.repository_owner }}/pme_app:latest"
+          echo "Building and pushing image: $IMAGE_TAG"
+          
           docker buildx build \
             --platform linux/amd64 \
-            --tag ghcr.io/${{ github.repository }}:latest \
-            --push .
+            --tag "$IMAGE_TAG" \
+            --push . \
+            --metadata-file /tmp/metadata.json
+            
+          echo "✅ Successfully pushed: $IMAGE_TAG"
       - name: Clean up Docker artifacts
         if: always()
         run: |
           # Remove builder cache & images to free disk space
           docker buildx prune -af --filter unused-for=1h
           # Log out for good measure
-          docker logout ghcr.io 
+          docker logout ghcr.io || true 

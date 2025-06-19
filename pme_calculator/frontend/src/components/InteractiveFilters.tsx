@@ -3,7 +3,7 @@ import {
   Box, Card, CardContent, Typography, FormControl, InputLabel, Select, MenuItem,
   Slider, TextField, Switch, FormControlLabel, Chip, Divider,
   Accordion, AccordionSummary, AccordionDetails, Button, ButtonGroup,
-  Grid, Paper, Stack
+  Paper, Stack
 } from '@mui/material';
 import { ExpandMore, FilterAlt, Refresh, Download } from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
@@ -187,36 +187,32 @@ export const InteractiveFilters: React.FC<InteractiveFiltersProps> = ({
             </Typography>
           </AccordionSummary>
           <AccordionDetails>
-            <Grid container spacing={3}>
-              <Grid item xs={12} md={6}>
-                <TextField
-                  label="Start Date"
-                  type="date"
-                  value={filters.dateRange.start}
-                  onChange={(e) => 
-                    handleFilterUpdate({ 
-                      dateRange: { ...filters.dateRange, start: e.target.value } 
-                    })
-                  }
-                  fullWidth
-                  InputLabelProps={{ shrink: true }}
-                />
-              </Grid>
-              <Grid item xs={12} md={6}>
-                <TextField
-                  label="End Date"
-                  type="date"
-                  value={filters.dateRange.end}
-                  onChange={(e) => 
-                    handleFilterUpdate({ 
-                      dateRange: { ...filters.dateRange, end: e.target.value } 
-                    })
-                  }
-                  fullWidth
-                  InputLabelProps={{ shrink: true }}
-                />
-              </Grid>
-            </Grid>
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}>
+              <TextField
+                label="Start Date"
+                type="date"
+                value={filters.dateRange.start}
+                onChange={(e) => 
+                  handleFilterUpdate({ 
+                    dateRange: { ...filters.dateRange, start: e.target.value } 
+                  })
+                }
+                fullWidth
+                InputLabelProps={{ shrink: true }}
+              />
+              <TextField
+                label="End Date"
+                type="date"
+                value={filters.dateRange.end}
+                onChange={(e) => 
+                  handleFilterUpdate({ 
+                    dateRange: { ...filters.dateRange, end: e.target.value } 
+                  })
+                }
+                fullWidth
+                InputLabelProps={{ shrink: true }}
+              />
+            </Box>
 
             {/* Quarter Selection */}
             <Box mt={3}>
@@ -353,40 +349,36 @@ export const InteractiveFilters: React.FC<InteractiveFiltersProps> = ({
                 </Select>
               </FormControl>
 
-              <Grid container spacing={2}>
-                <Grid item xs={6}>
-                  <TextField
-                    label="Min Cash Flow ($M)"
-                    type="number"
-                    value={filters.cashFlowFilters.minCashFlow / 1000000}
-                    onChange={(e) => 
-                      handleFilterUpdate({
-                        cashFlowFilters: {
-                          ...filters.cashFlowFilters,
-                          minCashFlow: Number(e.target.value) * 1000000
-                        }
-                      })
-                    }
-                    fullWidth
-                  />
-                </Grid>
-                <Grid item xs={6}>
-                  <TextField
-                    label="Max Cash Flow ($M)"
-                    type="number"
-                    value={filters.cashFlowFilters.maxCashFlow / 1000000}
-                    onChange={(e) => 
-                      handleFilterUpdate({
-                        cashFlowFilters: {
-                          ...filters.cashFlowFilters,
-                          maxCashFlow: Number(e.target.value) * 1000000
-                        }
-                      })
-                    }
-                    fullWidth
-                  />
-                </Grid>
-              </Grid>
+              <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+                <TextField
+                  label="Min Cash Flow ($M)"
+                  type="number"
+                  value={filters.cashFlowFilters.minCashFlow / 1000000}
+                  onChange={(e) => 
+                    handleFilterUpdate({
+                      cashFlowFilters: {
+                        ...filters.cashFlowFilters,
+                        minCashFlow: Number(e.target.value) * 1000000
+                      }
+                    })
+                  }
+                  fullWidth
+                />
+                <TextField
+                  label="Max Cash Flow ($M)"
+                  type="number"
+                  value={filters.cashFlowFilters.maxCashFlow / 1000000}
+                  onChange={(e) => 
+                    handleFilterUpdate({
+                      cashFlowFilters: {
+                        ...filters.cashFlowFilters,
+                        maxCashFlow: Number(e.target.value) * 1000000
+                      }
+                    })
+                  }
+                  fullWidth
+                />
+              </Box>
             </Stack>
           </AccordionDetails>
         </Accordion>

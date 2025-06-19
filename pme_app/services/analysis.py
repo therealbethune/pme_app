@@ -24,23 +24,23 @@ def ks_pme(
         )
         return np.nan
 
-    index_end = idx_at_dates[-1]
-    contrib_mask = fund_cf < 0
-    distrib_mask = fund_cf > 0
+    index_end: np.floating[Any] | float = idx_at_dates[-1]
+    contrib_mask: NDArray[np.bool_] = fund_cf < 0
+    distrib_mask: NDArray[np.bool_] = fund_cf > 0
 
-    contribs = -fund_cf[contrib_mask]
-    distribs = fund_cf[distrib_mask]
-    idx_contribs = idx_at_dates[contrib_mask]
-    idx_distribs = idx_at_dates[distrib_mask]
+    contribs: NDArray[np.floating[Any]] = -fund_cf[contrib_mask]
+    distribs: NDArray[np.floating[Any]] = fund_cf[distrib_mask]
+    idx_contribs: NDArray[np.floating[Any]] = idx_at_dates[contrib_mask]
+    idx_distribs: NDArray[np.floating[Any]] = idx_at_dates[distrib_mask]
 
-    pv_contrib = (
+    pv_contrib: np.floating[Any] | float = (
         np.sum(contribs * (index_end / idx_contribs)) if len(contribs) > 0 else 0.0
     )
-    pv_distrib = (
+    pv_distrib: np.floating[Any] | float = (
         np.sum(distribs * (index_end / idx_distribs)) if len(distribs) > 0 else 0.0
     )
 
-    result = safe_div(pv_distrib, pv_contrib)
+    result: float = safe_div(float(pv_distrib), float(pv_contrib))
     logger.info(
         "ks_pme_calculated",
         pme_value=result,
@@ -50,7 +50,7 @@ def ks_pme(
     return result
 
 
-def direct_alpha(fund_irr: float, index_irr: float) -> float:
+def direct_alpha(fund_irr: float | None, index_irr: float | None) -> float:
     """Calculate Direct Alpha from fund and index IRRs."""
     if (
         fund_irr is None
@@ -60,7 +60,7 @@ def direct_alpha(fund_irr: float, index_irr: float) -> float:
         or (1 + index_irr) == 0
     ):
         return np.nan
-    result = (1 + fund_irr) / (1 + index_irr) - 1
+    result: float = (1 + fund_irr) / (1 + index_irr) - 1
     logger.info(
         "direct_alpha_calculated", alpha=result, fund_irr=fund_irr, index_irr=index_irr
     )
@@ -74,6 +74,7 @@ def compute_volatility(return_series: pd.Series, freq: str = "monthly") -> float
     if len(return_series) <= 1:
         return np.nan
 
+    scale: float
     if freq == "monthly":
         scale = np.sqrt(12)
     elif freq == "quarterly":
@@ -83,7 +84,9 @@ def compute_volatility(return_series: pd.Series, freq: str = "monthly") -> float
     else:
         scale = 1
 
-    return float(np.nanstd(return_series) * scale)
+    # TODO: np.nanstd returns Any, should be float
+    volatility_result: float | Any = np.nanstd(return_series) * scale
+    return float(volatility_result)
 
 
 def compute_drawdown(series: pd.Series) -> float:
@@ -93,9 +96,10 @@ def compute_drawdown(series: pd.Series) -> float:
     if len(s) <= 1:
         return np.nan
 
-    cumulative = np.maximum.accumulate(s)
-    dd = (s - cumulative) / cumulative
-    return float(dd.min())
+    cumulative: pd.Series = np.maximum.accumulate(s)
+    dd: pd.Series = (s - cumulative) / cumulative
+    min_dd: float | Any = dd.min()  # TODO: pd.Series.min() returns Any
+    return float(min_dd)
 
 
 def compute_alpha_beta(
@@ -113,7 +117,7 @@ def compute_alpha_beta(
         fund_returns = fund_returns.loc[common_index]
         index_returns = index_returns.loc[common_index]
 
-    idx = pd.notnull(fund_returns) & pd.notnull(index_returns)
+    idx: pd.Series = pd.notnull(fund_returns) & pd.notnull(index_returns)
     if np.sum(idx) < 3:
         return np.nan, np.nan
 
@@ -126,8 +130,11 @@ def compute_alpha_beta(
 
     try:
         # OLS regression to find alpha and beta
-        params = np.linalg.lstsq(x_matrix, fund_returns_aligned, rcond=None)[0]
-        alpha, beta = params[0], params[1]
+        # TODO: np.linalg.lstsq returns tuple with Any elements
+        params: NDArray[Any] | Any = np.linalg.lstsq(
+            x_matrix, fund_returns_aligned, rcond=None
+        )[0]
+        alpha, beta = float(params[0]), float(params[1])
     except (np.linalg.LinAlgError, ValueError):
         alpha, beta = np.nan, np.nan
 
@@ -142,7 +149,7 @@ def calculate_annualized_return(
         return np.nan
 
     # Ensure returns are 1-based for product calculation
-    returns_1based = 1 + returns.dropna()
+    returns_1based: pd.Series = 1 + returns.dropna()
 
     # NaNs can be produced if returns are all -1
     if (returns_1based <= 0).any():
@@ -152,9 +159,11 @@ def calculate_annualized_return(
     # Calculate geometric mean
     # Adding small epsilon to prevent log(0)
     log_returns = np.log(returns_1based + 1e-12)
-    mean_log_return = log_returns.mean()
+    mean_log_return: float | Any = (
+        log_returns.mean()
+    )  # TODO: pd.Series.mean() returns Any
 
     # Annualize the result
-    annualized_return = np.exp(mean_log_return * periods_per_year) - 1
+    annualized_return: float | Any = np.exp(mean_log_return * periods_per_year) - 1
 
     return float(annualized_return)

@@ -12,9 +12,8 @@ import pandas as pd
 # Import existing PME modules with fallback
 try:
     from pme_app.data_loader import load_fund_file, load_index_file
+    from pme_app.main import PMEApp  # type: ignore
     from pme_app.pme_calcs import compute_pme_metrics
-
-    PME_MODULES_AVAILABLE = True
 except ImportError as e:
     from logger import get_logger
 
@@ -25,6 +24,18 @@ except ImportError as e:
 from logger import get_logger
 
 logger = get_logger(__name__)
+
+try:
+    from pme_app.main import PMEApp  # type: ignore
+except Exception:  # pragma: no cover
+    # Fallback stub when PMEApp is unavailable during linting/tests
+    class PMEApp:  # noqa: D101
+        """Stub PMEApp to satisfy type checkers in test context."""
+
+        fund_data: Any
+
+        def __init__(self):
+            self.fund_data = None
 
 
 class ApiBridge:

@@ -1,4 +1,5 @@
 import logging
+from typing import Any
 
 import pandas as pd
 from data_processor import IntelligentDataProcessor
@@ -57,7 +58,8 @@ async def process_datasets(request: Request) -> dict[str, Any]:
 
                     # If this contains fund-like data, make it primary
                     if any(
-                        col.lower() in ["cashflow", "contribution", "distribution", "nav"]
+                        col.lower()
+                        in ["cashflow", "contribution", "distribution", "nav"]
                         for col in df.columns
                     ):
                         primary_dataset = dataset_name
@@ -73,7 +75,9 @@ async def process_datasets(request: Request) -> dict[str, Any]:
         processor = IntelligentDataProcessor()
 
         # Create optimal data structure
-        optimal_structure = processor.create_optimal_structure(datasets, primary_dataset)
+        optimal_structure = processor.create_optimal_structure(
+            datasets, primary_dataset
+        )
 
         # Store processed data in global state for analysis
         if optimal_structure.calculation_ready:
@@ -212,7 +216,9 @@ async def suggest_optimal_structure(request: Request) -> dict[str, Any]:
 
         detected_types = data.get("detected_types", [])
         if not detected_types:
-            raise HTTPException(status_code=400, detail="No detected column types provided")
+            raise HTTPException(
+                status_code=400, detail="No detected column types provided"
+            )
 
         suggestions = {
             "fund_data_requirements": {
@@ -249,10 +255,14 @@ async def suggest_optimal_structure(request: Request) -> dict[str, Any]:
         # Determine data structure type
         if fund_data_score > index_data_score:
             suggestions["detected_structure"]["type"] = "fund_data"
-            suggestions["detected_structure"]["confidence"] = fund_data_score / len(detected_types)
+            suggestions["detected_structure"]["confidence"] = fund_data_score / len(
+                detected_types
+            )
         else:
             suggestions["detected_structure"]["type"] = "index_data"
-            suggestions["detected_structure"]["confidence"] = index_data_score / len(detected_types)
+            suggestions["detected_structure"]["confidence"] = index_data_score / len(
+                detected_types
+            )
 
         # Check for missing requirements
         detected_type_names = {col["data_type"] for col in detected_types}
@@ -270,7 +280,8 @@ async def suggest_optimal_structure(request: Request) -> dict[str, Any]:
 
             has_cashflow = "cashflow" in detected_type_names
             has_contrib_distrib = (
-                "contribution" in detected_type_names and "distribution" in detected_type_names
+                "contribution" in detected_type_names
+                and "distribution" in detected_type_names
             )
 
             if not (has_cashflow or has_contrib_distrib):
@@ -289,7 +300,9 @@ async def suggest_optimal_structure(request: Request) -> dict[str, Any]:
             )
 
         # Column-specific recommendations
-        low_confidence_cols = [col for col in detected_types if col.get("confidence", 0) < 0.7]
+        low_confidence_cols = [
+            col for col in detected_types if col.get("confidence", 0) < 0.7
+        ]
         if low_confidence_cols:
             suggestions["recommendations"].append(
                 f"📝 Review {len(low_confidence_cols)} columns with low detection confidence"

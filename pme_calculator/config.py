@@ -3,8 +3,6 @@ Typed configuration management using Pydantic Settings.
 Replaces scattered os.getenv() calls with type-safe configuration.
 """
 
-from typing import Optional
-
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 

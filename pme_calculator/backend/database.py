@@ -2,8 +2,11 @@
 Database configuration and models for PME Calculator.
 """
 
-from datetime import datetime
+# from datetime import datetime  # removed unused
 from typing import Any
+
+# Import our central timezone utility
+from pme_calculator.utils.time import utc_now
 
 try:
     from config import settings
@@ -36,7 +39,7 @@ except ImportError:
                     self.id = None
                     self.filename = kwargs.get("filename", "")
                     self.user = kwargs.get("user", "anonymous")
-                    self.created_at = datetime.utcnow()
+                    self.created_at = utc_now()
                     self.s3_key = kwargs.get("s3_key")
 
 
@@ -157,7 +160,7 @@ async def update_upload_record(
         for key, value in update_data.items():
             setattr(upload, key, value)
 
-        upload.updated_at = datetime.utcnow()
+        upload.updated_at = utc_now()
         await session.commit()
         await session.refresh(upload)
 

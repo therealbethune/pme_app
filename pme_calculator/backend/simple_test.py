@@ -10,7 +10,7 @@ import structlog
 logger = structlog.get_logger()
 import tempfile
 
-import pandas as pd
+import pandas as _pd
 
 
 def test_core_functionality():
@@ -24,9 +24,9 @@ def test_core_functionality():
         logger.debug("   ✅ Analysis Engine imported successfully")
 
         # Create test data
-        test_data = pd.DataFrame(
+        test_data = _pd.DataFrame(
             {
-                "date": pd.date_range("2020-01-01", periods=8, freq="QE"),
+                "date": _pd.date_range("2020-01-01", periods=8, freq="QE"),
                 "cashflow": [-1000, -500, 0, 200, 300, 0, 400, 500],
                 "nav": [1000, 1400, 1450, 1350, 1600, 1700, 1600, 1800],
             }
@@ -70,17 +70,17 @@ def test_core_functionality():
         logger.debug("   ✅ PME Engine imported successfully")
 
         # Create test data
-        fund_data = pd.DataFrame(
+        fund_data = _pd.DataFrame(
             {
-                "date": pd.date_range("2020-01-01", periods=8, freq="QE"),
+                "date": _pd.date_range("2020-01-01", periods=8, freq="QE"),
                 "cashflow": [-1000, -500, 0, 200, 300, 0, 400, 500],
                 "nav": [1000, 1400, 1450, 1350, 1600, 1700, 1600, 1800],
             }
         )
 
-        benchmark_data = pd.DataFrame(
+        benchmark_data = _pd.DataFrame(
             {
-                "date": pd.date_range("2020-01-01", periods=8, freq="QE"),
+                "date": _pd.date_range("2020-01-01", periods=8, freq="QE"),
                 "price": [100, 105, 110, 108, 115, 120, 118, 125],
             }
         )
@@ -158,13 +158,13 @@ def test_dependencies():
     for dep_name, _import_name in dependencies:
         try:
             if dep_name == "numpy":
-                import numpy as np
+                import numpy as _np  # noqa: F401
             elif dep_name == "pandas":
-                import pandas as pd
+                import pandas as _pd  # noqa: F401
             elif dep_name == "scipy":
-                import scipy
+                import scipy as _scipy  # noqa: F401
             elif dep_name == "fastapi":
-                from fastapi import FastAPI
+                from fastapi import FastAPI as _FastAPI  # noqa: F401
             logger.debug(f"   ✅ {dep_name}")
         except ImportError as e:
             logger.debug(f"   ❌ {dep_name}: {e}")
