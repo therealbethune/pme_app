@@ -110,6 +110,5 @@ celerybeat.pid
 coverage.xml
 
 # test artefacts
-coverage.xml
 .coverage*
-**/__pycache__/ 
+**/__pycache__/

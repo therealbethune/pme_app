@@ -85,9 +85,7 @@ async def upload_fund_file(
 
     # Content type validation
     if file.content_type not in ALLOWED:
-        raise HTTPException(
-            415, detail=f"Unsupported media type. Allowed: {', '.join(ALLOWED)}"
-        )
+        raise HTTPException(415, detail=f"Unsupported media type. Allowed: {', '.join(ALLOWED)}")
 
     # File size validation
     if hasattr(file, "size") and file.size is not None and file.size > MAX_MB * 1024**2:
@@ -150,9 +148,7 @@ async def upload_fund_file(
                     "file_id": file_id,
                     "upload_id": getattr(upload_meta, "id", None),
                     "row_count": (
-                        validation_result.metadata.row_count
-                        if validation_result.metadata
-                        else None
+                        validation_result.metadata.row_count if validation_result.metadata else None
                     ),
                     "detected_columns": validation_result.detected_mappings,
                 },
@@ -173,9 +169,7 @@ async def upload_fund_file(
                 },
             )
 
-            message = (
-                f"File validation failed with {len(validation_result.errors)} errors."
-            )
+            message = f"File validation failed with {len(validation_result.errors)} errors."
 
         return UploadResponse(
             success=validation_result.is_valid,
@@ -186,9 +180,7 @@ async def upload_fund_file(
         )
 
     except Exception as e:
-        logger.error(
-            "Upload processing failed", extra={"file_id": file_id, "error": str(e)}
-        )
+        logger.error("Upload processing failed", extra={"file_id": file_id, "error": str(e)})
 
         # Clean up temp file on error
         if "tmp_path" in locals():
@@ -223,9 +215,7 @@ async def upload_index_file(
 
     # Content type validation
     if file.content_type not in ALLOWED:
-        raise HTTPException(
-            415, detail=f"Unsupported media type. Allowed: {', '.join(ALLOWED)}"
-        )
+        raise HTTPException(415, detail=f"Unsupported media type. Allowed: {', '.join(ALLOWED)}")
 
     # File size validation
     if hasattr(file, "size") and file.size is not None and file.size > MAX_MB * 1024**2:
@@ -288,9 +278,7 @@ async def upload_index_file(
                     "file_id": file_id,
                     "upload_id": getattr(upload_meta, "id", None),
                     "row_count": (
-                        validation_result.metadata.row_count
-                        if validation_result.metadata
-                        else None
+                        validation_result.metadata.row_count if validation_result.metadata else None
                     ),
                     "detected_columns": validation_result.detected_mappings,
                 },
@@ -311,9 +299,7 @@ async def upload_index_file(
                 },
             )
 
-            message = (
-                f"File validation failed with {len(validation_result.errors)} errors."
-            )
+            message = f"File validation failed with {len(validation_result.errors)} errors."
 
         return UploadResponse(
             success=validation_result.is_valid,
