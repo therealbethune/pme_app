@@ -32,13 +32,12 @@ from fastapi import (
 from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import JSONResponse
 from logger import get_logger
+from utils.time import UTC
 from validation.schemas_simple import (
     AnalysisMethodEnum,
     AnalysisRequest,
     AnalysisResponse,
 )
-
-from ..utils.time import UTC
 
 logger = get_logger(__name__)
 router = APIRouter(prefix="/api/v1/analysis", tags=["analysis"])
@@ -108,7 +107,8 @@ async def run_analysis_simple():
 
 @router.post("/run", response_model=AnalysisResponse)
 async def run_analysis(
-    request: AnalysisRequest | None = None, background_tasks: BackgroundTasks | None = None
+    request: AnalysisRequest | None = None,
+    background_tasks: BackgroundTasks | None = None,
 ) -> AnalysisResponse:
     """
     Run PME analysis on uploaded files.

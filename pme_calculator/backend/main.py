@@ -7,6 +7,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
+
 from .logger import get_logger
 from .routers.upload import router as upload_router
 from .simple_analysis import router as simple_analysis_router
@@ -134,21 +135,21 @@ async def serve_spa(full_path: str):
 def main():
     """Start the FastAPI development server."""
     logger.info("Starting PME Calculator FastAPI Backend Server...")
-    print("=" * 60)
-    print("🚀 PME CALCULATOR FASTAPI BACKEND")
-    print("=" * 60)
-    print("📊 Backend API: http://localhost:8000")
-    print("📚 API Docs: http://localhost:8000/api/docs")
-    print("🩺 Health Check: http://localhost:8000/api/health")
-    print("⚛️  Frontend: http://localhost:5173 (Vite dev server)")
-    print("=" * 60)
-    print("✅ Features Active:")
-    print("   • Comprehensive file validation")
-    print("   • Intelligent column mapping")
-    print("   • Structured JSON logging")
-    print("   • Type-safe API contracts")
-    print("   • Professional error handling")
-    print("=" * 60)
+    logger.debug("=" * 60)
+    logger.debug("🚀 PME CALCULATOR FASTAPI BACKEND")
+    logger.debug("=" * 60)
+    logger.debug("📊 Backend API: http://localhost:8000")
+    logger.debug("📚 API Docs: http://localhost:8000/api/docs")
+    logger.debug("🩺 Health Check: http://localhost:8000/api/health")
+    logger.debug("⚛️  Frontend: http://localhost:5173 (Vite dev server)")
+    logger.debug("=" * 60)
+    logger.debug("✅ Features Active:")
+    logger.debug("   • Comprehensive file validation")
+    logger.debug("   • Intelligent column mapping")
+    logger.debug("   • Structured JSON logging")
+    logger.debug("   • Type-safe API contracts")
+    logger.debug("   • Professional error handling")
+    logger.debug("=" * 60)
 
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True, log_level="info")
 
