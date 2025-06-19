@@ -27,7 +27,7 @@ warnings.warn(
 # Re-export for backward compatibility
 __all__ = [
     "PMEAnalysisEngine",
-    "direct_alpha", 
+    "direct_alpha",
     "ks_pme",
     "make_json_serializable",
     "safe_float",

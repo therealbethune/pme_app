@@ -2,6 +2,7 @@
 Test suite for PME metrics calculations.
 """
 
+import random
 import sys
 from pathlib import Path
 
@@ -14,6 +15,10 @@ from datetime import datetime
 import numpy as np
 import pandas as pd
 import pytest
+
+# Set seeds for deterministic test results
+random.seed(12345)
+np.random.seed(12345)
 
 from pme_math.metrics import ks_pme, xirr_wrapper
 

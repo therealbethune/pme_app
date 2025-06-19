@@ -1,5 +1,11 @@
+import random
+import numpy as np
 import pandas as pd
 import pytest
+
+# Set seeds for deterministic test results
+random.seed(12345)
+np.random.seed(12345)
 
 from pme_app.services.portfolio import calc_portfolio_metrics, calculate_max_drawdown
 

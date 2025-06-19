@@ -1,178 +1,219 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRight, TrendingUp, BarChart3, Calculator, Shield, Zap, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { 
+  BarChart3, 
+  Upload, 
+  TrendingUp, 
+  Database,
+  ArrowRight,
+  Activity,
+  DollarSign,
+  Target
+} from 'lucide-react';
 
 const Home: React.FC = () => {
-  return (
-    <div className="min-h-full bg-white">
-      {/* Hero Section - Scale.com inspired */}
-      <section className="relative pt-20 pb-32 bg-gradient-to-br from-primary-50 via-white to-accent overflow-hidden">
-        <div className="absolute inset-0 bg-[url('/assets/grid.svg')] opacity-5"></div>
-        <div className="relative z-10 px-6 max-w-7xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="text-center max-w-4xl mx-auto"
-          >
-            <motion.h1
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.1 }}
-              className="text-hero text-gray-900 mb-8 font-bold tracking-tight"
-            >
-              Power{' '}
-              <span className="bg-gradient-to-r from-primary-600 to-primary-500 bg-clip-text text-transparent">
-                Fund Analysis
-              </span>
-              {' '}With Your Data
-            </motion.h1>
-            
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-              className="text-xl leading-relaxed text-gray-600 mb-12 max-w-3xl mx-auto"
-            >
-              Make the best investment decisions with the best data. Our PME Calculator powers institutional-grade 
-              analysis for private equity funds, leveraging your data to unlock precision insights.
-            </motion.p>
+  const quickActions = [
+    {
+      title: 'Upload Data',
+      description: 'Upload fund and benchmark data for analysis',
+      icon: Upload,
+      href: '/upload',
+      color: 'bg-blue-900/20 border-blue-800 hover:border-blue-700',
+      iconColor: 'text-blue-400'
+    },
+    {
+      title: 'View Analysis',
+      description: 'Review existing PME analysis results',
+      icon: BarChart3,
+      href: '/analysis',
+      color: 'bg-green-900/20 border-green-800 hover:border-green-700',
+      iconColor: 'text-green-400'
+    },
+    {
+      title: 'Portfolio Overview',
+      description: 'Manage your fund portfolio',
+      icon: Database,
+      href: '/portfolio',
+      color: 'bg-purple-900/20 border-purple-800 hover:border-purple-700',
+      iconColor: 'text-purple-400'
+    }
+  ];
 
+  const recentMetrics = [
+    {
+      label: 'Latest Analysis',
+      value: '18.5% IRR',
+      change: '+2.3%',
+      icon: TrendingUp,
+      positive: true
+    },
+    {
+      label: 'Portfolio Value',
+      value: '$125M',
+      change: '+8.7%',
+      icon: DollarSign,
+      positive: true
+    },
+    {
+      label: 'Active Funds',
+      value: '3',
+      change: 'No change',
+      icon: Target,
+      positive: null
+    }
+  ];
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6 }}
+      className="p-6 max-w-7xl mx-auto"
+    >
+      {/* Welcome Section */}
+      <div className="mb-8">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.1 }}
+        >
+          <h1 className="text-4xl font-bold text-white mb-3">
+            PME Analysis Dashboard
+          </h1>
+          <p className="text-xl text-gray-400 mb-6">
+            Welcome to your private equity performance analysis platform
+          </p>
+        </motion.div>
+      </div>
+
+      {/* Quick Actions */}
+      <div className="mb-8">
+        <h2 className="text-2xl font-semibold text-white mb-6">Quick Actions</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {quickActions.map((action, index) => (
             <motion.div
+              key={index}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.3 }}
-              className="flex flex-col sm:flex-row gap-4 justify-center items-center"
+              transition={{ duration: 0.6, delay: 0.2 + index * 0.1 }}
             >
               <Link
-                to="/upload"
-                className="group inline-flex items-center px-8 py-4 bg-primary-600 text-white font-semibold rounded-xl hover:bg-primary-700 transition-all duration-200 shadow-scale hover:shadow-scale-lg transform hover:-translate-y-0.5"
+                to={action.href}
+                className={`block p-6 rounded-xl border transition-all duration-200 hover:-translate-y-1 ${action.color}`}
               >
-                Start Analysis
-                <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </Link>
-              <Link
-                to="/analysis"
-                className="inline-flex items-center px-8 py-4 border-2 border-gray-200 text-gray-700 font-semibold rounded-xl hover:border-primary-300 hover:text-primary-700 transition-all duration-200"
-              >
-                View Demo
+                <div className="flex items-center justify-between mb-4">
+                  <action.icon className={`w-8 h-8 ${action.iconColor}`} />
+                  <ArrowRight className="w-5 h-5 text-gray-500" />
+                </div>
+                <h3 className="text-lg font-semibold text-white mb-2">
+                  {action.title}
+                </h3>
+                <p className="text-gray-400 text-sm">
+                  {action.description}
+                </p>
               </Link>
             </motion.div>
-          </motion.div>
-
-          {/* Trusted by section */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.5 }}
-            className="mt-20 text-center"
-          >
-            <p className="text-sm font-medium text-gray-500 mb-8">TRUSTED BY LEADING INVESTMENT FIRMS</p>
-            <div className="flex items-center justify-center space-x-12 opacity-60">
-              <div className="text-2xl font-bold text-gray-400">FIRM A</div>
-              <div className="text-2xl font-bold text-gray-400">FIRM B</div>
-              <div className="text-2xl font-bold text-gray-400">FIRM C</div>
-              <div className="text-2xl font-bold text-gray-400">FIRM D</div>
-            </div>
-          </motion.div>
+          ))}
         </div>
-      </section>
+      </div>
 
-      {/* Features Section - Scale.com inspired layout */}
-      <section className="py-24 px-6 bg-gray-50">
-        <div className="max-w-7xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.6 }}
-            className="text-center mb-20"
-          >
-            <h2 className="text-display text-gray-900 mb-6 font-semibold">
-              Enterprise-Grade Fund Analysis
-            </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-              Built for institutional investors who demand precision, scale, and comprehensive reporting 
-              across their entire portfolio.
+      {/* Recent Metrics */}
+      <div className="mb-8">
+        <h2 className="text-2xl font-semibold text-white mb-6">Recent Metrics</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {recentMetrics.map((metric, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.4 + index * 0.1 }}
+              className="metric-card"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <metric.icon className="w-6 h-6 text-primary" />
+                {metric.positive !== null && (
+                  <span className={`text-xs font-medium ${
+                    metric.positive ? 'text-green-400' : 'text-red-400'
+                  }`}>
+                    {metric.change}
+                  </span>
+                )}
+              </div>
+              <h3 className="text-sm font-medium text-gray-400 mb-1">
+                {metric.label}
+              </h3>
+              <p className="text-2xl font-bold text-white">
+                {metric.value}
+              </p>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+
+      {/* System Status */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.7 }}
+        className="chart-container"
+      >
+        <h2 className="text-2xl font-semibold text-white mb-6">System Status</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="bg-gray-900/50 rounded-lg p-4">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-white font-medium">Analysis Engine</h3>
+              <div className="flex items-center space-x-2">
+                <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                <span className="text-sm text-green-400">Online</span>
+              </div>
+            </div>
+            <p className="text-gray-400 text-sm">
+              All analysis services are operational
             </p>
-          </motion.div>
+          </div>
 
-          <div className="grid lg:grid-cols-3 gap-8">
-            {[
-              {
-                icon: Calculator,
-                title: 'Advanced PME Calculations',
-                description: 'Multiple PME methodologies including KS-PME, Direct Alpha, and custom benchmarks with institutional-grade precision.',
-                color: 'bg-primary-50 text-primary-600'
-              },
-              {
-                icon: Shield,
-                title: 'Risk Analytics Suite',
-                description: 'Comprehensive volatility analysis, drawdown metrics, and risk-adjusted returns with stress testing capabilities.',
-                color: 'bg-green-50 text-green-600'
-              },
-              {
-                icon: Zap,
-                title: 'Real-time Insights',
-                description: 'Advanced charting, cash flow analysis, and detailed portfolio attribution with automated reporting.',
-                color: 'bg-purple-50 text-purple-600'
-              }
-            ].map((feature, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.8 + index * 0.1 }}
-                className="group bg-white p-8 rounded-2xl shadow-scale hover:shadow-scale-lg transition-all duration-300 hover:-translate-y-1"
-              >
-                <div className={`w-14 h-14 ${feature.color} rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}>
-                  <feature.icon className="w-7 h-7" />
-                </div>
-                <h3 className="text-title text-gray-900 mb-4 font-semibold">
-                  {feature.title}
-                </h3>
-                <p className="text-gray-600 leading-relaxed">
-                  {feature.description}
-                </p>
-              </motion.div>
-            ))}
+          <div className="bg-gray-900/50 rounded-lg p-4">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-white font-medium">Data Processing</h3>
+              <div className="flex items-center space-x-2">
+                <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                <span className="text-sm text-green-400">Ready</span>
+              </div>
+            </div>
+            <p className="text-gray-400 text-sm">
+              Ready to process new uploads
+            </p>
+          </div>
+
+          <div className="bg-gray-900/50 rounded-lg p-4">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-white font-medium">Cache System</h3>
+              <div className="flex items-center space-x-2">
+                <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                <span className="text-sm text-green-400">Active</span>
+              </div>
+            </div>
+            <p className="text-gray-400 text-sm">
+              Results cached for fast retrieval
+            </p>
+          </div>
+
+          <div className="bg-gray-900/50 rounded-lg p-4">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-white font-medium">API Status</h3>
+              <div className="flex items-center space-x-2">
+                <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                <span className="text-sm text-green-400">Healthy</span>
+              </div>
+            </div>
+            <p className="text-gray-400 text-sm">
+              All endpoints responding normally
+            </p>
           </div>
         </div>
-      </section>
-
-      {/* CTA Section - Scale.com inspired */}
-      <section className="py-24 px-6 bg-gradient-to-r from-primary-600 to-primary-700">
-        <div className="max-w-4xl mx-auto text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 1.0 }}
-          >
-            <h2 className="text-display text-white mb-6 font-semibold">
-              Ready to Transform Your Fund Analysis?
-            </h2>
-            <p className="text-xl text-primary-100 mb-10 leading-relaxed">
-              Join leading institutional investors who trust our platform for mission-critical investment decisions.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link
-                to="/upload"
-                className="inline-flex items-center px-8 py-4 bg-white text-primary-700 font-semibold rounded-xl hover:bg-gray-50 transition-all duration-200 shadow-lg hover:shadow-xl"
-              >
-                Get Started Today
-                <ArrowRight className="ml-2 w-5 h-5" />
-              </Link>
-              <Link
-                to="/analysis"
-                className="inline-flex items-center px-8 py-4 border-2 border-primary-400 text-white font-semibold rounded-xl hover:bg-primary-500 transition-all duration-200"
-              >
-                Schedule Demo
-              </Link>
-            </div>
-          </motion.div>
-        </div>
-      </section>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 };
 

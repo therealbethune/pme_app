@@ -8,7 +8,9 @@ import {
   Trash2, 
   FolderOpen,
   Loader2,
-  Play
+  Play,
+  FileText,
+  Database
 } from 'lucide-react';
 import { analysisService } from '../services/analysisService';
 import { fileStore } from '../services/fileStore';
@@ -101,9 +103,9 @@ export const IntelligentDataUpload: React.FC = () => {
   const renderStatusIcon = (status: UploadStatus['status']) => {
     switch (status) {
       case 'pending': return <CloudUpload className="w-5 h-5 text-gray-400" />;
-      case 'uploading': return <Loader2 className="w-5 h-5 text-blue-500 animate-spin" />;
-      case 'success': return <CheckCircle className="w-5 h-5 text-green-500" />;
-      case 'error': return <AlertTriangle className="w-5 h-5 text-red-500" />;
+      case 'uploading': return <Loader2 className="w-5 h-5 text-primary animate-spin" />;
+      case 'success': return <CheckCircle className="w-5 h-5 text-green-400" />;
+      case 'error': return <AlertTriangle className="w-5 h-5 text-red-400" />;
       default: return null;
     }
   };
@@ -118,20 +120,27 @@ export const IntelligentDataUpload: React.FC = () => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6 }}
-      className="bg-white rounded-xl border border-gray-200 shadow-sm p-6"
+      className="bg-gray-950 rounded-xl border border-gray-800 shadow-lg p-6"
     >
+      <div className="mb-6">
+        <h2 className="text-2xl font-bold text-white mb-2">Data Upload & Analysis</h2>
+        <p className="text-gray-400">Upload your fund and benchmark data to begin PME analysis</p>
+      </div>
+
       <div className="grid md:grid-cols-2 gap-6 mb-6">
         {/* Fund File Upload */}
         <div className="space-y-4">
           <div className="flex items-center space-x-2 mb-3">
-            <FolderOpen className="w-5 h-5 text-brand" />
-            <h3 className="text-lg font-semibold text-gray-900">1. Upload Fund File</h3>
+            <Database className="w-5 h-5 text-primary" />
+            <h3 className="text-lg font-semibold text-white">1. Upload Fund Data</h3>
+            <span className="status-error">Required</span>
           </div>
           
           <label className="block">
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-brand transition-colors cursor-pointer">
-              <CloudUpload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-              <span className="text-sm text-gray-600">Click to select fund data file</span>
+            <div className="border-2 border-dashed border-gray-700 rounded-lg p-6 text-center hover:border-primary hover:bg-gray-900/50 transition-all cursor-pointer">
+              <CloudUpload className="w-10 h-10 text-gray-400 mx-auto mb-3" />
+              <span className="text-sm text-gray-300 block mb-1">Click to select fund data file</span>
+              <span className="text-xs text-gray-500">Supports CSV, XLSX, XLS</span>
             </div>
             <input
               type="file"
@@ -145,15 +154,20 @@ export const IntelligentDataUpload: React.FC = () => {
             <motion.div 
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg"
+              className="flex items-center space-x-3 p-4 bg-gray-900 rounded-lg border border-gray-800"
             >
               {renderStatusIcon(fundUpload.status)}
               <div className="flex-1">
-                <p className="text-sm font-medium text-gray-900">{fundUpload.file.name}</p>
-                <p className="text-xs text-gray-500">
+                <p className="text-sm font-medium text-white">{fundUpload.file.name}</p>
+                <p className="text-xs text-gray-400">
                   {fundUpload.error || fundUpload.status}
                 </p>
               </div>
+              {fundUpload.status === 'success' && (
+                <div className="status-success">
+                  <CheckCircle className="w-4 h-4" />
+                </div>
+              )}
             </motion.div>
           )}
         </div>
@@ -161,15 +175,16 @@ export const IntelligentDataUpload: React.FC = () => {
         {/* Index File Upload */}
         <div className="space-y-4">
           <div className="flex items-center space-x-2 mb-3">
-            <BarChart3 className="w-5 h-5 text-brand" />
-            <h3 className="text-lg font-semibold text-gray-900">2. Upload Index File</h3>
-            <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">Optional</span>
+            <BarChart3 className="w-5 h-5 text-primary" />
+            <h3 className="text-lg font-semibold text-white">2. Upload Benchmark</h3>
+            <span className="status-info">Optional</span>
           </div>
           
           <label className="block">
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-brand transition-colors cursor-pointer">
-              <BarChart3 className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-              <span className="text-sm text-gray-600">Click to select benchmark index</span>
+            <div className="border-2 border-dashed border-gray-700 rounded-lg p-6 text-center hover:border-primary hover:bg-gray-900/50 transition-all cursor-pointer">
+              <BarChart3 className="w-10 h-10 text-gray-400 mx-auto mb-3" />
+              <span className="text-sm text-gray-300 block mb-1">Click to select benchmark index</span>
+              <span className="text-xs text-gray-500">Market index for comparison</span>
             </div>
             <input
               type="file"
@@ -183,68 +198,101 @@ export const IntelligentDataUpload: React.FC = () => {
             <motion.div 
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg"
+              className="flex items-center space-x-3 p-4 bg-gray-900 rounded-lg border border-gray-800"
             >
               {renderStatusIcon(indexUpload.status)}
               <div className="flex-1">
-                <p className="text-sm font-medium text-gray-900">{indexUpload.file.name}</p>
-                <p className="text-xs text-gray-500">
+                <p className="text-sm font-medium text-white">{indexUpload.file.name}</p>
+                <p className="text-xs text-gray-400">
                   {indexUpload.error || indexUpload.status}
                 </p>
               </div>
+              {indexUpload.status === 'success' && (
+                <div className="status-success">
+                  <CheckCircle className="w-4 h-4" />
+                </div>
+              )}
             </motion.div>
           )}
         </div>
       </div>
 
       {/* Action Buttons */}
-      <div className="flex items-center justify-between pt-4 border-t border-gray-200">
-        <button
-          onClick={clearUploads}
-          className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-red-600 transition-colors"
-        >
-          <Trash2 className="w-4 h-4" />
-          <span>Clear All</span>
-        </button>
-
-        <div className="flex items-center space-x-3">
-          <button
-            onClick={handleUpload}
-            disabled={!hasPendingUploads}
-            className="flex items-center space-x-2 px-6 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <CloudUpload className="w-4 h-4" />
-            <span>Upload Files</span>
-          </button>
-
-          <button
-            onClick={handleRunAnalysis}
-            disabled={!canAnalyze || isAnalyzing || hasPendingUploads}
-            className="flex items-center space-x-2 px-6 py-3 bg-brand text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
-          >
-            {isAnalyzing ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              <Play className="w-4 h-4" />
-            )}
-            <span>{isAnalyzing ? 'Running Analysis...' : 'Run Analysis'}</span>
-          </button>
+      <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t border-gray-800">
+        <div className="flex gap-3 flex-1">
+          {hasPendingUploads && (
+            <button
+              onClick={handleUpload}
+              className="btn-primary flex-1"
+            >
+              <CloudUpload className="w-4 h-4 mr-2" />
+              Upload Files
+            </button>
+          )}
+          
+          {uploads.length > 0 && (
+            <button
+              onClick={clearUploads}
+              className="btn-ghost"
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Clear
+            </button>
+          )}
         </div>
+
+        <button
+          onClick={handleRunAnalysis}
+          disabled={!canAnalyze || isAnalyzing}
+          className={`btn-primary ${(!canAnalyze || isAnalyzing) ? 'opacity-50 cursor-not-allowed' : ''}`}
+        >
+          {isAnalyzing ? (
+            <>
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              Running Analysis...
+            </>
+          ) : (
+            <>
+              <Play className="w-4 h-4 mr-2" />
+              Run PME Analysis
+            </>
+          )}
+        </button>
       </div>
 
-      {/* Error Message */}
+      {/* Analysis Error */}
       {analysisError && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg"
+          className="mt-4 bg-red-900/20 border border-red-800 rounded-lg p-4 flex items-start"
         >
-          <div className="flex items-center space-x-2">
-            <AlertTriangle className="w-5 h-5 text-red-500" />
-            <p className="text-sm text-red-700">{analysisError}</p>
+          <AlertTriangle className="w-5 h-5 text-red-400 mr-3 mt-0.5 flex-shrink-0" />
+          <div>
+            <h4 className="text-red-400 font-medium mb-1">Analysis Error</h4>
+            <p className="text-red-300 text-sm">{analysisError}</p>
           </div>
         </motion.div>
       )}
+
+      {/* Upload Instructions */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.3 }}
+        className="mt-6 bg-gray-900/50 rounded-lg p-4"
+      >
+        <h4 className="text-white font-medium mb-2 flex items-center">
+          <FileText className="w-4 h-4 mr-2 text-primary" />
+          File Format Requirements
+        </h4>
+        <ul className="text-sm text-gray-400 space-y-1">
+          <li>• Fund data should include dates, cash flows, and valuations</li>
+          <li>• Benchmark data should include dates and index values</li>
+          <li>• Supported formats: CSV, Excel (XLSX, XLS)</li>
+          <li>• Ensure dates are in a consistent format</li>
+        </ul>
+      </motion.div>
     </motion.div>
   );
 }; 

@@ -232,7 +232,11 @@ class PMEAnalysisEngine:
                         )
                         if len(self.fund_data.columns) >= 2:
                             break
-                    except (pd.errors.ParserError, UnicodeDecodeError, FileNotFoundError):
+                    except (
+                        pd.errors.ParserError,
+                        UnicodeDecodeError,
+                        FileNotFoundError,
+                    ):
                         continue
                 if self.fund_data is not None and len(self.fund_data.columns) >= 2:
                     break
@@ -267,7 +271,11 @@ class PMEAnalysisEngine:
                         )
                         if len(self.index_data.columns) >= 2:
                             break
-                    except (pd.errors.ParserError, UnicodeDecodeError, FileNotFoundError):
+                    except (
+                        pd.errors.ParserError,
+                        UnicodeDecodeError,
+                        FileNotFoundError,
+                    ):
                         continue
                 if self.index_data is not None and len(self.index_data.columns) >= 2:
                     break

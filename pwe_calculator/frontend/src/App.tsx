@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Sidebar from './layout/Sidebar';
-import Header from './layout/Header';
+import { Header } from './layout/Header';
+import { Sidebar } from './layout/Sidebar';
 import Home from './pages/Home';
 import Upload from './pages/Upload';
 import Analysis from './pages/Analysis';
@@ -9,22 +9,14 @@ import Portfolio from './pages/Portfolio';
 import Settings from './pages/Settings';
 import './styles/global.css';
 
-const App: React.FC = () => {
-  const [isDarkMode, setIsDarkMode] = useState(false);
-
-  const toggleDarkMode = () => {
-    setIsDarkMode(!isDarkMode);
-  };
-
+function App() {
   return (
     <Router>
-      <div className={isDarkMode ? 'dark' : ''}>
-        <Sidebar>
-          <Header 
-            isDark={isDarkMode} 
-            onToggleDarkMode={toggleDarkMode} 
-          />
-          <main className="flex-1 overflow-auto">
+      <div className="min-h-screen bg-black text-white">
+        <Header />
+        <div className="flex">
+          <Sidebar />
+          <main className="flex-1 min-h-screen bg-black">
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/upload" element={<Upload />} />
@@ -33,10 +25,10 @@ const App: React.FC = () => {
               <Route path="/settings" element={<Settings />} />
             </Routes>
           </main>
-        </Sidebar>
+        </div>
       </div>
     </Router>
   );
-};
+}
 
 export default App; 

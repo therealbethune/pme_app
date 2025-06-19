@@ -4,11 +4,20 @@ export default {
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
+  darkMode: 'class',
   theme: {
     extend: {
       colors: {
-        // Scale.com inspired color palette
+        // Dark black theme for internal use
+        background: '#000000',
+        foreground: '#ffffff',
+        muted: '#1a1a1a',
+        'muted-foreground': '#666666',
+        border: '#333333',
+        input: '#1a1a1a',
+        ring: '#0ea5e9',
         primary: {
+          DEFAULT: '#0ea5e9',
           50: '#f0f9ff',
           100: '#e0f2fe', 
           200: '#bae6fd',
@@ -18,7 +27,28 @@ export default {
           600: '#0284c7',
           700: '#0369a1',
           800: '#075985',
-          900: '#0c4a6e'
+          900: '#0c4a6e',
+          foreground: '#ffffff'
+        },
+        secondary: {
+          DEFAULT: '#1a1a1a',
+          foreground: '#ffffff'
+        },
+        destructive: {
+          DEFAULT: '#ef4444',
+          foreground: '#ffffff'
+        },
+        accent: {
+          DEFAULT: '#1a1a1a',
+          foreground: '#ffffff'
+        },
+        popover: {
+          DEFAULT: '#000000',
+          foreground: '#ffffff'
+        },
+        card: {
+          DEFAULT: '#0a0a0a',
+          foreground: '#ffffff'
         },
         gray: {
           50: '#f9fafb',
@@ -30,11 +60,11 @@ export default {
           600: '#4b5563',
           700: '#374151',
           800: '#1f2937',
-          900: '#111827'
+          900: '#111827',
+          950: '#0a0a0a'
         },
-        brand: "#0ea5e9", // Scale blue
-        surface: "#ffffff",
-        accent: "#f0f9ff"
+        brand: "#0ea5e9",
+        surface: "#0a0a0a"
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],

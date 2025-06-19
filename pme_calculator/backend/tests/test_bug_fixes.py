@@ -5,6 +5,7 @@ Tests various edge cases and potential issues identified through code scanning.
 
 import json
 import os
+import random
 import sys
 import tempfile
 from pathlib import Path
@@ -12,6 +13,10 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import pytest
+
+# Set seeds for deterministic test results
+random.seed(12345)
+np.random.seed(12345)
 
 # Add backend directory to path
 backend_dir = Path(__file__).parent.parent

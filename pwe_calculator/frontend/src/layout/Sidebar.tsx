@@ -1,146 +1,103 @@
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React from 'react';
+import { motion } from 'framer-motion';
+import { NavLink } from 'react-router-dom';
 import { 
-  Menu, 
-  X, 
   Home, 
-  BarChart3, 
   Upload, 
+  BarChart3, 
+  FileText, 
   Settings,
+  Database,
   TrendingUp
 } from 'lucide-react';
-import { Link, useLocation } from 'react-router-dom';
 
-interface SidebarProps {
-  children: React.ReactNode;
-}
+const navigationItems = [
+  {
+    name: 'Home',
+    href: '/',
+    icon: Home,
+  },
+  {
+    name: 'Data Upload',
+    href: '/upload',
+    icon: Upload,
+  },
+  {
+    name: 'Analysis',
+    href: '/analysis',
+    icon: BarChart3,
+  },
+  {
+    name: 'Portfolio',
+    href: '/portfolio',
+    icon: Database,
+  },
+  {
+    name: 'Reports',
+    href: '/reports',
+    icon: FileText,
+  },
+  {
+    name: 'Settings',
+    href: '/settings',
+    icon: Settings,
+  },
+];
 
-const Sidebar: React.FC<SidebarProps> = ({ children }) => {
-  const [isCollapsed, setIsCollapsed] = useState(false);
-  const location = useLocation();
-
-  const navigationItems = [
-    { icon: Home, label: 'Home', path: '/' },
-    { icon: Upload, label: 'Upload', path: '/upload' },
-    { icon: BarChart3, label: 'Analysis', path: '/analysis' },
-    { icon: TrendingUp, label: 'Portfolio', path: '/portfolio' },
-    { icon: Settings, label: 'Settings', path: '/settings' },
-  ];
-
+export const Sidebar: React.FC = () => {
   return (
-    <div className="flex h-screen bg-gray-50">
-      {/* Sidebar */}
-      <motion.aside
-        initial={false}
-        animate={{ width: isCollapsed ? 80 : 280 }}
-        transition={{ duration: 0.3, ease: "easeInOut" }}
-        className="bg-white border-r border-gray-200 shadow-sm flex flex-col"
-      >
-        {/* Header */}
-        <div className="p-6 border-b border-gray-100">
-          <div className="flex items-center justify-between">
-            <AnimatePresence>
-              {!isCollapsed && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.2 }}
-                  className="flex items-center space-x-3"
-                >
-                  <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-600 rounded-xl flex items-center justify-center shadow-scale">
-                    <TrendingUp className="w-6 h-6 text-white" />
-                  </div>
-                  <div>
-                    <span className="font-bold text-lg text-gray-900">PME Pro</span>
-                    <p className="text-xs text-gray-500 font-medium">Fund Analysis</p>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-            <button
-              onClick={() => setIsCollapsed(!isCollapsed)}
-              className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
-            >
-              {isCollapsed ? (
-                <Menu className="w-5 h-5 text-gray-600" />
-              ) : (
-                <X className="w-5 h-5 text-gray-600" />
-              )}
-            </button>
+    <motion.aside
+      initial={{ opacity: 0, x: -20 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.6 }}
+      className="w-64 bg-gray-950 border-r border-gray-800 min-h-screen"
+    >
+      <div className="p-6">
+        <div className="flex items-center space-x-3 mb-8">
+          <div className="flex items-center justify-center w-8 h-8 bg-primary rounded-lg">
+            <TrendingUp className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <h2 className="text-lg font-bold text-white">PME Analysis</h2>
+            <p className="text-xs text-gray-400">Internal Tool</p>
           </div>
         </div>
 
-        {/* Navigation */}
-        <nav className="flex-1 p-4 space-y-1">
-          {navigationItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = location.pathname === item.path;
-            
-            return (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={`group flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 ${
-                  isActive 
-                    ? 'bg-primary-50 text-primary-700 shadow-sm' 
-                    : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
-                }`}
+        <nav className="space-y-2">
+          {navigationItems.map((item, index) => (
+            <motion.div
+              key={item.name}
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.4, delay: index * 0.1 }}
+            >
+              <NavLink
+                to={item.href}
+                className={({ isActive }) =>
+                  `flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 ${
+                    isActive
+                      ? 'bg-primary text-white shadow-lg'
+                      : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+                  }`
+                }
               >
-                <Icon className={`w-5 h-5 flex-shrink-0 ${isActive ? 'text-primary-600' : 'text-gray-500 group-hover:text-gray-700'}`} />
-                <AnimatePresence>
-                  {!isCollapsed && (
-                    <motion.span
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.2 }}
-                      className={`font-medium ${isActive ? 'text-primary-700' : 'text-gray-700 group-hover:text-gray-900'}`}
-                    >
-                      {item.label}
-                    </motion.span>
-                  )}
-                </AnimatePresence>
-                {isActive && (
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    className="w-2 h-2 bg-primary-600 rounded-full ml-auto"
-                  />
-                )}
-              </Link>
-            );
-          })}
+                <item.icon className="w-5 h-5" />
+                <span className="font-medium">{item.name}</span>
+              </NavLink>
+            </motion.div>
+          ))}
         </nav>
-
-        {/* Footer */}
-        <div className="p-4 border-t border-gray-100">
-          <AnimatePresence>
-            {!isCollapsed && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.2 }}
-                className="text-center"
-              >
-                <p className="text-xs text-gray-500 mb-2">Version 2.0.1</p>
-                <div className="flex items-center justify-center space-x-1">
-                  <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                  <span className="text-xs text-gray-500 font-medium">System Healthy</span>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-      </motion.aside>
-
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden bg-gray-50">
-        {children}
       </div>
-    </div>
-  );
-};
 
-export default Sidebar; 
+      <div className="absolute bottom-6 left-6 right-6">
+        <div className="bg-gray-900 rounded-lg p-4 border border-gray-800">
+          <h3 className="text-white font-medium mb-2">Analysis Status</h3>
+          <div className="flex items-center space-x-2">
+            <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+            <span className="text-sm text-gray-400">System Ready</span>
+          </div>
+        </div>
+      </div>
+    </motion.aside>
+  );
+}; 
