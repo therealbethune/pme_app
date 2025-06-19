@@ -13,12 +13,17 @@ import { ErrorBoundary } from "./components/ErrorBoundary";
 import { TestingPanel } from "./components/TestingPanel";
 import { GradientBackground } from "./components/ui/GradientBackground";
 import DashboardShell from "./components/DashboardShell";
+import NeonDashboard from "./components/NeonDashboard";
+import EnhancedNeonDashboard from "./components/EnhancedNeonDashboard";
+import SimpleEnhancedDashboard from "./components/SimpleEnhancedDashboard";
+import CommandPalette from "./components/ui/CommandPalette";
 
 function App() {
   const [apiConnected, setApiConnected] = useState<boolean | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showTestingPanel, setShowTestingPanel] = useState(false);
   const [isDemoMode, setIsDemoMode] = useState(false);
+  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
 
   const checkApiConnection = async () => {
     try {
@@ -45,18 +50,25 @@ function App() {
     return unsubscribe;
   }, []);
 
-  // Testing panel keyboard shortcut
+  // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Testing panel shortcut
       if (e.ctrlKey && e.shiftKey && e.key === 'T') {
         e.preventDefault();
         setShowTestingPanel(!showTestingPanel);
+      }
+      
+      // Command palette shortcut
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setIsCommandPaletteOpen(!isCommandPaletteOpen);
       }
     };
     
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [showTestingPanel]);
+  }, [showTestingPanel, isCommandPaletteOpen]);
 
   if (isLoading) {
     return <GlassfundsLoader />;
@@ -80,6 +92,9 @@ function App() {
               <Navbar />
               <Routes>
                 <Route path="/" element={<DashboardShell />} />
+                <Route path="/neon" element={<NeonDashboard />} />
+                <Route path="/enhanced" element={<EnhancedNeonDashboard />} />
+                <Route path="/simple" element={<SimpleEnhancedDashboard />} />
                 <Route path="/analysis" element={<Analysis />} />
                 <Route path="/upload" element={<DataUpload />} />
                 <Route path="/charts-test" element={<ChartsTest />} />
@@ -93,6 +108,12 @@ function App() {
         <TestingPanel 
           visible={showTestingPanel} 
           onClose={() => setShowTestingPanel(false)} 
+        />
+        
+        {/* Command Palette - Cmd/Ctrl+K to toggle */}
+        <CommandPalette 
+          isOpen={isCommandPaletteOpen}
+          onClose={() => setIsCommandPaletteOpen(false)}
         />
       </ColorModeProvider>
     </ErrorBoundary>

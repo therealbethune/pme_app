@@ -1,6 +1,16 @@
 import React from 'react'
 import { motion } from 'framer-motion'
-import { Box } from '@mui/material'
+import { 
+  Box, 
+  Typography, 
+  Card, 
+  CardContent, 
+  Container,
+  Divider,
+  Chip,
+  Stack,
+  Paper
+} from '@mui/material'
 import { 
   TrendingUp, 
   TrendingDown, 
@@ -9,7 +19,9 @@ import {
   BarChart3,
   PieChart,
   Users,
-  Target
+  Target,
+  Clock,
+  Award
 } from 'lucide-react'
 import { Sidebar } from '../layout/Sidebar'
 import { Header } from '../layout/Header'
@@ -71,6 +83,14 @@ const DashboardShell: React.FC = () => {
     }
   ]
 
+  // Recent activity data
+  const recentActivities = [
+    { label: 'Fund Analysis Complete', time: '2 min ago', type: 'success' },
+    { label: 'New LP Onboarded', time: '1 hour ago', type: 'info' },
+    { label: 'Quarterly Report Generated', time: '3 hours ago', type: 'default' },
+    { label: 'PME Calculation Updated', time: '1 day ago', type: 'warning' }
+  ]
+
   // Keyboard shortcut handler
   React.useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -95,30 +115,52 @@ const DashboardShell: React.FC = () => {
         <Header onCommandPaletteOpen={() => setCommandOpen(true)} />
         
         {/* Dashboard Content */}
-        <Box component="main" sx={{ flex: 1, p: 3, overflow: 'auto' }}>
+        <Container 
+          maxWidth="xl" 
+          sx={{ 
+            flex: 1, 
+            py: 4,
+            px: { xs: 2, sm: 3, md: 4 }
+          }}
+        >
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
           >
             {/* Hero Section */}
-            <Box sx={{ mb: 4 }}>
-              <motion.h1 
-                className="text-3xl font-bold text-gray-900 mb-2"
+            <Box sx={{ mb: 6 }}>
+              <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.1 }}
+                transition={{ delay: 0.1, duration: 0.6 }}
               >
-                Portfolio Dashboard
-              </motion.h1>
-              <motion.p 
-                className="text-gray-600"
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.2 }}
-              >
-                Scale.ai-grade PME Calculator with professional design system
-              </motion.p>
+                <Typography 
+                  variant="h3" 
+                  sx={{ 
+                    fontWeight: 800,
+                    fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' },
+                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    backgroundClip: 'text',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    mb: 2
+                  }}
+                >
+                  Portfolio Dashboard
+                </Typography>
+                <Typography 
+                  variant="h6"
+                  sx={{ 
+                    color: 'text.secondary',
+                    fontWeight: 400,
+                    maxWidth: '600px',
+                    lineHeight: 1.6
+                  }}
+                >
+                  Professional-grade PME Calculator with advanced analytics and modern design
+                </Typography>
+              </motion.div>
             </Box>
 
             {/* KPI Grid */}
@@ -131,62 +173,224 @@ const DashboardShell: React.FC = () => {
                   md: 'repeat(3, 1fr)',
                   lg: 'repeat(4, 1fr)'
                 },
-                gap: 3,
-                mb: 4
+                gap: { xs: 2, sm: 3, md: 4 },
+                mb: 6
               }}
             >
               {kpiData.map((kpi, index) => (
                 <motion.div
                   key={kpi.title}
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 * index }}
+                  transition={{ 
+                    delay: 0.1 * index, 
+                    duration: 0.6,
+                    ease: "easeOut"
+                  }}
                 >
                   <KpiCard {...kpi} />
                 </motion.div>
               ))}
             </Box>
 
-            {/* Additional Content Sections */}
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '2fr 1fr' }, gap: 3 }}>
-              {/* Main Chart Area */}
+            {/* Main Content Grid */}
+            <Box 
+              sx={{ 
+                display: 'grid', 
+                gridTemplateColumns: { xs: '1fr', lg: '2fr 1fr' }, 
+                gap: { xs: 3, md: 4 }
+              }}
+            >
+              {/* Performance Analytics Card */}
               <motion.div
-                initial={{ opacity: 0, x: -20 }}
+                initial={{ opacity: 0, x: -30 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.5 }}
-                className="bg-white rounded-xl p-6 shadow-sm border border-gray-100"
+                transition={{ delay: 0.5, duration: 0.6 }}
               >
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Performance Analytics</h3>
-                <div className="h-64 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg flex items-center justify-center">
-                  <p className="text-gray-500">Chart visualization area</p>
-                </div>
+                <Card 
+                  sx={{ 
+                    height: '100%',
+                    borderRadius: 3,
+                    border: '1px solid',
+                    borderColor: 'divider',
+                    background: 'linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.7) 100%)',
+                    backdropFilter: 'blur(20px)',
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                      transform: 'translateY(-2px)',
+                      boxShadow: '0 12px 40px rgba(0,0,0,0.08)',
+                    }
+                  }}
+                >
+                  <CardContent sx={{ p: 4 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+                      <Box
+                        sx={{
+                          p: 1.5,
+                          borderRadius: 2,
+                          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                        }}
+                      >
+                        <BarChart3 size={24} color="white" />
+                      </Box>
+                      <Typography 
+                        variant="h5" 
+                        sx={{ 
+                          fontWeight: 700,
+                          color: 'text.primary'
+                        }}
+                      >
+                        Performance Analytics
+                      </Typography>
+                    </Box>
+                    
+                    <Box 
+                      sx={{ 
+                        height: 320,
+                        background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%)',
+                        borderRadius: 2,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        border: '2px dashed',
+                        borderColor: 'divider'
+                      }}
+                    >
+                      <Stack alignItems="center" spacing={2}>
+                        <Award size={48} color="#667eea" />
+                        <Typography 
+                          variant="h6" 
+                          sx={{ 
+                            color: 'text.secondary',
+                            fontWeight: 500
+                          }}
+                        >
+                          Chart Visualization Area
+                        </Typography>
+                        <Typography 
+                          variant="body2" 
+                          sx={{ 
+                            color: 'text.secondary',
+                            textAlign: 'center',
+                            maxWidth: 300
+                          }}
+                        >
+                          Interactive charts and performance metrics will be displayed here
+                        </Typography>
+                      </Stack>
+                    </Box>
+                  </CardContent>
+                </Card>
               </motion.div>
 
-              {/* Side Panel */}
+              {/* Recent Activity Panel */}
               <motion.div
-                initial={{ opacity: 0, x: 20 }}
+                initial={{ opacity: 0, x: 30 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.6 }}
-                className="bg-white rounded-xl p-6 shadow-sm border border-gray-100"
+                transition={{ delay: 0.6, duration: 0.6 }}
               >
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h3>
-                <div className="space-y-3">
-                  {[
-                    'Fund Analysis Complete',
-                    'New LP Onboarded',
-                    'Quarterly Report Generated',
-                    'PME Calculation Updated'
-                  ].map((activity, index) => (
-                    <div key={index} className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                      <span className="text-sm text-gray-700">{activity}</span>
-                    </div>
-                  ))}
-                </div>
+                <Card 
+                  sx={{ 
+                    height: '100%',
+                    borderRadius: 3,
+                    border: '1px solid',
+                    borderColor: 'divider',
+                    background: 'linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.7) 100%)',
+                    backdropFilter: 'blur(20px)',
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                      transform: 'translateY(-2px)',
+                      boxShadow: '0 12px 40px rgba(0,0,0,0.08)',
+                    }
+                  }}
+                >
+                  <CardContent sx={{ p: 4 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+                      <Box
+                        sx={{
+                          p: 1.5,
+                          borderRadius: 2,
+                          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                        }}
+                      >
+                        <Clock size={24} color="white" />
+                      </Box>
+                      <Typography 
+                        variant="h5" 
+                        sx={{ 
+                          fontWeight: 700,
+                          color: 'text.primary'
+                        }}
+                      >
+                        Recent Activity
+                      </Typography>
+                    </Box>
+                    
+                    <Stack spacing={3}>
+                      {recentActivities.map((activity, index) => (
+                        <motion.div
+                          key={index}
+                          initial={{ opacity: 0, x: 20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: 0.7 + (index * 0.1), duration: 0.4 }}
+                        >
+                          <Paper
+                            sx={{
+                              p: 2.5,
+                              borderRadius: 2,
+                              border: '1px solid',
+                              borderColor: 'divider',
+                              background: 'rgba(255,255,255,0.7)',
+                              transition: 'all 0.2s ease',
+                              '&:hover': {
+                                background: 'rgba(255,255,255,0.9)',
+                                transform: 'translateX(4px)',
+                              }
+                            }}
+                          >
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                              <Box
+                                sx={{
+                                  width: 8,
+                                  height: 8,
+                                  borderRadius: '50%',
+                                  bgcolor: activity.type === 'success' ? 'success.main' :
+                                          activity.type === 'info' ? 'info.main' :
+                                          activity.type === 'warning' ? 'warning.main' : 'grey.400'
+                                }}
+                              />
+                              <Box sx={{ flex: 1 }}>
+                                <Typography 
+                                  variant="body2" 
+                                  sx={{ 
+                                    fontWeight: 600,
+                                    color: 'text.primary',
+                                    mb: 0.5
+                                  }}
+                                >
+                                  {activity.label}
+                                </Typography>
+                                <Typography 
+                                  variant="caption" 
+                                  sx={{ 
+                                    color: 'text.secondary',
+                                    fontSize: '0.75rem'
+                                  }}
+                                >
+                                  {activity.time}
+                                </Typography>
+                              </Box>
+                            </Box>
+                          </Paper>
+                        </motion.div>
+                      ))}
+                    </Stack>
+                  </CardContent>
+                </Card>
               </motion.div>
             </Box>
           </motion.div>
-        </Box>
+        </Container>
       </Box>
 
       {/* Command Modal */}
