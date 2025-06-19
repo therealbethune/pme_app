@@ -2,10 +2,10 @@
 Database configuration and models for PME Calculator.
 """
 
-import os
 from datetime import datetime
 from typing import Any
 
+from config import settings
 from logger import get_logger
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
@@ -39,10 +39,8 @@ except ImportError:
 
 logger = get_logger(__name__)
 
-# Database configuration
-DATABASE_URL = os.getenv(
-    "DATABASE_URL", "postgresql+asyncpg://pme_user:pme_password@localhost:5432/pme_db"
-)
+# Database configuration using typed settings
+DATABASE_URL = settings.DATABASE_URL
 
 # Create async engine
 engine = create_async_engine(

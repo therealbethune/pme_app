@@ -15,11 +15,11 @@ Key Features:
 import hashlib
 import json
 import logging
-import os
 import time
 from typing import Any
 
 import redis.asyncio as redis
+from config import settings
 
 # Import db_views with error handling for different import contexts
 try:
@@ -37,8 +37,8 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
-# Redis configuration
-REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
+# Redis configuration using typed settings
+REDIS_URL = settings.REDIS_URL
 DEFAULT_TTL = 86_400  # 24 hours
 CACHE_PREFIX = "pme"
 
