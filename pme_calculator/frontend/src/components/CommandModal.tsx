@@ -88,7 +88,7 @@ export function CommandModal({ isOpen, onClose }: CommandModalProps) {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: -20 }}
             transition={{ duration: 0.2 }}
-            className="w-full max-w-2xl bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden"
+            className="w-full max-w-2xl bg-white rounded-xl shadow-card border border-gray-200 overflow-hidden"
             onClick={e => e.stopPropagation()}
           >
             {/* Search input */}
