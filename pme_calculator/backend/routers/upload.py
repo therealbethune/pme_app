@@ -4,7 +4,6 @@ FastAPI upload router with comprehensive file validation.
 
 import tempfile
 import uuid
-from datetime import datetime
 from pathlib import Path
 from typing import Any, AsyncGenerator
 
@@ -19,6 +18,7 @@ from fastapi import (
 )
 from fastapi.responses import JSONResponse
 from logger import get_logger
+from utils.time import UTC, now_utc
 from validation.file_check_simple import validate_file_comprehensive
 from validation.schemas_simple import (
     UploadResponse,
@@ -133,7 +133,7 @@ async def upload_fund_file(
                 "temp_path": str(tmp_path),
                 "file_type": "fund",
                 "validation": validation_result,
-                "upload_timestamp": datetime.utcnow().isoformat(),
+                "upload_timestamp": now_utc().isoformat(),
             }
 
             # Insert UploadFileMeta row if database is available
@@ -263,7 +263,7 @@ async def upload_index_file(
                 "temp_path": str(tmp_path),
                 "file_type": "index",
                 "validation": validation_result,
-                "upload_timestamp": datetime.utcnow().isoformat(),
+                "upload_timestamp": now_utc().isoformat(),
             }
 
             # Insert UploadFileMeta row if database is available
