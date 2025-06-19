@@ -12,7 +12,7 @@ import { NotificationProvider } from "./components/NotificationSystem";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { TestingPanel } from "./components/TestingPanel";
 import { GradientBackground } from "./components/ui/GradientBackground";
-import { DashboardShell } from "./components/DashboardShell";
+import DashboardShell from "./components/DashboardShell";
 
 function App() {
   const [apiConnected, setApiConnected] = useState<boolean | null>(null);
