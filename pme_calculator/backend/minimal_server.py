@@ -11,6 +11,9 @@ import pandas as pd
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 
+# Import our central timezone utility
+from pme_calculator.utils.time import utc_now
+
 app = FastAPI(title="PME Calculator - Minimal", version="1.0.0")
 
 # CORS middleware
@@ -64,7 +67,7 @@ async def upload_fund_file(file: UploadFile = File(...)):
             "dataframe": df,
             "columns": df.columns.tolist(),
             "row_count": len(df),
-            "upload_time": datetime.utcnow().isoformat(),
+            "upload_time": utc_now().isoformat(),
         }
 
         return {
@@ -101,7 +104,7 @@ async def upload_index_file(file: UploadFile = File(...)):
             "dataframe": df,
             "columns": df.columns.tolist(),
             "row_count": len(df),
-            "upload_time": datetime.utcnow().isoformat(),
+            "upload_time": utc_now().isoformat(),
         }
 
         return {
@@ -167,7 +170,7 @@ async def run_simple_analysis():
                 "risk_profile": "Moderate risk with good diversification",
             },
             "has_benchmark": True,
-            "analysis_date": datetime.utcnow().isoformat(),
+            "analysis_date": utc_now().isoformat(),
         }
     except Exception as e:
         return {"success": False, "error": str(e)}

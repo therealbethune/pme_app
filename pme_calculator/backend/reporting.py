@@ -1,6 +1,7 @@
 import io
 import logging
 from datetime import datetime
+from typing import Any
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -13,6 +14,9 @@ import seaborn as sns
 from models import Portfolio, PortfolioFund
 from portfolio_service import PortfolioService
 from sqlalchemy.orm import Session
+
+# Import our central timezone utility
+from pme_calculator.utils.time import utc_now
 
 logger = logging.getLogger(__name__)
 
@@ -431,7 +435,7 @@ async def generate_monthly_performance_pack(portfolio_id: int) -> dict:
             "portfolio_id": portfolio_id,
             "pdf_size": len(pdf_bytes),
             "excel_size": len(excel_bytes),
-            "generated_at": datetime.utcnow().isoformat(),
+            "generated_at": utc_now().isoformat(),
             "status": "success",
         }
 

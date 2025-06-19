@@ -8,6 +8,9 @@ from models import NAV, CashFlow, Fund, Portfolio, PortfolioFund
 from scipy.optimize import minimize
 from sqlalchemy.orm import Session
 
+# Import our central timezone utility
+from pme_calculator.utils.time import utc_now
+
 logger = logging.getLogger(__name__)
 
 
@@ -121,7 +124,7 @@ class PortfolioService:
                 "current_weights": fund_weights,
                 "risk_metrics": risk_metrics,
                 "diversification_score": diversification_score,
-                "calculated_at": datetime.utcnow().isoformat(),
+                "calculated_at": utc_now().isoformat(),
             }
 
         except Exception as e:

@@ -1,6 +1,7 @@
 import io
 import logging
 from datetime import datetime
+from typing import Any
 
 from database import get_db  # Assume this exists
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -10,6 +11,9 @@ from models import Fund, Portfolio, PortfolioFund
 from portfolio_service import PortfolioService
 from reporting import ReportingService
 from sqlalchemy.orm import Session
+
+# Import our central timezone utility
+from pme_calculator.utils.time import utc_now
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/portfolio", tags=["portfolio"])
@@ -184,7 +188,7 @@ async def update_portfolio(
         for field, value in update_data.items():
             setattr(portfolio, field, value)
 
-        portfolio.updated_at = datetime.utcnow()
+        portfolio.updated_at = utc_now()
         db.commit()
 
         num_funds = (
@@ -221,7 +225,7 @@ async def delete_portfolio(portfolio_id: int, db: Session = Depends(get_db)) -> 
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Portfolio not found")
 
         portfolio.is_active = False
-        portfolio.updated_at = datetime.utcnow()
+        portfolio.updated_at = utc_now()
         db.commit()
 
         return {"message": "Portfolio deleted successfully"}
@@ -296,7 +300,7 @@ async def update_portfolio_weights(
 
             portfolio_fund.weight = weight_update.weight
 
-        portfolio.updated_at = datetime.utcnow()
+        portfolio.updated_at = utc_now()
         db.commit()
 
         return {"message": "Portfolio weights updated successfully"}
