@@ -56,3 +56,5 @@ tzdata==2025.2
     # via pandas
 uvicorn==0.34.3
     # via -r requirements/base.in
+pydantic-settings==2.2.1
+    # via -r requirements/base.in

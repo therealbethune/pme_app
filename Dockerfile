@@ -11,7 +11,8 @@ COPY pme_calculator/ ./pme_calculator/
 COPY pme_math/ ./pme_math/
 
 # Install dependencies and the package itself
-RUN pip install --prefix=/install --no-cache-dir -e .[dev]
+RUN pip install --prefix=/install --no-cache-dir -e .[dev] \
+    && pip install --no-cache-dir "pydantic-settings>=2.0.0"
 
 # Stage 2: Runtime - Create minimal production image
 FROM python:3.13-slim
