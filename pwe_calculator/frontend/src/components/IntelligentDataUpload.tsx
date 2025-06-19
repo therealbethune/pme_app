@@ -1,8 +1,15 @@
 import React, { useState } from 'react';
-import {
-  Box, Typography, Button, Card, CardContent, Alert, ListItem, ListItemIcon, ListItemText, Divider, CircularProgress, Grid
-} from '@mui/material';
-import { CloudUpload, Analytics, CheckCircle, Warning, DeleteOutline, Folder, BarChart } from '@mui/icons-material';
+import { motion } from 'framer-motion';
+import { 
+  CloudUpload, 
+  BarChart3, 
+  CheckCircle, 
+  AlertTriangle, 
+  Trash2, 
+  FolderOpen,
+  Loader2,
+  Play
+} from 'lucide-react';
 import { analysisService } from '../services/analysisService';
 import { fileStore } from '../services/fileStore';
 import { useNavigate } from 'react-router-dom';
@@ -91,50 +98,153 @@ export const IntelligentDataUpload: React.FC = () => {
     }
   };
 
+  const renderStatusIcon = (status: UploadStatus['status']) => {
+    switch (status) {
+      case 'pending': return <CloudUpload className="w-5 h-5 text-gray-400" />;
+      case 'uploading': return <Loader2 className="w-5 h-5 text-blue-500 animate-spin" />;
+      case 'success': return <CheckCircle className="w-5 h-5 text-green-500" />;
+      case 'error': return <AlertTriangle className="w-5 h-5 text-red-500" />;
+      default: return null;
+    }
+  };
+
   const fundUpload = uploads.find(u => u.type === 'fund');
   const indexUpload = uploads.find(u => u.type === 'index');
   const canAnalyze = !!fileStore.getState().fundFile;
   const hasPendingUploads = uploads.some(u => u.status === 'pending');
 
   return (
-    <Card>
-    <CardContent>
-    <Box sx={{ p: 1 }}>
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={6}>
-            <Typography variant="h6" gutterBottom display="flex" alignItems="center">
-                <Folder sx={{ mr: 1 }}/> 1. Upload Fund File
-            </Typography>
-            <Button variant="outlined" component="label" fullWidth>Select File<input type="file" hidden onChange={e => handleFileChange(e, 'fund')} /></Button>
-            {fundUpload && <ListItem><ListItemIcon>{renderStatusIcon(fundUpload.status)}</ListItemIcon><ListItemText primary={fundUpload.file.name} secondary={fundUpload.error || fundUpload.status} /></ListItem>}
-        </Grid>
-        <Grid item xs={12} md={6}>
-            <Typography variant="h6" gutterBottom display="flex" alignItems="center">
-                <BarChart sx={{ mr: 1 }}/> 2. Upload Index File (Optional)
-            </Typography>
-            <Button variant="outlined" component="label" fullWidth>Select File<input type="file" hidden onChange={e => handleFileChange(e, 'index')} /></Button>
-            {indexUpload && <ListItem><ListItemIcon>{renderStatusIcon(indexUpload.status)}</ListItemIcon><ListItemText primary={indexUpload.file.name} secondary={indexUpload.error || indexUpload.status} /></ListItem>}
-        </Grid>
-      </Grid>
-      <Divider sx={{ my: 3 }} />
-      <Box display="flex" justifyContent="space-between" alignItems="center">
-        <Button startIcon={<DeleteOutline />} onClick={clearUploads} color="warning">Clear</Button>
-        <Button startIcon={<CloudUpload />} onClick={handleUpload} disabled={!hasPendingUploads} variant="contained">Upload</Button>
-        <Button variant="contained" size="large" onClick={handleRunAnalysis} disabled={!canAnalyze || isAnalyzing || hasPendingUploads} startIcon={isAnalyzing ? <CircularProgress size={24} /> : <Analytics />}>Run Analysis</Button>
-      </Box>
-      {analysisError && <Alert severity="error" sx={{ mt: 2 }}>{analysisError}</Alert>}
-    </Box>
-    </CardContent>
-    </Card>
-  );
-};
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6 }}
+      className="bg-white rounded-xl border border-gray-200 shadow-sm p-6"
+    >
+      <div className="grid md:grid-cols-2 gap-6 mb-6">
+        {/* Fund File Upload */}
+        <div className="space-y-4">
+          <div className="flex items-center space-x-2 mb-3">
+            <FolderOpen className="w-5 h-5 text-brand" />
+            <h3 className="text-lg font-semibold text-gray-900">1. Upload Fund File</h3>
+          </div>
+          
+          <label className="block">
+            <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-brand transition-colors cursor-pointer">
+              <CloudUpload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+              <span className="text-sm text-gray-600">Click to select fund data file</span>
+            </div>
+            <input
+              type="file"
+              className="hidden"
+              onChange={(e) => handleFileChange(e, 'fund')}
+              accept=".csv,.xlsx,.xls"
+            />
+          </label>
 
-const renderStatusIcon = (status: UploadStatus['status']) => {
-    switch (status) {
-        case 'pending': return <CloudUpload color="action" />;
-        case 'uploading': return <CircularProgress size={24} />;
-        case 'success': return <CheckCircle color="success" />;
-        case 'error': return <Warning color="error" />;
-        default: return null;
-    }
+          {fundUpload && (
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg"
+            >
+              {renderStatusIcon(fundUpload.status)}
+              <div className="flex-1">
+                <p className="text-sm font-medium text-gray-900">{fundUpload.file.name}</p>
+                <p className="text-xs text-gray-500">
+                  {fundUpload.error || fundUpload.status}
+                </p>
+              </div>
+            </motion.div>
+          )}
+        </div>
+
+        {/* Index File Upload */}
+        <div className="space-y-4">
+          <div className="flex items-center space-x-2 mb-3">
+            <BarChart3 className="w-5 h-5 text-brand" />
+            <h3 className="text-lg font-semibold text-gray-900">2. Upload Index File</h3>
+            <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">Optional</span>
+          </div>
+          
+          <label className="block">
+            <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-brand transition-colors cursor-pointer">
+              <BarChart3 className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+              <span className="text-sm text-gray-600">Click to select benchmark index</span>
+            </div>
+            <input
+              type="file"
+              className="hidden"
+              onChange={(e) => handleFileChange(e, 'index')}
+              accept=".csv,.xlsx,.xls"
+            />
+          </label>
+
+          {indexUpload && (
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg"
+            >
+              {renderStatusIcon(indexUpload.status)}
+              <div className="flex-1">
+                <p className="text-sm font-medium text-gray-900">{indexUpload.file.name}</p>
+                <p className="text-xs text-gray-500">
+                  {indexUpload.error || indexUpload.status}
+                </p>
+              </div>
+            </motion.div>
+          )}
+        </div>
+      </div>
+
+      {/* Action Buttons */}
+      <div className="flex items-center justify-between pt-4 border-t border-gray-200">
+        <button
+          onClick={clearUploads}
+          className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-red-600 transition-colors"
+        >
+          <Trash2 className="w-4 h-4" />
+          <span>Clear All</span>
+        </button>
+
+        <div className="flex items-center space-x-3">
+          <button
+            onClick={handleUpload}
+            disabled={!hasPendingUploads}
+            className="flex items-center space-x-2 px-6 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <CloudUpload className="w-4 h-4" />
+            <span>Upload Files</span>
+          </button>
+
+          <button
+            onClick={handleRunAnalysis}
+            disabled={!canAnalyze || isAnalyzing || hasPendingUploads}
+            className="flex items-center space-x-2 px-6 py-3 bg-brand text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+          >
+            {isAnalyzing ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Play className="w-4 h-4" />
+            )}
+            <span>{isAnalyzing ? 'Running Analysis...' : 'Run Analysis'}</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Error Message */}
+      {analysisError && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg"
+        >
+          <div className="flex items-center space-x-2">
+            <AlertTriangle className="w-5 h-5 text-red-500" />
+            <p className="text-sm text-red-700">{analysisError}</p>
+          </div>
+        </motion.div>
+      )}
+    </motion.div>
+  );
 }; 
